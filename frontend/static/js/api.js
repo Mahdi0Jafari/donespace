@@ -28,6 +28,7 @@ window.HomeAPI = {
         
         const res = await fetch(`${API_BASE}${endpoint}`, options);
         if (res.status === 401 && !window.location.pathname.includes('/login')) {
+            this.setToken(null);
             window.location.href = '/login' + window.location.search;
         }
         return res;
