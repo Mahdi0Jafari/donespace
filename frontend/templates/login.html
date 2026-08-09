@@ -413,7 +413,7 @@
                 btn.disabled = false;
             } else {
                 window.HomeAPI.setToken(res.token);
-                window.location.href = '/';
+                window.location.href = '/app';
             }
         });
 
@@ -448,7 +448,7 @@
                 btn.disabled = false;
             } else {
                 window.HomeAPI.setToken(res.token);
-                window.location.href = '/';
+                window.location.href = '/app';
             }
         }
 
@@ -460,7 +460,7 @@
             const btn = document.getElementById('authModalBtn');
             if (isSuccess) {
                 btn.textContent = "Go to Dashboard";
-                btn.onclick = () => window.location.href = '/';
+                btn.onclick = () => window.location.href = '/app';
             } else {
                 btn.textContent = "Try Again";
                 btn.onclick = () => document.getElementById('authModalOverlay').style.display = 'none';

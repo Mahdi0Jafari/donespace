@@ -148,11 +148,11 @@ def login():
     user.token = secrets.token_hex(32) # Generate new token on login
     db.session.commit()
     
-    home = db.session.get(Home, user.home_id)
+    home = db.session.get(Home, user.home_id) if user.home_id else None
     return jsonify({
         'token': user.token,
         'user': user.to_dict(),
-        'home': {'name': home.name, 'join_code': home.join_code}
+        'home': {'name': home.name, 'join_code': home.join_code} if home else None
     })
 
 @auth_bp.route('/me', methods=['GET'])
