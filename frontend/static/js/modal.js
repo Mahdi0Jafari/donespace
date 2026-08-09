@@ -752,9 +752,35 @@ window.showCreateHomeModal = function() {
                         <h2 style="font-size: 32px; letter-spacing: 8px; color: var(--primary-purple); margin: 0;">${res.join_code}</h2>
                     </div>
 
-                    <button class="primary-btn" onclick="window.location.reload();" style="width: 100%; padding: 14px 20px; font-size: 16px;">Got it, let's go!</button>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="primary-btn" id="shareInviteBtn" style="width: 100%; padding: 14px 20px; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                            <span class="material-symbols-rounded">share</span> Share Invite Link
+                        </button>
+                        <button class="secondary-btn" onclick="window.location.reload();" style="width: 100%; padding: 14px 20px; font-size: 16px;">Got it, let's go!</button>
+                    </div>
                 </div>
             `;
+
+            document.getElementById('shareInviteBtn').onclick = async function() {
+                const inviteUrl = window.location.origin + '/login?join=' + res.join_code;
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'Join my home on DoneSpace',
+                            text: 'Click this link to join my home and collaborate on tasks and meals!',
+                            url: inviteUrl
+                        });
+                    } catch (err) {
+                        console.error('Share failed:', err);
+                    }
+                } else {
+                    // Fallback to clipboard
+                    navigator.clipboard.writeText(inviteUrl);
+                    const originalHTML = this.innerHTML;
+                    this.innerHTML = '<span class="material-symbols-rounded">check</span> Copied!';
+                    setTimeout(() => { this.innerHTML = originalHTML; }, 2000);
+                }
+            };
         }
     };
 };

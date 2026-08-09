@@ -263,3 +263,28 @@ def create_home():
     db.session.commit()
     
     return jsonify({'success': True, 'home_id': home.id, 'join_code': home.join_code, 'home_name': home.name})
+
+@auth_bp.route('/invite/<code>', methods=['GET'])
+def get_invite_preview(code):
+    home = Home.query.filter_by(join_code=code).first()
+    if not home:
+        return jsonify({'error': 'Invalid or expired invite link'}), 404
+        
+    # Get members to show in preview
+    member_links = UserHome.query.filter_by(home_id=home.id).limit(5).all()
+    members = []
+    for link in member_links:
+        user = db.session.get(User, link.user_id)
+        if user:
+            members.append({
+                'display_name': user.display_name,
+                'avatar': user.avatar
+            })
+            
+    total_members = UserHome.query.filter_by(home_id=home.id).count()
+    
+    return jsonify({
+        'name': home.name,
+        'members': members,
+        'total_members': total_members
+    })

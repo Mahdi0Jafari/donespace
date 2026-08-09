@@ -23,7 +23,7 @@ window.HomeAPI = {
         
         const res = await fetch(`${API_BASE}${endpoint}`, options);
         if (res.status === 401 && !window.location.pathname.includes('/login')) {
-            window.location.href = '/login';
+            window.location.href = '/login' + window.location.search;
         }
         return res;
     },
@@ -286,12 +286,32 @@ window.HomeAPI = {
 
 // Global data refresh handler (called by SSE or initial load)
 window.refreshAllData = async function() {
+    // If not authenticated, redirect to login
     if (!window.HomeAPI.getToken() && !window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+        window.location.href = '/login' + window.location.search;
         return;
     }
     
     // Fetch Me to ensure we are logged in and get user data
+    
+    // Check for join parameter and attempt auto-join
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinCode = urlParams.get('join');
+    if (joinCode && window.HomeAPI.getToken()) {
+        // Strip from URL immediately to prevent loop
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
+        try {
+            const joinRes = await window.HomeAPI.joinHome(joinCode);
+            if (joinRes.error) {
+                alert("Invite link error: " + joinRes.error);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    
     const me = await window.HomeAPI.getMe();
     if (me) {
         window.me = me;

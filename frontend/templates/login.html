@@ -207,6 +207,11 @@
         <div class="login-card-center">
             
             <div class="auth-container">
+                <div id="inviteBanner" style="display: none; background: #E9EFFD; border: 1px solid #C4D3FA; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: center;">
+                    <span class="material-symbols-rounded" style="color: var(--primary-purple); font-size: 28px; margin-bottom: 8px;">waving_hand</span>
+                    <h3 style="margin: 0 0 4px 0; font-size: 16px; color: #1f2937;">You've been invited!</h3>
+                    <p style="margin: 0; font-size: 14px; color: #4b5563;" id="inviteBannerText"></p>
+                </div>
                 <div class="views-wrapper" id="viewsWrapper">
                     
                     <!-- VIEW 1: LOGIN -->
@@ -354,7 +359,34 @@
             }
         }
 
-        // Wizard Logic
+        // --- Invite Link Logic ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const joinCode = params.get('join');
+            
+            if (joinCode) {
+                try {
+                    const res = await fetch('/api/auth/invite/' + joinCode);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const banner = document.getElementById('inviteBanner');
+                        const text = document.getElementById('inviteBannerText');
+                        
+                        let memberNames = data.members.map(m => m.display_name).join(', ');
+                        if (data.total_members > data.members.length) {
+                            memberNames += ` and ${data.total_members - data.members.length} others`;
+                        }
+                        
+                        text.innerHTML = `Join <strong>${data.name}</strong> with ${memberNames}. Create an account or log in to continue.`;
+                        banner.style.display = 'block';
+                    }
+                } catch (e) {
+                    console.error('Failed to load invite preview', e);
+                }
+            }
+        });
+
+        // Tab Switching Logic
         let currentStep = 0;
         const totalSteps = 2;
         const wizardWrapper = document.getElementById('wizardStepsWrapper');
@@ -426,7 +458,7 @@
                 btn.disabled = false;
             } else {
                 window.HomeAPI.setToken(res.token);
-                window.location.href = '/app';
+                window.location.href = '/app' + window.location.search;
             }
         });
 
@@ -450,7 +482,7 @@
                 email: email,
                 password: password,
                 avatar: avatar,
-                join_code: null,
+                join_code: new URLSearchParams(window.location.search).get('join'),
                 home_name: null
             };
 
@@ -461,7 +493,7 @@
                 btn.disabled = false;
             } else {
                 window.HomeAPI.setToken(res.token);
-                window.location.href = '/app';
+                window.location.href = '/app' + window.location.search;
             }
         }
 
