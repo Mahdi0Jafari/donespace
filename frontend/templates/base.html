@@ -17,16 +17,7 @@
     <meta property="twitter:url" content="https://donespace.ir/">
     <meta property="twitter:title" content="DoneSpace — Home Management">
 
-    <!-- Anti-Flash Script: Hide body initially, only show if token exists -->
-    <style>body { display: none; }</style>
-    <script>
-        if (!localStorage.getItem('authToken')) {
-            window.location.replace('/login');
-        } else {
-            // Un-hide body synchronously if token exists
-            document.write('<style>body { display: block !important; }</style>');
-        }
-    </script>
+
 
     <!-- Global CSS -->
     <link rel="stylesheet" href="/static/css/main.css?v=4">
@@ -52,8 +43,8 @@
             <nav class="nav-menu">
                 <a href="#" class="nav-item logo-item"><span class="material-symbols-rounded" style="color: var(--primary-purple); font-size: 32px;">task_alt</span></a>
                 
-                <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}" title="Dashboard">
-                    {% if request.path == '/' %}<div class="active-indicator"></div>{% endif %}
+                <a href="/app" class="nav-item {% if request.path == '/app' %}active{% endif %}" title="Dashboard">
+                    {% if request.path == '/app' %}<div class="active-indicator"></div>{% endif %}
                     <span class="material-symbols-rounded">grid_view</span>
                 </a>
                 
@@ -80,7 +71,7 @@
                 <a href="/meals" class="arc-item {% if request.path == '/meals' %}active{% endif %}" data-index="1" data-label="Meals & Recipes">
                     <div class="arc-icon-wrapper"><span class="material-symbols-rounded">restaurant_menu</span></div>
                 </a>
-                <a href="/" class="arc-item {% if request.path == '/' %}active{% endif %}" data-index="2" data-label="Dashboard">
+                <a href="/app" class="arc-item {% if request.path == '/app' %}active{% endif %}" data-index="2" data-label="Dashboard">
                     <div class="arc-icon-wrapper"><span class="material-symbols-rounded">grid_view</span></div>
                 </a>
                 <a href="#" class="arc-item" data-index="3" data-label="Settings">

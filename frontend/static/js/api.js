@@ -9,8 +9,13 @@ window.HomeAPI = {
     },
     
     setToken(token) {
-        if (token) localStorage.setItem('authToken', token);
-        else localStorage.removeItem('authToken');
+        if (token) {
+            localStorage.setItem('authToken', token);
+            document.cookie = `authToken=${token}; path=/; max-age=31536000`; // Set cookie for 1 year
+        } else {
+            localStorage.removeItem('authToken');
+            document.cookie = `authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`; // Clear cookie
+        }
     },
     
     // Core fetch wrapper

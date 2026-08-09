@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, g, render_template, send_from_directory
+from flask import Flask, request, jsonify, g, render_template, send_from_directory, redirect
 from flask_cors import CORS
 from backend.extensions import db
 from backend.models import User
@@ -32,28 +32,31 @@ def require_auth():
     # Allow CORS preflight
     if request.method == 'OPTIONS':
         return
-    # Exempt auth routes
-    if request.path in ['/api/auth/login', '/api/auth/register'] or request.path.startswith('/api/auth/invite/'):
+    # Exempt auth routes, static files, and public pages
+    exempt_routes = ['/api/auth/login', '/api/auth/register', '/login', '/']
+    if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/static/'):
         return
         
-    # Exempt non-API routes (allow static files to load)
-    if not request.path.startswith('/api/'):
-        return
-
-    # Check for SSE stream auth (from query params because EventSource doesn't support headers)
+    # Check for SSE stream auth
+    token = None
     if request.path == '/api/stream':
         token = request.args.get('token')
     else:
         auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({'error': 'Unauthorized'}), 401
-        token = auth_header.split(' ')[1]
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+        else:
+            token = request.cookies.get('authToken')
 
     if not token:
+        if not request.path.startswith('/api/'):
+            return redirect('/login')
         return jsonify({'error': 'Unauthorized'}), 401
         
     user = User.query.filter_by(token=token).first()
     if not user:
+        if not request.path.startswith('/api/'):
+            return redirect('/login')
         return jsonify({'error': 'Unauthorized'}), 401
         
     g.user = user
