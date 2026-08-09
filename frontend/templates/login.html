@@ -265,6 +265,11 @@
                                             <input type="password" id="signupPassword" class="pwd-input" placeholder="Password" maxlength="255" required>
                                             <button type="button" class="text-btn toggle-password">Show</button>
                                         </div>
+                                        <div class="input-wrap">
+                                            <span class="material-symbols-rounded input-icon">lock_reset</span>
+                                            <input type="password" id="signupConfirmPassword" class="pwd-input" placeholder="Confirm Password" maxlength="255" required>
+                                            <button type="button" class="text-btn toggle-password">Show</button>
+                                        </div>
                                         <button type="submit" class="primary-btn submit-btn">Continue</button>
                                     </form>
                                 </div>
@@ -380,6 +385,14 @@
         updateWizard();
 
         function nextStep() {
+            if (currentStep === 0) {
+                const pwd = document.getElementById('signupPassword').value;
+                const confirmPwd = document.getElementById('signupConfirmPassword').value;
+                if (pwd !== confirmPwd) {
+                    showModal("Passwords Mismatch", "Please make sure both passwords match perfectly.");
+                    return;
+                }
+            }
             if (currentStep < totalSteps - 1) {
                 currentStep++;
                 updateWizard();
