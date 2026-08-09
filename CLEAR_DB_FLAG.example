@@ -1,0 +1,15 @@
+# Database Wiping Guide
+
+This file acts as a flag for the deployment script.
+
+## How to wipe the database?
+If you want to completely erase all database data on the server (e.g., for testing or starting fresh):
+1. Rename this file and remove the `.example` extension (so the filename becomes exactly `CLEAR_DB_FLAG`).
+2. Commit and push. The server will see this file and wipe the database.
+
+## ⚠️ CRITICAL WARNING ⚠️
+As you probably guessed, if this file remains in GitHub as `CLEAR_DB_FLAG`, **your database will be wiped on EVERY future push!**
+Therefore, immediately after wiping the DB, you MUST rename it back to `CLEAR_DB_FLAG.example`, commit, and push again to remove the active flag from GitHub.
+
+💡 MUCH SAFER ALTERNATIVE:
+Instead of messing with this file, simply include the tag `[clear-db]` in your commit message when you push! The server will automatically detect it and wipe the database just for that single deployment (without any risk to future commits).

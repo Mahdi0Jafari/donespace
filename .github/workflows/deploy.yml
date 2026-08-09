@@ -32,8 +32,9 @@ jobs:
               # 3. Create database folder on host to avoid permission issues when docker mounts it
               mkdir -p database
               
-              if [ -f "CLEAR_DB_FLAG" ]; then
-                echo "CLEAR_DB_FLAG found! Wiping database folder..."
+              COMMIT_MSG="${{ github.event.head_commit.message }}"
+              if [ -f "CLEAR_DB_FLAG" ] || [[ "$COMMIT_MSG" == *"[clear-db]"* ]]; then
+                echo "Clear DB signal received! Wiping database folder..."
                 rm -rf database/*
               fi
               
