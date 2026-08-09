@@ -829,6 +829,17 @@ window.showJoinHomeModal = function() {
                 otpBoxes[idx - 1].value = '';
             }
         });
+        box.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            if (pastedData) {
+                for (let i = 0; i < pastedData.length && idx + i < otpBoxes.length; i++) {
+                    otpBoxes[idx + i].value = pastedData[i];
+                }
+                const focusIdx = Math.min(idx + pastedData.length, otpBoxes.length - 1);
+                otpBoxes[focusIdx].focus();
+            }
+        });
         box.addEventListener('focus', () => {
             box.style.borderColor = 'var(--primary-purple)';
         });
@@ -861,4 +872,70 @@ window.showJoinHomeModal = function() {
             window.location.reload();
         }
     };
+};
+
+window.showConfirmInviteModal = async function(joinCode) {
+    const existing = document.getElementById('dynamicConfirmInviteModal');
+    if (existing) existing.remove();
+
+    const modalHTML = `
+        <div class="modal-overlay active" id="dynamicConfirmInviteModal">
+            <div class="modal-content" style="max-width: 400px; padding: 32px 24px; text-align: center;" id="confirmInviteModalContent">
+                <span class="material-symbols-rounded" style="color: var(--primary-purple); font-size: 48px; margin-bottom: 16px; display: block; animation: pulse 2s infinite;">hourglass_empty</span>
+                <h3 style="margin-bottom: 12px; font-size: 20px;">Loading Invite...</h3>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    try {
+        const res = await fetch('/api/auth/invite/' + joinCode);
+        const content = document.getElementById('confirmInviteModalContent');
+        
+        if (res.ok) {
+            const data = await res.json();
+            let memberNames = data.members.map(m => m.display_name).join(', ');
+            if (data.total_members > data.members.length) {
+                memberNames += ` and ${data.total_members - data.members.length} others`;
+            }
+            
+            content.innerHTML = `
+                <div style="width: 60px; height: 60px; border-radius: 50%; background: #E9EFFD; color: var(--primary-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                    <span class="material-symbols-rounded" style="font-size: 32px;">waving_hand</span>
+                </div>
+                <h3 style="margin-bottom: 8px; font-size: 22px;">You've been invited!</h3>
+                <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">Join <strong>${data.name}</strong> with ${memberNames}.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="primary-btn" id="acceptInviteBtn" style="width: 100%; padding: 14px 20px; font-size: 16px;">Accept Invite</button>
+                    <button class="secondary-btn" onclick="document.getElementById('dynamicConfirmInviteModal').remove();" style="width: 100%; padding: 14px 20px; font-size: 16px;">Cancel</button>
+                </div>
+            `;
+            
+            document.getElementById('acceptInviteBtn').onclick = async function() {
+                const btn = this;
+                btn.disabled = true;
+                btn.textContent = 'Joining...';
+                
+                const joinRes = await window.HomeAPI.joinHome(joinCode);
+                if (joinRes.error) {
+                    alert("Invite link error: " + joinRes.error);
+                    btn.disabled = false;
+                    btn.textContent = 'Accept Invite';
+                } else {
+                    window.location.reload();
+                }
+            };
+        } else {
+            content.innerHTML = `
+                <span class="material-symbols-rounded" style="color: #ef4444; font-size: 48px; margin-bottom: 16px; display: block;">error</span>
+                <h3 style="margin-bottom: 12px; font-size: 20px;">Invalid Invite</h3>
+                <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">This invite link is invalid or has expired.</p>
+                <button class="secondary-btn" onclick="document.getElementById('dynamicConfirmInviteModal').remove();" style="width: 100%; padding: 14px 20px; font-size: 16px;">Close</button>
+            `;
+        }
+    } catch (e) {
+        document.getElementById('dynamicConfirmInviteModal').remove();
+        console.error('Failed to load invite preview', e);
+    }
 };

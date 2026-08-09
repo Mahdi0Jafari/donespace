@@ -33,7 +33,7 @@ def require_auth():
     if request.method == 'OPTIONS':
         return
     # Exempt auth routes
-    if request.path in ['/api/auth/login', '/api/auth/register']:
+    if request.path in ['/api/auth/login', '/api/auth/register'] or request.path.startswith('/api/auth/invite/'):
         return
         
     # Exempt non-API routes (allow static files to load)

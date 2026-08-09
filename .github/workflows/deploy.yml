@@ -32,6 +32,11 @@ jobs:
               # 3. Create database folder on host to avoid permission issues when docker mounts it
               mkdir -p database
               
+              if [ -f "CLEAR_DB_FLAG" ]; then
+                echo "CLEAR_DB_FLAG found! Wiping database folder..."
+                rm -rf database/*
+              fi
+              
               # 4. Build and start containers with zero-downtime approach
               docker compose up -d --build
               

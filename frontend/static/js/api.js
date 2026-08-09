@@ -302,13 +302,10 @@ window.refreshAllData = async function() {
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
         
-        try {
-            const joinRes = await window.HomeAPI.joinHome(joinCode);
-            if (joinRes.error) {
-                alert("Invite link error: " + joinRes.error);
-            }
-        } catch (e) {
-            console.error(e);
+        if (window.showConfirmInviteModal) {
+            window.showConfirmInviteModal(joinCode);
+        } else {
+            console.error('showConfirmInviteModal not loaded');
         }
     }
     
