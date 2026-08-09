@@ -1,0 +1,20 @@
+/* Global Styles & Variables */
+@import url('https://fonts.googleapis.com/css2?family=Estedad:wght@400;500;600;700;800;900&family=Lalezar&family=Outfit:wght@300..900&display=swap');
+
+:root {
+    --primary-purple: #0d47a1; /* Deep Trust Blue */
+    --primary-light: #1565c0;
+    --bg-color: #f4f5f8;
+    --surface-color: #ffffff;
+    --text-main: #2b2b36;
+    --text-muted: #8c8c9a;
+    --accent-yellow: #ffcf54;
+    --accent-orange: #ff9868;
+    --accent-cyan: #3dc4e2;
+    --font-family: 'Estedad', 'Outfit', sans-serif;
+    --font-heading: 'Lalezar', 'Outfit', sans-serif;
+    --border-radius-lg: 24px;
+    --border-radius-md: 16px;
+    --border-radius-sm: 12px;
+    --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.05);
+}

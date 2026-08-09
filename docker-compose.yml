@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    container_name: donespace_web
+    restart: always
+    ports:
+      # Mapping to 8096 on the host to avoid conflict with Khonshu (8095)
+      - "8096:3004"
+    volumes:
+      # Persist SQLite database and photos
+      - ./database:/app/database
+    networks:
+      - donespace_network
+
+networks:
+  donespace_network:
+    name: donespace_network
+    driver: bridge

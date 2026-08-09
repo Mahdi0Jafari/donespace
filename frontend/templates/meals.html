@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Meals & Recipes — DoneSpace{% endblock %}
+
+{% block head %}
+    <meta name="description" content="Your household recipe bank. Save meals, write recipes, and plan your weekly cooking.">
+    <link rel="stylesheet" href="/static/css/widgets/calendar.css">
+    <link rel="stylesheet" href="/static/css/pages/meals.css?v=2">
+{% endblock %}
+
+{% block header_search %}
+<div class="search-bar">
+    <span class="material-symbols-rounded">search</span>
+    <input type="text" placeholder="Search recipes...">
+</div>
+{% endblock %}
+{% block content %}
+            <!-- Page Title -->
+            <div class="meals-page-header animate-fade-up" style="animation-delay: 0.2s;">
+                <div>
+                    <h1 class="meals-page-title">Meals & Recipes</h1>
+                    <p class="meals-page-sub">Your household cookbook — save, plan, and cook.</p>
+                </div>
+                <button class="primary-btn" id="addRecipeBtn">
+                    <span class="material-symbols-rounded">add</span>
+                    Add Recipe
+                </button>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="recipe-filter-tabs animate-fade-up" style="animation-delay: 0.3s;">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="breakfast">Breakfast</button>
+                <button class="filter-tab" data-filter="lunch">Lunch</button>
+                <button class="filter-tab" data-filter="dinner">Dinner</button>
+                <button class="filter-tab" data-filter="snack">Snack</button>
+            </div>
+
+            <!-- Recipe Grid -->
+            <div class="recipe-grid animate-fade-up" id="recipeGrid" style="animation-delay: 0.4s;">
+                <!-- Populated by meals.js -->
+            </div>
+
+        </main>
+
+        <!-- Right Panel -->
+        <aside class="right-panel">
+
+            <!-- Quick Stats -->
+            <div class="panel-section animate-fade-up" style="animation-delay: 0.5s;">
+                <div class="section-header">
+                    <h2>Overview</h2>
+                </div>
+                <div class="meal-stats-grid">
+                    <div class="meal-stat-card">
+                        <span class="material-symbols-rounded meal-stat-icon" style="color:#8c52ff;">menu_book</span>
+                        <div>
+                            <div class="meal-stat-num" id="statTotal">0</div>
+                            <div class="meal-stat-label">Recipes</div>
+                        </div>
+                    </div>
+                    <div class="meal-stat-card">
+                        <span class="material-symbols-rounded meal-stat-icon" style="color:#ff914d;">schedule</span>
+                        <div>
+                            <div class="meal-stat-num" id="statAvgTime">—</div>
+                            <div class="meal-stat-label">Avg. Cook Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- This Week's Plan (Agenda) -->
+            <div class="panel-section animate-fade-up" style="animation-delay: 0.6s;">
+                <div class="section-header">
+                    <h2>Schedule</h2>
+                    <button class="icon-btn small"><span class="material-symbols-rounded">chevron_right</span></button>
+                </div>
+                <div class="agenda-scroll-area" id="mealsAgendaArea" style="height: 450px; overflow-y: auto; padding-right: 4px; margin-top: 12px; border-radius: 12px; border: 1px solid #f0f0f5;">
+                    <!-- Modular AgendaWidget will render here -->
+                </div>
+            </div>
+
+            <!-- Random Suggestion -->
+            <div class="panel-section animate-fade-up" style="animation-delay: 0.7s;">
+                <div class="section-header">
+                    <h2>Feeling Stuck?</h2>
+                </div>
+                <div class="suggestion-box" id="suggestionBox">
+                    <p>Tap the button and we'll pick a random recipe from your collection.</p>
+                    <button class="primary-btn" id="randomPickBtn" style="width: 100%; justify-content: center; margin-top: 14px;">
+                        <span class="material-symbols-rounded">casino</span>
+                        Surprise Me
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab-btn" id="fabAddRecipe">
+        <span class="material-symbols-rounded">add</span>
+    </button>
+
+    <!-- ─── Recipe Detail / Edit Modal ──────────────────────── -->
+    <div class="meals-modal-overlay" id="recipeModal">
+        <div class="recipe-modal-box" id="recipeModalBox">
+
+            <div class="recipe-modal-header">
+                <div class="recipe-modal-emoji" id="modalEmoji">🍳</div>
+                <div class="recipe-modal-title-row">
+                    <h2 id="modalTitle">New Recipe</h2>
+                    <div style="display:flex;gap:8px;">
+                        <button class="icon-btn small" id="editModeBtn" title="Edit"><span class="material-symbols-rounded">edit</span></button>
+                        <button class="icon-btn small" id="closeRecipeModal"><span class="material-symbols-rounded">close</span></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Mode -->
+            <div id="recipeViewMode">
+                <div class="recipe-view-tags" id="viewTags"></div>
+                <div class="recipe-view-meta" id="viewMeta"></div>
+                <div class="recipe-view-section">
+                    <h3>Ingredients</h3>
+                    <ul class="recipe-ingredients-list" id="viewIngredients"></ul>
+                </div>
+                <div class="recipe-view-section" id="viewNotesSection">
+                    <h3>Notes / Recipe</h3>
+                    <p class="recipe-notes-text" id="viewNotes"></p>
+                </div>
+                <div class="recipe-modal-footer">
+                    <button class="delete-meal-btn" id="deleteRecipeBtn">
+                        <span class="material-symbols-rounded">delete</span> Delete
+                    </button>
+                    <button class="primary-btn" id="planMealBtn">
+                        <span class="material-symbols-rounded">calendar_add_on</span> Add to Week
+                    </button>
+                </div>
+            </div>
+
+            <!-- Edit Mode -->
+            <div id="recipeEditMode" style="display:none;">
+                <div class="meal-form-group">
+                    <label>Emoji</label>
+                    <div class="meal-icon-row" id="editEmojiRow"></div>
+                </div>
+                <div class="meal-form-group">
+                    <label for="editName">Recipe Name *</label>
+                    <input type="text" id="editName" class="form-control" placeholder="e.g., Ghormeh Sabzi">
+                </div>
+                <div class="edit-form-row">
+                    <div class="meal-form-group">
+                        <label for="editCategory">Category</label>
+                        <select id="editCategory" class="form-control">
+                            <option value="dinner">Dinner</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="snack">Snack</option>
+                        </select>
+                    </div>
+                    <div class="meal-form-group">
+                        <label for="editTime">Cook Time (min)</label>
+                        <input type="number" id="editTime" class="form-control" placeholder="e.g., 45" min="1">
+                    </div>
+                </div>
+                <div class="meal-form-group">
+                    <label>Ingredients</label>
+                    <div class="ingredients-input-row">
+                        <input type="text" id="ingredientInput" class="form-control" placeholder="Add ingredient…">
+                        <button type="button" class="icon-btn small" id="addIngredientBtn" style="padding: 6px; background: var(--primary-purple); color:white; border-radius: 10px; border:none; cursor:pointer;">
+                            <span class="material-symbols-rounded" style="font-size:18px;">add</span>
+                        </button>
+                    </div>
+                    <ul class="edit-ingredients-list" id="editIngredientsList"></ul>
+                </div>
+                <div class="meal-form-group">
+                    <label for="editNotes">Notes / Recipe (optional)</label>
+                    <textarea id="editNotes" class="form-control" rows="4" placeholder="Write the recipe steps, tips, or a link…" style="resize:vertical;"></textarea>
+                </div>
+                <div class="recipe-modal-footer">
+                    <button class="secondary-btn" id="cancelEditBtn">Cancel</button>
+                    <button class="primary-btn" id="saveRecipeBtn">
+                        <span class="material-symbols-rounded">check_circle</span> Save
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Plan Meal Modal (assign to a day) -->
+    <div class="meals-modal-overlay" id="planModal">
+        <div class="plan-modal-box">
+            <div class="meal-plan-sticky-header themed-gradient">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 17px; font-weight: 700; margin: 0; color: #fff;">Schedule a Meal</h2>
+                    <button class="icon-btn small" id="closePlanModal" style="color: #fff; background: rgba(255,255,255,0.2);"><span class="material-symbols-rounded">close</span></button>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 12px; margin-top: 20px;">
+                    <span id="planModalIcon" class="material-symbols-rounded" style="font-size: 28px; color: var(--primary-purple); background: #fff; padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">restaurant</span>
+                    <div style="display: flex; flex-direction: column;">
+                        <h3 id="planModalTitle" style="margin: 0; font-size: 18px; font-weight: 700; color: #fff;">Add to Week</h3>
+                        <span id="planModalSubtitle" style="font-size: 13px; color: rgba(255, 255, 255, 0.8); margin-top: 4px; font-weight: 500;">Pick a recipe and day</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="meal-form-group" style="margin-bottom:16px;">
+                <label>Recipe</label>
+                <input type="text" id="planRecipeSearch" class="form-control" placeholder="Search your recipes..." style="margin-bottom: 8px; border-radius: 8px;">
+                <div id="planRecipeCustomList" class="custom-recipe-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <div class="meal-form-group" style="margin-bottom:16px;">
+                <label>Meal Time</label>
+                <div class="cook-chips" id="planMealTypeChips">
+                    <button class="cook-chip selected" data-type="Breakfast">Breakfast</button>
+                    <button class="cook-chip" data-type="Lunch">Lunch</button>
+                    <button class="cook-chip" data-type="Dinner">Dinner</button>
+                    <button class="cook-chip" data-type="Snack">Snack</button>
+                </div>
+            </div>
+
+            <div class="meal-form-group">
+                <label>Day</label>
+                <div class="plan-days-grid" id="planDaysGrid" style="display: flex; overflow-x: auto; padding-bottom: 8px; gap: 8px;"></div>
+            </div>
+            <div class="meal-form-group" style="margin-top:16px;">
+                <label>Who's Cooking?</label>
+                <div class="cook-chips" id="planCookChips"></div>
+            </div>
+            <div class="recipe-modal-footer" style="margin-top:16px;">
+                <button class="delete-meal-btn" id="deletePlanBtn" style="display:none;">
+                    <span class="material-symbols-rounded">delete</span> Remove
+                </button>
+                <div style="display:flex; gap:8px; margin-left:auto;">
+                    <button class="secondary-btn" id="cancelPlanBtn">Cancel</button>
+                    <button class="primary-btn" id="savePlanBtn">
+                        <span class="material-symbols-rounded">check_circle</span> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="/static/js/data-store.js"></script>
+    <script src="/static/js/calendar.js"></script>
+    <script src="/static/js/meals.js"></script>
+{% endblock %}

@@ -1,0 +1,661 @@
+{% extends "base.html" %}
+
+{% block title %}Chore Management Dashboard{% endblock %}
+
+{% block head %}
+    <!-- Flatpickr for beautiful date selection -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block content %}
+            <!-- Dashboard Empty State -->
+            <section id="emptyStateDashboard" class="empty-state-dashboard" style="display: none;">
+                <img src="/static/illustration.svg" alt="Welcome to DoneSpace" class="empty-state-img">
+                <h1>Welcome to DoneSpace! 🏠</h1>
+                <p>
+                    You are not currently part of any home. To get started, you can either create a brand new home for your family/roommates, or join an existing one using a Join Code.
+                </p>
+                <div class="empty-state-actions">
+                    <button class="primary-btn" onclick="if(window.showCreateHomeModal) window.showCreateHomeModal();">
+                        <span class="material-symbols-rounded">add_circle</span> Create New Home
+                    </button>
+                    <button class="secondary-btn" onclick="if(window.showJoinHomeModal) window.showJoinHomeModal();">
+                        <span class="material-symbols-rounded">login</span> Join Existing
+                    </button>
+                </div>
+            </section>
+
+            <!-- Welcome Banner (Visual) -->
+            <section class="welcome-banner animate-fade-down" style="animation-delay: 0.3s;">
+                <div class="welcome-text">
+                    <h1 id="welcomeGreeting">Good morning! ✨</h1>
+                    <p id="welcomeDate">Ready to make your home shine today?</p>
+                </div>
+                <div class="welcome-illustration">
+                    <img src="/static/illustration.svg" alt="Welcome Illustration">
+                </div>
+            </section>
+
+            <!-- Dynamic Priority Task Cards -->
+            <div id="priorityCardsContainer" class="priority-cards-container animate-fade-up" style="animation-delay: 0.4s; margin-bottom: 30px;">
+                <!-- Filled dynamically by JS -->
+            </div>
+
+            <!-- Agenda View Calendar -->
+            <section class="agenda-widget animate-fade-up" style="animation-delay: 0.5s;">
+                <div class="agenda-header">
+                    <h2>Upcoming Schedule</h2>
+                    <button class="icon-btn small"><span class="material-symbols-rounded">add</span></button>
+                </div>
+                
+                <div class="agenda-scroll-area" id="agendaScrollArea">
+                    <!-- Dynamic JavaScript Calendar Content Will Load Here -->
+                </div>
+            </section>
+
+            <!-- Home Sections Overview -->
+            <section class="home-sections animate-fade-up" style="animation-delay: 0.6s;">
+                <div class="section-header">
+                    <h2>Home Facilities</h2>
+                    <div class="room-stats">
+                        <div class="stat-pill">
+                            <span class="material-symbols-rounded">checklist</span> <span id="pendingTasksText">0 Tasks</span>
+                        </div>
+                        <div class="stat-pill">
+                            <span class="material-symbols-rounded">cleaning_services</span> <span id="spacesLeftText">0 Spaces</span>
+                        </div>
+                        
+                        <div class="stat-pill progress-pill">
+                            <span class="progress-text" id="overallProgressText">0%</span>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="overallProgressBar"></div>
+                            </div>
+                        </div>
+
+                        <div class="stat-pill custom-select-pill" id="zoneFilterPill">
+                            <span class="material-symbols-rounded" id="zoneFilterIcon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); font-size: 18px;">layers</span>
+                            <select id="zoneFilter" class="zone-select" style="padding-left: 38px;">
+                                <!-- Populated dynamically -->
+                            </select>
+                            <span class="material-symbols-rounded select-icon">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="facilities-grid">
+                    <!-- Dynamic JavaScript Facility Cards Will Load Here via dashboard.js -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Right Panel (Widgets) -->
+        <aside class="right-panel">
+            <div class="panel-section animate-fade-up" style="animation-delay: 1.2s;">
+                <div class="section-header">
+                    <h2>My Rooms</h2>
+                    <div class="controls">
+                        <span class="dropdown">ALL <span class="material-symbols-rounded">expand_more</span></span>
+                        <button class="icon-btn small"><span class="material-symbols-rounded">chevron_right</span></button>
+                    </div>
+                </div>
+                <div class="devices-grid">
+                    <div class="device-card purple">
+                        <div class="card-top">
+                            <span class="material-symbols-rounded">chair</span>
+                        </div>
+                        <p>Living Room</p>
+                    </div>
+                    <div class="device-card yellow">
+                        <div class="card-top">
+                            <span class="material-symbols-rounded">kitchen</span>
+                        </div>
+                        <p>Kitchen</p>
+                    </div>
+                    <div class="device-card orange">
+                        <div class="card-top">
+                            <span class="material-symbols-rounded">wc</span>
+                        </div>
+                        <p>Restroom</p>
+                    </div>
+                    <div class="device-card cyan">
+                        <div class="card-top">
+                            <span class="material-symbols-rounded">bathtub</span>
+                        </div>
+                        <p>Bathroom</p>
+                    </div>
+                    <div class="device-card green" style="grid-column: 1 / -1;">
+                        <div class="card-top">
+                            <span class="material-symbols-rounded">bed</span>
+                        </div>
+                        <p>Bedroom</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section animate-fade-up" style="animation-delay: 1.3s;">
+                <div class="section-header">
+                    <h2>Members</h2>
+                    <button class="icon-btn small"><span class="material-symbols-rounded">chevron_right</span></button>
+                </div>
+                <div class="members-list" id="realMembersList">
+                    <!-- Populated dynamically from API -->
+                </div>
+            </div>
+
+            <div class="panel-section animate-fade-up" style="animation-delay: 1.4s;">
+                <div class="section-header">
+                    <h2>Household Progress</h2>
+                    <div class="controls">
+                        <span class="dropdown"><span class="material-symbols-rounded">calendar_today</span> Today <span class="material-symbols-rounded">expand_more</span></span>
+                    </div>
+                </div>
+                <div class="progress-widget">
+                    <div class="progress-header">
+                        <span class="legend">Chores Completed</span>
+                        <span class="spending" id="householdProgressCount">0/0</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="householdProgressBar" style="width: 0%;"></div>
+                    </div>
+                    <p class="progress-message" id="householdProgressMsg">No chores scheduled for today.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <!-- Floating Action Button -->
+    <button class="fab-btn">
+        <span class="material-symbols-rounded">add</span>
+    </button>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Accordion Functionality for Cards
+            const facilityCards = document.querySelectorAll('.facility-card');
+            
+            facilityCards.forEach(card => {
+                const summary = card.querySelector('.card-summary');
+                if (summary) {
+                    summary.addEventListener('click', () => {
+                        card.classList.toggle('active');
+                    });
+                }
+            });
+            
+
+
+        });
+    </script>
+
+    <!-- Event Details Popover (Read-Only) -->
+    <div class="modal-overlay" id="eventDetailsPopover">
+        <div class="modal-content read-only-card" style="padding: 0; max-width: 400px; overflow: hidden; border-radius: 24px;">
+            <div class="popover-header themed-gradient" id="popoverHeader" style="padding: 20px 24px; position: relative; transition: background-color 0.3s ease;">
+                <div style="display: flex; justify-content: flex-end; gap: 4px; position: relative; z-index: 2;">
+                    <button class="icon-btn small transparent" id="popoverEditBtn" style="color: inherit; background: transparent; border: none; cursor: pointer; padding: 4px;"><span class="material-symbols-rounded">edit</span></button>
+                    <button class="icon-btn small transparent" id="popoverDeleteBtn" style="color: inherit; background: transparent; border: none; cursor: pointer; padding: 4px;"><span class="material-symbols-rounded">delete</span></button>
+                    <button class="icon-btn small transparent" id="popoverCloseBtn" style="color: inherit; background: transparent; border: none; cursor: pointer; padding: 4px;"><span class="material-symbols-rounded">close</span></button>
+                </div>
+                <div style="margin-top: 12px; position: relative; z-index: 2;">
+                    <h2 id="popoverTitle" style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">Task Title</h2>
+                </div>
+            </div>
+            <div class="popover-body" style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+                <div class="popover-row" style="display: flex; gap: 16px; align-items: flex-start;">
+                    <span class="material-symbols-rounded" style="color: var(--text-muted); font-size: 22px; margin-top: 2px;">schedule</span>
+                    <div class="popover-info" style="display: flex; flex-direction: column; gap: 2px;">
+                        <span id="popoverDate" style="font-weight: 600; font-size: 15px; color: var(--text-main);">Today</span>
+                        <span id="popoverTime" style="font-size: 13px; color: var(--text-muted);">All Day</span>
+                    </div>
+                </div>
+                <div class="popover-row" style="display: flex; gap: 16px; align-items: flex-start;">
+                    <span class="material-symbols-rounded" style="color: var(--text-muted); font-size: 22px; margin-top: 2px;">location_on</span>
+                    <div class="popover-info" style="display: flex; flex-direction: column; gap: 2px;">
+                        <span id="popoverRoom" style="font-weight: 600; font-size: 15px; color: var(--text-main);">General</span>
+                    </div>
+                </div>
+                <div class="popover-row" id="popoverAssigneesRow" style="display: flex; gap: 16px; align-items: flex-start;">
+                    <span class="material-symbols-rounded" style="color: var(--text-muted); font-size: 22px; margin-top: 2px;">group</span>
+                    <div class="popover-info" style="display: flex; gap: 8px; flex-wrap: wrap;" id="popoverAssignees">
+                        <!-- Avatars -->
+                    </div>
+                </div>
+                <div class="popover-row" id="popoverDescRow" style="display: none; gap: 16px; align-items: flex-start;">
+                    <span class="material-symbols-rounded" style="color: var(--text-muted); font-size: 22px; margin-top: 2px;">subject</span>
+                    <div class="popover-info">
+                        <p id="popoverDesc" style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--text-main);"></p>
+                    </div>
+                </div>
+                <div class="popover-recipe-details" id="popoverRecipeDetails" style="display: none; flex-direction: column; gap: 16px; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <div style="display: flex; gap: 16px; align-items: flex-start;">
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); font-size: 22px; margin-top: 2px;">timer</span>
+                        <div class="popover-info">
+                            <span style="font-weight: 600; font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 2px;">Cook Time</span>
+                            <span id="popoverRecipeTime" style="font-size: 15px; color: var(--text-main); font-weight: 500;">45 min</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 16px; align-items: flex-start;">
+                        <span class="material-symbols-rounded" style="color: var(--text-muted); font-size: 22px; margin-top: 2px;">kitchen</span>
+                        <div class="popover-info" style="width: 100%;">
+                            <span style="font-weight: 600; font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 6px;">Ingredients</span>
+                            <div id="popoverRecipeIngredients" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                <!-- Ingredient chips injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Task Modal -->
+    <div class="modal-overlay" id="quickAddModal">
+        <div class="modal-content">
+            <div class="modal-sticky-header">
+                <div class="modal-header">
+                    <h2>Quick Add Task</h2>
+                    <button class="modal-close-btn" id="closeModalBtn"><span class="material-symbols-rounded">close</span></button>
+                </div>
+                
+                <!-- Fixed Task Header (for pre-defined tasks) -->
+                <div id="fixedTaskHeader" style="display: none; margin-top: 20px; padding-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span id="fixedTaskIcon" class="material-symbols-rounded" style="font-size: 28px; color: var(--primary-purple); background: #fdfcff; padding: 12px; border-radius: 12px; box-shadow: 0 4px 10px rgba(140,82,255,0.15);">check_circle</span>
+                        <div style="display: flex; flex-direction: column;">
+                            <h3 id="fixedTaskName" style="margin: 0; font-size: 18px; font-weight: 700;">Task Name</h3>
+                            <span id="fixedTaskRoom" style="font-size: 13px; color: #6b7280; margin-top: 4px; font-weight: 500;">Room</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group" id="taskNameGroup">
+                <label for="taskName">What needs to be done?</label>
+                <input type="text" id="taskName" class="form-control" placeholder="e.g., Fix the leaky faucet">
+            </div>
+
+            <div class="form-group">
+                <label for="taskDescription">Description (Optional)</label>
+                <textarea id="taskDescription" class="form-control" rows="2" placeholder="e.g., Use the green bags..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <label style="margin: 0;">All-day</label>
+                    <input type="checkbox" id="taskAllDay" class="toggle-input" checked>
+                    <label for="taskAllDay" class="toggle-switch-container" style="gap: 0;">
+                        <div class="toggle-switch"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half-width">
+                    <label for="taskDate">Date</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-rounded input-icon">calendar_month</span>
+                        <input type="date" id="taskDate" class="form-control with-icon">
+                    </div>
+                </div>
+                <div class="form-group half-width" id="timeInputGroup" style="display: none;">
+                    <label for="taskTime">Time</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-rounded input-icon">schedule</span>
+                        <input type="time" id="taskTime" class="form-control with-icon">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half-width" id="taskRoomGroup">
+                    <label for="taskRoom">Room / Area</label>
+                    <select id="taskRoom" class="form-control">
+                        <option value="general">General Home</option>
+                        <option value="default-kitchen">Kitchen</option>
+                        <option value="default-bath">Bathroom</option>
+                        <option value="default-living">Living Room</option>
+                        <option value="default-routines">Routines</option>
+                    </select>
+                </div>
+                <div class="form-group half-width">
+                    <label for="taskRecurrence">Recurrence</label>
+                    <select id="taskRecurrence" class="form-control">
+                        <option value="none">Does not repeat</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="custom">Custom...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Weekday Picker for Weekly Recurrence -->
+            <div class="form-group" id="weekdayPickerGroup" style="display: none;">
+                <label>Repeat on</label>
+                <div class="weekday-picker">
+                    <div class="weekday-circle" data-day="0">S</div>
+                    <div class="weekday-circle" data-day="1">M</div>
+                    <div class="weekday-circle" data-day="2">T</div>
+                    <div class="weekday-circle" data-day="3">W</div>
+                    <div class="weekday-circle" data-day="4">T</div>
+                    <div class="weekday-circle" data-day="5">F</div>
+                    <div class="weekday-circle" data-day="6">S</div>
+                </div>
+            </div>
+
+            <!-- Custom Recurrence Settings -->
+            <div class="form-group custom-recurrence-container" id="customRecurrenceGroup" style="display: none; background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); backdrop-filter: blur(10px);">
+                <label style="margin-bottom: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px;"><span class="material-symbols-rounded" style="font-size: 20px; color: var(--theme-color, #8c52ff);">autorenew</span> Custom Recurrence</label>
+                
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; background: rgba(0,0,0,0.03); padding: 12px 16px; border-radius: 12px;">
+                    <span style="font-size: 15px; font-weight: 500; color: var(--text-main);">Repeat every</span>
+                    <input type="number" id="customInterval" class="form-control" value="1" min="1" style="width: 60px; text-align: center; padding: 8px; font-weight: 600; background: #fff; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                    <select id="customFrequency" class="form-control" style="width: 120px; font-weight: 500; background: #fff; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                        <option value="daily">day(s)</option>
+                        <option value="weekly">week(s)</option>
+                        <option value="monthly">month(s)</option>
+                        <option value="yearly">year(s)</option>
+                    </select>
+                </div>
+
+                <div id="customWeekdayPickerGroup" style="display: none; margin-bottom: 24px;">
+                    <span style="font-size: 14px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 12px;">Repeat on</span>
+                    <div class="weekday-picker custom-weekday-picker" style="background: rgba(0,0,0,0.02); padding: 12px; border-radius: 12px;">
+                        <div class="weekday-circle" data-day="0">S</div>
+                        <div class="weekday-circle" data-day="1">M</div>
+                        <div class="weekday-circle" data-day="2">T</div>
+                        <div class="weekday-circle" data-day="3">W</div>
+                        <div class="weekday-circle" data-day="4">T</div>
+                        <div class="weekday-circle" data-day="5">F</div>
+                        <div class="weekday-circle" data-day="6">S</div>
+                    </div>
+                </div>
+
+                <div class="ends-group">
+                    <span style="font-size: 14px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 12px;">Ends</span>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.02); padding: 12px; border-radius: 12px;">
+                        <label class="radio-label" style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; margin: 0; padding: 8px; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
+                            <input type="radio" name="recurrenceEnds" value="never" checked style="width: 18px; height: 18px; accent-color: var(--theme-color, #8c52ff);">
+                            <span style="font-weight: 500;">Never</span>
+                        </label>
+                        
+                        <label class="radio-label" style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; margin: 0; padding: 8px; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
+                            <input type="radio" name="recurrenceEnds" value="date" style="width: 18px; height: 18px; accent-color: var(--theme-color, #8c52ff);">
+                            <span style="font-weight: 500; min-width: 40px;">On</span>
+                            <input type="date" id="customEndDate" class="form-control" style="width: 140px; padding: 8px 12px; font-size: 14px; background: #fff; border: 1px solid rgba(0,0,0,0.1);" disabled>
+                        </label>
+                        
+                        <label class="radio-label" style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; margin: 0; padding: 8px; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
+                            <input type="radio" name="recurrenceEnds" value="occurrences" style="width: 18px; height: 18px; accent-color: var(--theme-color, #8c52ff);">
+                            <span style="font-weight: 500; min-width: 40px;">After</span>
+                            <div style="display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 4px 12px;">
+                                <input type="number" id="customEndOccurrences" value="13" min="1" style="width: 40px; text-align: center; border: none; outline: none; font-size: 15px; font-weight: 600; background: transparent;" disabled>
+                                <span style="font-size: 14px; opacity: 0.8;">occurrences</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Assign to</label>
+                <div class="assignee-picker" id="taskAssigneePicker">
+                    <!-- Dynamically populated via JS -->
+                </div>
+                
+                <div id="rotateToggleContainer" style="display: none; margin-top: 16px;">
+                    <input type="checkbox" id="taskRotate" class="toggle-input">
+                    <label for="taskRotate" class="toggle-switch-container">
+                        <div class="toggle-switch"></div>
+                        <span>Rotate turns among selected members</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="secondary-btn" id="cancelModalBtn">Cancel</button>
+                <button class="primary-btn">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Wizard Modal -->
+    <div class="modal-overlay" id="setupWizardModal">
+        <div class="wizard-content">
+            <div class="wizard-header">
+                <h2>Add New Space</h2>
+                <button class="modal-close-btn" id="closeWizardBtn"><span class="material-symbols-rounded">close</span></button>
+            </div>
+
+            <!-- Step Indicators -->
+            <div class="wizard-steps">
+                <div class="step active" data-step="1">1. Details</div>
+                <div class="step" data-step="2">2. Visuals</div>
+                <div class="step" data-step="3">3. Chores</div>
+            </div>
+
+            <form id="setupWizardForm">
+                <!-- Step 1: Details -->
+                <div class="wizard-step-pane active" id="wizardStep1">
+                    <div class="form-group">
+                        <label for="wizardSpaceName">What is this space called?</label>
+                        <input type="text" id="wizardSpaceName" class="form-control large-input" placeholder="e.g., Living Room, Garage" autocomplete="off">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 24px;" id="templatesSection">
+                        <label>Or start with a template:</label>
+                        <div class="templates-container" id="wizardTemplatesContainer">
+                            <!-- Template chips will be dynamically rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Visuals -->
+                <div class="wizard-step-pane" id="wizardStep2">
+                    <div class="form-group">
+                        <label>Select an Icon</label>
+                        <div class="icon-grid" id="wizardIconGrid">
+                            <div class="icon-option selected" data-icon="chair" title="Living Room / Seating"><span class="material-symbols-rounded">chair</span></div>
+                            <div class="icon-option" data-icon="kitchen" title="Kitchen"><span class="material-symbols-rounded">kitchen</span></div>
+                            <div class="icon-option" data-icon="bathtub" title="Bathroom"><span class="material-symbols-rounded">bathtub</span></div>
+                            <div class="icon-option" data-icon="bed" title="Bedroom"><span class="material-symbols-rounded">bed</span></div>
+                            <div class="icon-option" data-icon="yard" title="Yard / Outdoor"><span class="material-symbols-rounded">yard</span></div>
+                            <div class="icon-option" data-icon="garage" title="Garage / Storage"><span class="material-symbols-rounded">garage</span></div>
+                            <div class="icon-option" data-icon="local_laundry_service" title="Laundry / Utility"><span class="material-symbols-rounded">local_laundry_service</span></div>
+                            <div class="icon-option" data-icon="wc" title="Restroom"><span class="material-symbols-rounded">wc</span></div>
+                        </div>
+                        <input type="hidden" id="wizardIcon" value="chair">
+                    </div>
+                    <div class="form-group">
+                        <label>Select Theme Color</label>
+                        <div class="color-grid" id="wizardColorGrid">
+                            <div class="color-swatch purple selected" data-color="purple" title="Purple"></div>
+                            <div class="color-swatch yellow" data-color="yellow" title="Yellow"></div>
+                            <div class="color-swatch orange" data-color="orange" title="Orange"></div>
+                            <div class="color-swatch cyan" data-color="cyan" title="Cyan"></div>
+                            <div class="color-swatch green" data-color="green" title="Green"></div>
+                            <div class="color-swatch blue" data-color="blue" title="Blue"></div>
+                        </div>
+                        <input type="hidden" id="wizardColor" value="purple">
+                    </div>
+                </div>
+
+                <!-- Step 3: Chores -->
+                <div class="wizard-step-pane" id="wizardStep3">
+                    <div class="form-group">
+                        <label>Add Routine Chores</label>
+                        <div class="task-input-row">
+                            <!-- Task Icon Selector -->
+                            <div class="task-icon-selector">
+                                <button type="button" class="icon-btn small" id="taskIconBtn" style="background: transparent; border: 2px solid #e5e7eb; color: #6b7280;">
+                                    <span class="material-symbols-rounded">check_circle</span>
+                                </button>
+                                <!-- Mini Icon Dropdown -->
+                                <div class="task-icon-dropdown" id="taskIconDropdown">
+                                    <span class="material-symbols-rounded" data-icon="cleaning_services" title="Cleaning / Sweeping">cleaning_services</span>
+                                    <span class="material-symbols-rounded" data-icon="mop" title="Mopping">mop</span>
+                                    <span class="material-symbols-rounded" data-icon="window" title="Window / Glass">window</span>
+                                    <span class="material-symbols-rounded" data-icon="sanitizer" title="Sanitizing / Spray">sanitizer</span>
+                                    <span class="material-symbols-rounded" data-icon="delete" title="Trash / Disposal">delete</span>
+                                    <span class="material-symbols-rounded" data-icon="local_laundry_service" title="Laundry / Washing">local_laundry_service</span>
+                                    <span class="material-symbols-rounded" data-icon="iron" title="Ironing">iron</span>
+                                    <span class="material-symbols-rounded" data-icon="inventory_2" title="Organizing / Storage">inventory_2</span>
+                                    <span class="material-symbols-rounded" data-icon="bed" title="Make Bed">bed</span>
+                                    <span class="material-symbols-rounded" data-icon="shower" title="Shower / Bath">shower</span>
+                                    <span class="material-symbols-rounded" data-icon="wc" title="Toilet">wc</span>
+                                    <span class="material-symbols-rounded" data-icon="restaurant" title="Dishes / Dining">restaurant</span>
+                                    <span class="material-symbols-rounded" data-icon="shopping_cart" title="Groceries / Shopping">shopping_cart</span>
+                                    <span class="material-symbols-rounded" data-icon="water_drop" title="Watering / Liquids">water_drop</span>
+                                    <span class="material-symbols-rounded" data-icon="yard" title="Yard / Garden Work">yard</span>
+                                    <span class="material-symbols-rounded" data-icon="pets" title="Pet Care">pets</span>
+                                    <span class="material-symbols-rounded" data-icon="microwave" title="Microwave / Oven">microwave</span>
+                                    <span class="material-symbols-rounded" data-icon="tv" title="Electronics / Dusting">tv</span>
+                                    <span class="material-symbols-rounded" data-icon="blender" title="Appliances">blender</span>
+                                    <span class="material-symbols-rounded" data-icon="weekend" title="Living Space / Furniture">weekend</span>
+                                    <span class="material-symbols-rounded" data-icon="potted_plant" title="Plants / Gardening">potted_plant</span>
+                                    <span class="material-symbols-rounded" data-icon="checkroom" title="Closet / Clothing">checkroom</span>
+                                    <span class="material-symbols-rounded" data-icon="soap" title="Soap / Washing">soap</span>
+                                    <span class="material-symbols-rounded" data-icon="dry_cleaning" title="Dry Cleaning / Clothes">dry_cleaning</span>
+                                    <span class="material-symbols-rounded" data-icon="check_circle" title="General Task">check_circle</span>
+                                    <span class="material-symbols-rounded" data-icon="vacuum" title="Vacuum / Floor">vacuum</span>
+                                    <span class="material-symbols-rounded" data-icon="build" title="Repair / Maintenance">build</span>
+                                    <span class="material-symbols-rounded" data-icon="local_florist" title="Plants / Flowers">local_florist</span>
+                                    <span class="material-symbols-rounded" data-icon="payments" title="Bills / Payments">payments</span>
+                                    <span class="material-symbols-rounded" data-icon="kitchen" title="Kitchen / Appliances">kitchen</span>
+                                    <span class="material-symbols-rounded" data-icon="bathtub" title="Bathtub / Bath">bathtub</span>
+                                    <span class="material-symbols-rounded" data-icon="chair" title="Chair / Seating">chair</span>
+                                    <span class="material-symbols-rounded" data-icon="garage" title="Garage / Storage">garage</span>
+                                    <span class="material-symbols-rounded" data-icon="deck" title="Deck / Patio">deck</span>
+                                    <span class="material-symbols-rounded" data-icon="stairs" title="Stairs">stairs</span>
+                                </div>
+                                <input type="hidden" id="wizardTaskIcon" value="check_circle">
+                            </div>
+
+                            <input type="text" id="wizardNewTask" class="form-control" placeholder="e.g., Sweep floor">
+                            <button type="button" class="icon-btn purple" id="wizardAddTaskBtn"><span class="material-symbols-rounded">add</span></button>
+                        </div>
+                        <ul class="pending-tasks-list" id="wizardTaskList"></ul>
+                    </div>
+                </div>
+
+                <!-- Wizard Footer Actions -->
+                <div class="wizard-actions">
+                    <button type="button" class="secondary-btn" id="wizardPrevBtn" style="visibility: hidden;">Back</button>
+                    
+                    <div class="right-actions" style="display: flex; gap: 12px; margin-left: auto;">
+                        <button type="button" class="secondary-btn" id="wizardDeleteBtn" style="display: none; border-color: #fca5a5; color: #ef4444;">Delete</button>
+                        <button type="button" class="primary-btn" id="wizardNextBtn">Next Step</button>
+                        <button type="button" class="primary-btn" id="wizardSubmitBtn" style="display: none;"><span class="material-symbols-rounded">check_circle</span> Finish</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Zone Modal -->
+    <div class="modal-overlay" id="addZoneModal" style="display: none; align-items: center; justify-content: center; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; padding: 20px;">
+        <div class="wizard-content" style="max-width: 400px; padding: 24px; width: 100%;">
+            <div class="wizard-header" style="margin-bottom: 20px;">
+                <h2 style="font-size: 20px; font-weight: 700; color: var(--text-main);">Add New Zone</h2>
+                <button type="button" class="icon-btn close-btn" id="closeZoneModalBtn" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);"><span class="material-symbols-rounded">close</span></button>
+            </div>
+            <div class="form-group">
+                <label for="newZoneNameInput" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-main);">Zone Name</label>
+                <input type="text" id="newZoneNameInput" class="form-control" placeholder="e.g., Basement, Second Floor" autocomplete="off" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb; outline: none; font-family: inherit;">
+            </div>
+            
+            <div class="form-group" style="margin-top: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-main);">Select an Icon</label>
+                <div class="icon-grid" id="zoneIconGrid">
+                    <div class="icon-option selected" data-icon="layers" title="General Layer"><span class="material-symbols-rounded">layers</span></div>
+                    <div class="icon-option" data-icon="home" title="Home / Main Building"><span class="material-symbols-rounded">home</span></div>
+                    <div class="icon-option" data-icon="apartment" title="Apartment / Unit"><span class="material-symbols-rounded">apartment</span></div>
+                    <div class="icon-option" data-icon="stairs" title="Floor / Level"><span class="material-symbols-rounded">stairs</span></div>
+                    <div class="icon-option" data-icon="deck" title="Patio / Deck"><span class="material-symbols-rounded">deck</span></div>
+                    <div class="icon-option" data-icon="garage" title="Garage / Parking"><span class="material-symbols-rounded">garage</span></div>
+                </div>
+                <input type="hidden" id="newZoneIconInput" value="layers">
+            </div>
+            
+            <div class="form-group" style="margin-top: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-main);">Select Theme Color</label>
+                <div class="color-grid" id="zoneColorGrid">
+                    <div class="color-swatch purple selected" data-color="purple" title="Purple"></div>
+                    <div class="color-swatch yellow" data-color="yellow" title="Yellow"></div>
+                    <div class="color-swatch orange" data-color="orange" title="Orange"></div>
+                    <div class="color-swatch cyan" data-color="cyan" title="Cyan"></div>
+                    <div class="color-swatch green" data-color="green" title="Green"></div>
+                    <div class="color-swatch blue" data-color="blue" title="Blue"></div>
+                </div>
+                <input type="hidden" id="newZoneColorInput" value="purple">
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end;">
+                <button type="button" class="secondary-btn" id="cancelZoneBtn" style="padding: 10px 20px; border-radius: 8px; border: 1px solid #e5e7eb; background: transparent; cursor: pointer; font-family: inherit; font-weight: 600;">Cancel</button>
+                <button type="button" class="primary-btn" id="saveZoneBtn" style="padding: 10px 20px; border-radius: 8px; border: none; background: #8c52ff; color: white; cursor: pointer; font-family: inherit; font-weight: 600;">Save Zone</button>
+            </div>
+        </div>
+    </div>
+    <!-- 🍽️ Meal Modal -->
+    <div id="mealModal">
+        <div class="meal-modal-box">
+            <div class="meal-modal-header">
+                <h2 id="mealModalTitle">Add Meal</h2>
+                <button class="icon-btn small" id="closeMealModalBtn" style="border:none; background:transparent;">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+
+            <!-- Meal Name -->
+            <div class="meal-form-group">
+                <label for="mealNameInput">Meal Name</label>
+                <input type="text" id="mealNameInput" class="form-control" placeholder="e.g., Ghormeh Sabzi, Pasta…">
+            </div>
+
+            <!-- Icon picker -->
+            <div class="meal-form-group">
+                <label>Icon</label>
+                <div class="meal-icon-row" id="mealIconRow"></div>
+            </div>
+
+            <!-- Color -->
+            <div class="meal-form-group">
+                <label>Color</label>
+                <div class="meal-color-row" id="mealColorRow"></div>
+            </div>
+
+            <!-- Cook assignment -->
+            <div class="meal-form-group">
+                <label>Who's Cooking?</label>
+                <div class="cook-chips" id="cookChips"></div>
+            </div>
+
+            <!-- Note -->
+            <div class="meal-form-group">
+                <label for="mealNoteInput">Note (optional)</label>
+                <input type="text" id="mealNoteInput" class="form-control" placeholder="e.g., use leftover chicken…">
+            </div>
+
+            <!-- Footer actions -->
+            <div class="meal-modal-footer">
+                <button class="delete-meal-btn" id="deleteMealBtn">
+                    <span class="material-symbols-rounded">delete</span> Remove
+                </button>
+                <div style="display:flex; gap:10px; margin-left:auto;">
+                    <button class="secondary-btn" id="cancelMealBtn" onclick="document.getElementById('mealModal').classList.remove('active')">Cancel</button>
+                    <button class="primary-btn" id="saveMealBtn">
+                        <span class="material-symbols-rounded">check_circle</span> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="/static/js/engagement.js"></script>
+    <script src="/static/js/recurrence-util.js"></script>
+    <script src="/static/js/calendar.js?v=3"></script>
+    <script src="/static/js/dashboard.js?v=3"></script>
+    <script src="/static/js/modal.js?v=5"></script>
+    <script src="/static/js/meal-planner.js"></script>
+{% endblock %}

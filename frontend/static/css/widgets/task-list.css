@@ -1,0 +1,204 @@
+/* Task Lists */
+
+.priority-cards-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 16px;
+    padding-bottom: 12px; /* Just enough for shadow/scrollbar */
+    flex-shrink: 0; /* Prevent the container from being squished vertically by the main-content flex column */
+    /* Hide scrollbar for a cleaner look but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+.priority-cards-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Ensure the cards themselves don't shrink too small */
+.priority-cards-container .facility-card {
+    min-width: 300px;
+    max-width: 400px;
+    flex: 0 0 auto;
+    margin-bottom: 0 !important; /* Override the inline style from before if any */
+}
+
+@media (max-width: 600px) {
+    .priority-cards-container {
+        flex-direction: column;
+        padding-bottom: 0;
+        gap: 12px;
+    }
+    .priority-cards-container .facility-card {
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+.home-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.section-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.room-stats {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Keep wrap for mobile, but it's flex so it fits tight on desktop */
+    gap: 12px;
+}
+
+.stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    white-space: nowrap;
+}
+
+.stat-pill .material-symbols-rounded {
+    font-size: 18px;
+    color: var(--text-muted);
+}
+
+.progress-pill {
+    gap: 10px;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.progress-track {
+    width: 60px;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #8c52ff, #5c24ff);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.custom-select-pill {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+    background: var(--bg-color); /* slightly different background for select */
+    border-color: transparent;
+}
+
+.zone-select {
+    appearance: none;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-main);
+    padding: 6px 32px 6px 14px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.select-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 18px !important;
+    color: var(--text-muted);
+}
+
+.task-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+    margin: 0;
+    margin-top: 16px;
+}
+
+.task-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px 16px;
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.task-text { transition: all 0.3s; font-weight: 500; }
+.custom-checkbox input:checked ~ .task-text {
+    text-decoration: line-through;
+    opacity: 0.5;
+}
+
+.assignee-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 800px) {
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .room-stats {
+        width: 100%;
+    }
+    .custom-select-pill {
+        flex-grow: 1; /* Makes dropdown full width on mobile */
+    }
+}
+
+.task-item-clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.task-item-clickable:hover {
+    transform: translateX(4px);
+    background: #fdfcff;
+    box-shadow: 0 4px 12px rgba(140, 82, 255, 0.1);
+}
+

@@ -1,0 +1,199 @@
+/* Agenda View Calendar */
+.agenda-widget {
+    background-color: var(--surface-color, #ffffff);
+    border-radius: var(--border-radius-lg, 24px);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-soft, 0 4px 20px rgba(0, 0, 0, 0.03));
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.agenda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 12px;
+}
+
+.agenda-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.agenda-scroll-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar for Agenda */
+.agenda-scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+.agenda-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+.agenda-scroll-area::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 10px;
+}
+.agenda-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+}
+
+/* Day Group */
+.agenda-day-group {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 15px;
+}
+
+/* Date Column */
+.agenda-date-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 5px;
+}
+
+.day-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.day-number {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin: 2px 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.day-number.today {
+    background-color: var(--primary-purple, #8c52ff);
+    color: white;
+}
+
+.month-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: #9ca3af;
+}
+
+/* Tasks Column */
+.agenda-tasks-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Task Pills */
+.task-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-pill:hover {
+    transform: translateX(4px);
+}
+
+.pill-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pill-icon {
+    font-size: 20px;
+    opacity: 0.8;
+}
+
+.pill-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pill-avatar, .pill-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.pill-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.pill-avatar-placeholder .material-symbols-rounded {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* Pill Colors (Material You inspired pastels) */
+.task-pill.bg-blue {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+.task-pill.bg-green {
+    background-color: #dcfce7;
+    color: #166534;
+}
+.task-pill.bg-yellow {
+    background-color: #fef08a;
+    color: #854d0e;
+}
+.task-pill.bg-orange {
+    background-color: #ffedd5;
+    color: #9a3412;
+}
+.task-pill.bg-purple {
+    background-color: #f3e8ff;
+    color: #6b21a8;
+}
+.task-pill.bg-cyan {
+    background-color: #cffafe;
+    color: #155e75;
+}
+
+/* Highlighting Logic: Dim tasks belonging to others */
+.task-pill.is-other {
+    opacity: 0.5;
+    filter: grayscale(40%);
+    box-shadow: none;
+    transform: none; /* Disable hover movement for others' tasks to emphasize yours */
+    cursor: default;
+}
+
+@media (max-width: 600px) {
+    .agenda-day-group {
+        grid-template-columns: 40px 1fr;
+        gap: 10px;
+    }
+    .task-pill {
+        padding: 10px 12px;
+    }
+}

@@ -1,0 +1,288 @@
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Modal Content Box */
+.modal-content {
+    background-color: #ffffff;
+    width: 90%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 28px;
+    padding: 32px;
+    box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.03);
+    transform: translateY(30px) scale(0.98);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.modal-sticky-header {
+    position: sticky;
+    top: -32px;
+    background: #ffffff;
+    margin: -32px -32px 20px -32px;
+    padding: 32px 32px 20px 32px;
+    z-index: 10;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0; /* Margin moved to sticky container padding */
+}
+
+.modal-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.modal-close-btn:hover {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+/* Modal Form Elements */
+.form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0; /* Remove bottom margin when in a row */
+}
+
+.half-width {
+    flex: 1;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    background-color: #f8fafc;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 15px;
+    color: #1e293b;
+    transition: all 0.2s ease;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.01) inset;
+}
+
+.form-control:hover {
+    background-color: #f1f5f9;
+}
+
+.form-control:focus {
+    background-color: #ffffff;
+    border-color: var(--primary-purple, #8c52ff);
+    box-shadow: 0 0 0 4px rgba(140, 82, 255, 0.15);
+}
+
+/* Input with Icon Wrapper */
+.input-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-wrapper .input-icon {
+    position: absolute;
+    left: 14px;
+    color: #64748b;
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.form-control.with-icon {
+    padding-left: 44px;
+}
+
+/* Custom Assignee Picker */
+.assignee-picker {
+    display: flex;
+    gap: 12px;
+}
+
+.assignee-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.assignee-option:hover {
+    opacity: 0.8;
+}
+
+.assignee-option.selected {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.assignee-option img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.assignee-option.selected img {
+    border-color: var(--primary-purple);
+    box-shadow: 0 4px 10px rgba(140, 82, 255, 0.3);
+}
+
+.assignee-option span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+/* Modal Footer Actions */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin: 30px -32px -32px -32px; /* Negative margins to stretch full width */
+    position: sticky;
+    bottom: -32px;
+    background: #ffffff;
+    padding: 24px 32px 32px 32px; /* Compensate for negative margins */
+    border-top: 1px solid #f1f5f9;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.03);
+    z-index: 10;
+    transition: background-color 0.3s ease;
+}
+
+/* Themed Gradient Overlay for Header and Footer */
+.themed-gradient {
+    position: sticky;
+    overflow: hidden;
+}
+
+.themed-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.themed-gradient > * {
+    position: relative;
+    z-index: 2;
+}
+
+.secondary-btn {
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    transition: background-color 0.2s;
+}
+
+.secondary-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.secondary-btn:active {
+    transform: scale(0.95);
+}
+
+/* Responsive Settings Modal */
+@media (max-width: 768px) {
+    .settings-modal-content {
+        flex-direction: column !important;
+        height: 85vh !important;
+        max-height: 85vh !important;
+    }
+    .settings-sidebar {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid #e5e7eb;
+        flex-direction: row !important;
+        overflow-x: auto;
+        padding: 12px 16px !important;
+        align-items: center;
+    }
+    .settings-sidebar::-webkit-scrollbar {
+        display: none;
+    }
+    .settings-sidebar-title, .settings-section-title {
+        display: none !important;
+    }
+    .settings-tab {
+        white-space: nowrap;
+        padding: 8px 16px;
+        margin-right: 8px;
+    }
+}

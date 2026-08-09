@@ -1,0 +1,189 @@
+/* Sidebar Redesign */
+.desktop-only { display: flex; }
+.mobile-arc-navbar { display: none; }
+
+.sidebar {
+    width: 68px; /* Thinner */
+    background: #0b0f19; /* Very dark minimal black */
+    margin: 24px 0 24px 24px; /* Floating detached look */
+    height: calc(100% - 48px);
+    border-radius: 36px; /* iPhone-like soft corners */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 0;
+    color: white;
+    z-index: 20;
+    border-right: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.nav-item {
+    color: rgba(255, 255, 255, 0.4); /* Subdued light gray for inactive */
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin: 0 auto;
+}
+
+.nav-item:hover { 
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    transform: translateY(-2px);
+}
+
+.nav-item.active {
+    color: white;
+    background: transparent;
+    box-shadow: none;
+    transform: translateY(0);
+}
+
+/* Elegant left indicator for active item */
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -16px; /* Exactly hits the left edge of the 80px sidebar */
+    width: 4px;
+    height: 24px;
+    background: white;
+    border-radius: 0 4px 4px 0;
+}
+
+.nav-item .material-symbols-rounded {
+    font-size: 28px;
+    z-index: 2;
+    transition: transform 0.3s;
+}
+
+.nav-item.active .material-symbols-rounded {
+    font-variation-settings: 'FILL' 1;
+}
+
+.nav-item.logo-item {
+    background: transparent;
+    margin-bottom: 24px;
+}
+.nav-item.logo-item:hover {
+    background: transparent;
+    transform: scale(1.05);
+    box-shadow: none;
+}
+.nav-item.logo-item .material-symbols-rounded {
+    color: white !important;
+    font-size: 32px;
+}
+
+@media (max-width: 1200px) {
+    .desktop-only {
+        display: none !important;
+    }
+    
+    .mobile-arc-navbar {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 40px 40px 0 0;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05);
+        z-index: 100;
+        flex-direction: column;
+        align-items: center;
+        overflow: visible;
+    }
+
+    .arc-container {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        height: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .arc-item {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        text-decoration: none;
+        transform-origin: center;
+    }
+    
+    /* The white circle wrapper */
+    .arc-icon-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        color: #111827;
+    }
+    
+    .arc-icon-wrapper .material-symbols-rounded {
+        font-size: 24px;
+        transition: all 0.4s ease;
+    }
+
+    /* Active Item (Center) */
+    .arc-item.active {
+        z-index: 10;
+    }
+    .arc-item.active .arc-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        background: #111827; /* Dark black */
+        color: #ffffff;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .arc-item.active .material-symbols-rounded {
+        font-size: 30px;
+        font-variation-settings: 'FILL' 1;
+    }
+
+    /* Inactive items styling base */
+    .arc-item:not(.active) .arc-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        background: #ffffff;
+        color: #111827;
+    }
+    
+    /* JS will set exact transforms, but here are fallbacks */
+    
+    .arc-label {
+        position: absolute;
+        bottom: 15px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #111827;
+        transition: all 0.3s ease;
+        opacity: 1;
+    }
+}

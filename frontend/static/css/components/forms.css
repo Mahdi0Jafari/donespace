@@ -1,0 +1,176 @@
+/* Forms & Inputs */
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    user-select: none;
+    flex: 1;
+}
+
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 18px;
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.custom-checkbox:hover input ~ .checkmark { border-color: var(--primary-purple); }
+
+.custom-checkbox input:checked ~ .checkmark {
+    background-color: var(--primary-purple);
+    border-color: var(--primary-purple);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.custom-checkbox input:checked ~ .checkmark:after { display: block; }
+
+/* View Mode Toggle */
+.view-toggle-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.segmented-control {
+    position: relative;
+    display: inline-flex;
+    background-color: var(--bg-color, #eaeaf2);
+    border-radius: 30px;
+    padding: 4px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.segmented-control input[type="radio"] {
+    display: none;
+}
+
+.segmented-control label {
+    position: relative;
+    z-index: 2;
+    padding: 8px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted, #888);
+    cursor: pointer;
+    transition: color 0.3s;
+    border-radius: 26px;
+}
+
+.segmented-control input[type="radio"]:checked + label {
+    color: var(--primary-purple, #8c52ff);
+}
+
+.sliding-bg {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    bottom: 4px;
+    width: calc(50% - 4px);
+    background-color: white;
+    border-radius: 26px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+#view-household:checked ~ .sliding-bg {
+    transform: translateX(100%);
+}
+
+/* Toggle Switch */
+.toggle-input {
+    display: none;
+}
+.toggle-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-main, #333);
+}
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: #e5e7eb;
+    border-radius: 12px;
+    transition: background-color 0.3s;
+}
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.toggle-input:checked + .toggle-switch-container .toggle-switch {
+    background-color: var(--primary-purple, #8c52ff);
+}
+.toggle-input:checked + .toggle-switch-container .toggle-switch::after {
+    transform: translateX(20px);
+}
+
+/* Weekday Picker */
+.weekday-picker {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+}
+.weekday-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+.weekday-circle:hover {
+    background: #e5e7eb;
+}
+.weekday-circle.selected {
+    background: var(--primary-purple, #8c52ff);
+    color: white;
+    box-shadow: 0 4px 10px rgba(140, 82, 255, 0.3);
+}

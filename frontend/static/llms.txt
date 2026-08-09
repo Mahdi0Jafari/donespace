@@ -1,0 +1,20 @@
+# DoneSpace
+
+DoneSpace is a modern, gamified home management and chore-tracking web application designed for families, couples, and roommates to coordinate tasks and plan meals effortlessly.
+
+## About Us
+DoneSpace focuses on reducing household friction through gamification and shared accountability. We believe that managing a home should be collaborative, rewarding, and frustration-free.
+
+## Key Resources
+- [Login or Sign up](https://donespace.ir/login): The primary entry point for users to create an account, join an existing household via a Join Code, or start a new home space.
+
+## Features
+- **Task Management**: Create, assign, and track chores across different rooms and zones (e.g., Kitchen, Living Room).
+- **Gamification**: Users earn points for completing tasks. A dynamic leaderboard shows who is contributing the most to the household.
+- **Meal Planning**: Save recipes and plan meals for the week.
+
+## Technical Details
+DoneSpace is a responsive, web-based application utilizing Modern Web Vitals standards and Semantic HTML for high accessibility.
+
+## Contact Information
+- Website: https://donespace.ir/

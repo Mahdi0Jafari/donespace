@@ -1,0 +1,307 @@
+/* Setup Wizard Modal Styles */
+
+.wizard-content {
+    background-color: var(--surface-color, #fff);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+}
+
+.modal-overlay.active .wizard-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.wizard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.wizard-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* Step Indicators */
+.wizard-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    position: relative;
+}
+
+.wizard-steps::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #f3f4f6;
+    z-index: 1;
+    transform: translateY(-50%);
+}
+
+.wizard-steps .step {
+    background-color: #fff;
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 2px solid #f3f4f6;
+    z-index: 2;
+    transition: all 0.3s;
+}
+
+.wizard-steps .step.active {
+    border-color: var(--primary-purple);
+    color: var(--primary-purple);
+    background-color: #f3e8ff;
+}
+
+.wizard-steps .step.completed {
+    background-color: var(--primary-purple);
+    color: white;
+    border-color: var(--primary-purple);
+}
+
+/* Wizard Panes */
+.wizard-step-pane {
+    display: none;
+    animation: fadeRight 0.3s ease;
+}
+
+.wizard-step-pane.active {
+    display: block;
+}
+
+@keyframes fadeRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Form Styles */
+.large-input {
+    font-size: 20px;
+    padding: 16px 20px;
+    border-width: 2px;
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.icon-option {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.icon-option.selected {
+    border-color: var(--primary-purple);
+    background-color: #f3e8ff;
+    color: var(--primary-purple);
+}
+
+.color-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.color-swatch {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.2s;
+}
+
+.color-swatch.selected {
+    border-color: #1f2937;
+    transform: scale(1.1);
+}
+
+/* Templates */
+.templates-container {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-top: 8px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.templates-container::-webkit-scrollbar {
+    display: none;
+}
+.template-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #f3f4f6;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4b5563;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.template-chip:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+    transform: translateY(-2px);
+}
+.template-chip .material-symbols-rounded {
+    font-size: 18px;
+}
+
+.color-swatch.purple { background-color: #8c52ff; }
+.color-swatch.yellow { background-color: #facc15; }
+.color-swatch.orange { background-color: #f97316; }
+.color-swatch.cyan { background-color: #06b6d4; }
+.color-swatch.green { background-color: #22c55e; }
+.color-swatch.blue { background-color: #3b82f6; }
+
+/* Tasks */
+.task-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.task-icon-selector {
+    position: relative;
+}
+
+.task-icon-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: all 0.2s;
+    width: max-content;
+}
+
+.task-icon-dropdown.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.task-icon-dropdown .material-symbols-rounded {
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    color: #6b7280;
+}
+
+.task-icon-dropdown .material-symbols-rounded:hover {
+    background-color: #f3f4f6;
+    color: var(--primary-purple);
+}
+
+.pending-tasks-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.pending-tasks-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background-color: #f9fafb;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.pending-tasks-list li button {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+}
+
+/* Wizard Actions */
+.wizard-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* Ghost Card on Dashboard */
+.facility-card.add-new {
+    background: transparent;
+    border: 2px dashed #d1d5db;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 145px;
+    height: 100%;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.facility-card.add-new:hover {
+    border-color: var(--primary-purple);
+    background-color: rgba(140, 82, 255, 0.05);
+}
+
+.facility-card.add-new .icon {
+    font-size: 32px;
+    color: #9ca3af;
+    margin-bottom: 12px;
+}
+
+.facility-card.add-new:hover .icon,
+.facility-card.add-new:hover p {
+    color: var(--primary-purple);
+}
+
+.facility-card.add-new p {
+    color: #9ca3af;
+    font-weight: 600;
+    font-size: 16px;
+}

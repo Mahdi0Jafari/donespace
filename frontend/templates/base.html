@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DoneSpace{% endblock %}</title>
+    <meta name="description" content="DoneSpace is the modern way to manage your home. Coordinate chores, plan meals, and earn points with your family or roommates.">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="canonical" href="https://donespace.ir/">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://donespace.ir/">
+    <meta property="og:title" content="DoneSpace — Home Management">
+    <meta property="og:description" content="Coordinate chores, plan meals, and earn points with your family or roommates.">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://donespace.ir/">
+    <meta property="twitter:title" content="DoneSpace — Home Management">
+
+    <!-- Anti-Flash Script: Hide body initially, only show if token exists -->
+    <style>body { display: none; }</style>
+    <script>
+        if (!localStorage.getItem('authToken')) {
+            window.location.replace('/login');
+        } else {
+            // Un-hide body synchronously if token exists
+            document.write('<style>body { display: block !important; }</style>');
+        }
+    </script>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/static/css/main.css?v=4">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0..1,0" />
+    <style>
+        .material-symbols-rounded { font-variation-settings: 'wght' 300; }
+        .active .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 400; }
+    </style>
+    
+    <!-- Extra Head Content for specific pages -->
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar desktop-only">
+            <nav class="nav-menu">
+                <a href="#" class="nav-item logo-item"><span class="material-symbols-rounded" style="color: var(--primary-purple); font-size: 32px;">task_alt</span></a>
+                
+                <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}" title="Dashboard">
+                    {% if request.path == '/' %}<div class="active-indicator"></div>{% endif %}
+                    <span class="material-symbols-rounded">grid_view</span>
+                </a>
+                
+                <a href="/meals" class="nav-item {% if request.path == '/meals' %}active{% endif %}" title="Meals & Recipes">
+                    {% if request.path == '/meals' %}<div class="active-indicator"></div>{% endif %}
+                    <span class="material-symbols-rounded">restaurant_menu</span>
+                </a>
+                
+                <a href="/logs" class="nav-item {% if request.path == '/logs' %}active{% endif %}" title="Activity Logs">
+                    {% if request.path == '/logs' %}<div class="active-indicator"></div>{% endif %}
+                    <span class="material-symbols-rounded">history</span>
+                </a>
+                
+                <a href="#" class="nav-item"><span class="material-symbols-rounded">settings</span></a>
+            </nav>
+        </aside>
+
+        <!-- Mobile Arc Navbar -->
+        <nav class="mobile-arc-navbar">
+            <div class="arc-container" id="arcContainer">
+                <a href="/logs" class="arc-item {% if request.path == '/logs' %}active{% endif %}" data-index="0" data-label="Activity Logs">
+                    <div class="arc-icon-wrapper"><span class="material-symbols-rounded">history</span></div>
+                </a>
+                <a href="/meals" class="arc-item {% if request.path == '/meals' %}active{% endif %}" data-index="1" data-label="Meals & Recipes">
+                    <div class="arc-icon-wrapper"><span class="material-symbols-rounded">restaurant_menu</span></div>
+                </a>
+                <a href="/" class="arc-item {% if request.path == '/' %}active{% endif %}" data-index="2" data-label="Dashboard">
+                    <div class="arc-icon-wrapper"><span class="material-symbols-rounded">grid_view</span></div>
+                </a>
+                <a href="#" class="arc-item" data-index="3" data-label="Settings">
+                    <div class="arc-icon-wrapper"><span class="material-symbols-rounded">settings</span></div>
+                </a>
+                <a href="#" onclick="document.getElementById('logoutConfirmModal').classList.add('active');" class="arc-item" data-index="4" data-label="Log Out">
+                    <div class="arc-icon-wrapper"><span class="material-symbols-rounded">logout</span></div>
+                </a>
+            </div>
+            <div class="arc-label" id="arcLabel">Dashboard</div>
+        </nav>
+
+        <!-- Custom Logout Modal -->
+        <div class="modal-overlay" id="logoutConfirmModal">
+            <div class="modal-content" style="max-width: 320px; text-align: center; padding: 32px 24px;">
+                <span class="material-symbols-rounded" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;">logout</span>
+                <h3 style="margin-bottom: 12px;">Log Out</h3>
+                <p style="color: #6b7280; font-size: 14px; margin-bottom: 28px;">Are you sure you want to log out of your account?</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="secondary-btn" onclick="document.getElementById('logoutConfirmModal').classList.remove('active');" style="flex: 1;">Cancel</button>
+                    <button class="primary-btn" onclick="if(window.HomeAPI) window.HomeAPI.setToken(null); window.location.href='/login';" style="flex: 1; background: #ef4444; color: white;">Log Out</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Unified Settings Modal -->
+        <div class="modal-overlay" id="unifiedSettingsModal">
+            <div class="modal-content settings-modal-content" style="max-width: 800px; width: 90%; height: 600px; display: flex; padding: 0; overflow: hidden; border-radius: 24px;">
+                <!-- Sidebar -->
+                <div class="settings-sidebar" style="width: 240px; background: #f8fafc; border-right: 1px solid #e5e7eb; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px;">
+                    <h2 class="settings-sidebar-title" style="font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-left: 12px;">Settings</h2>
+                    
+                    <div class="settings-section-title" style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #9ca3af; padding: 8px 12px; margin-top: 8px;">Personal</div>
+                    <button class="settings-tab active" data-target="tab-profile">My Profile</button>
+                    <button class="settings-tab" data-target="tab-security">Security</button>
+                    
+                    <div class="settings-section-title" style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #9ca3af; padding: 8px 12px; margin-top: 16px;">Workspace</div>
+                    <button class="settings-tab" data-target="tab-home-general">General</button>
+                    <button class="settings-tab" data-target="tab-home-members">Members</button>
+                </div>
+                
+                <!-- Content Area -->
+                <div style="flex: 1; padding: 32px; overflow-y: auto; position: relative;">
+                    <button onclick="document.getElementById('unifiedSettingsModal').classList.remove('active');" style="position: absolute; top: 24px; right: 24px; background: transparent; border: none; cursor: pointer; color: #9ca3af;">
+                        <span class="material-symbols-rounded">close</span>
+                    </button>
+                    
+                    <div id="tab-profile" class="settings-pane active">
+                        <h3 style="font-size: 24px; margin-bottom: 24px;">My Profile</h3>
+                        <p style="color: #6b7280; margin-bottom: 24px;">Manage your personal details here.</p>
+                        <!-- Form placeholders -->
+                        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                            <img src="" id="settingsAvatarPreview" style="width: 80px; height: 80px; border-radius: 20px; object-fit: cover; background: #e5e7eb;">
+                            <button class="secondary-btn" onclick="alert('Avatar upload coming soon!');">Change Avatar</button>
+                        </div>
+                        <input type="text" id="settingsDisplayName" placeholder="Display Name" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px;">
+                        <button class="primary-btn" onclick="alert('Profile saving coming soon!');">Save Changes</button>
+                    </div>
+                    
+                    <div id="tab-security" class="settings-pane" style="display: none;">
+                        <h3 style="font-size: 24px; margin-bottom: 24px;">Security</h3>
+                        <p style="color: #6b7280; margin-bottom: 24px;">Update your password.</p>
+                        <input type="password" placeholder="New Password" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px;">
+                        <button class="primary-btn">Update Password</button>
+                    </div>
+
+                    <div id="tab-home-general" class="settings-pane" style="display: none;">
+                        <h3 style="font-size: 24px; margin-bottom: 24px;">Workspace General</h3>
+                        <p style="color: #6b7280; margin-bottom: 24px;">Manage your home details.</p>
+                        <input type="text" placeholder="Home Name" id="settingsHomeName" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 16px;">
+                        <p style="font-size: 14px; color: #4b5563; margin-bottom: 16px;">Join Code: <strong id="settingsJoinCode" style="letter-spacing: 2px; color: var(--primary-purple);">...</strong></p>
+                        <button class="primary-btn" onclick="alert('Home saving coming soon!');">Save Changes</button>
+                    </div>
+
+                    <div id="tab-home-members" class="settings-pane" style="display: none;">
+                        <h3 style="font-size: 24px; margin-bottom: 24px;">Workspace Members</h3>
+                        <p style="color: #6b7280; margin-bottom: 24px;">Manage who has access to this home.</p>
+                        <div id="settingsMembersList" style="display: flex; flex-direction: column; gap: 12px;">
+                            <!-- JS Populated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .settings-tab {
+                text-align: left;
+                padding: 10px 12px;
+                border-radius: 8px;
+                background: transparent;
+                border: none;
+                color: #4b5563;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .settings-tab:hover {
+                background: #f3f4f6;
+                color: #111827;
+            }
+            .settings-tab.active {
+                background: rgba(139, 92, 246, 0.1);
+                color: var(--primary-purple);
+                font-weight: 600;
+            }
+            
+            #workspaceSwitcherBtn:hover {
+                background: #f3f4f6;
+            }
+        </style>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header animate-fade-down" style="animation-delay: 0.1s;">
+                {% block header_search %}{% endblock %}
+                <div class="header-actions">
+                    <!-- Notification Bell -->
+                    <div style="position: relative;" id="notifBellWrapper">
+                        <button class="icon-btn" id="notifBellBtn" style="position: relative;">
+                            <span class="material-symbols-rounded">notifications</span>
+                            <span id="notifBadge" style="display:none; position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; background: #ef4444; color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; display: none; align-items: center; justify-content: center; border: 2px solid var(--surface-color); line-height: 1;">0</span>
+                        </button>
+                        <!-- Notification Dropdown -->
+                        <div id="notifDropdown" style="display:none; position: absolute; top: calc(100% + 12px); right: 0; width: 340px; max-width: 90vw; background: var(--surface-color); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); border: 1px solid var(--border-color); z-index: 1000; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px 12px; border-bottom: 1px solid var(--border-color);">
+                                <span style="font-weight: 700; font-size: 16px; color: var(--text-main);">Notifications</span>
+                                <button id="notifReadAllBtn" style="font-family: inherit; background: none; border: none; font-size: 13px; color: var(--primary-purple); cursor: pointer; font-weight: 600; padding: 4px 8px; border-radius: 8px;">Mark all read</button>
+                            </div>
+                            <div id="notifList" style="max-height: 380px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+                    <div class="user-profile" id="userProfileBtn">
+                        <img src="" alt="Profile" id="headerAvatar" style="display: none;">
+                        <span id="headerUsername">Loading...</span>
+                        <span class="material-symbols-rounded">expand_more</span>
+
+                        <!-- Profile Dropdown Menu -->
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="dropdown-header" id="workspaceSwitcherBtn" style="cursor: pointer; transition: background 0.2s; padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <img src="" alt="Avatar" id="dropdownAvatar" style="display:none; width: 44px; height: 44px; border-radius: 12px; object-fit: cover;">
+                                    <div class="dropdown-user-info">
+                                        <span id="dropdownUsername" class="dropdown-name" style="font-weight: 700; font-size: 15px; color: #111827;">Loading...</span>
+                                        <span id="dropdownFacility" class="dropdown-house" style="font-size: 13px; color: #6b7280; font-weight: 500;">No House</span>
+                                    </div>
+                                </div>
+                                <span class="material-symbols-rounded" style="color: #9ca3af; font-size: 20px;">unfold_more</span>
+                            </div>
+                            
+                            <!-- Submenu for Workspace Switcher -->
+                            <div id="workspaceSubmenu" style="display: none; padding: 0 4px 8px 4px; border-bottom: 1px solid #f3f4f6; margin-bottom: 8px;">
+                                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: #9ca3af; padding: 4px 12px 8px 12px;">Switch Home</div>
+                                <div id="workspaceList">
+                                    <!-- Populated by JS -->
+                                </div>
+                                <a href="#" onclick="if(window.showCreateHomeModal) window.showCreateHomeModal();" class="dropdown-item" style="color: var(--primary-purple); padding: 8px 12px; margin-top: 4px;">
+                                    <span class="material-symbols-rounded">add</span>
+                                    Create New Home
+                                </a>
+                                <a href="#" onclick="if(window.showJoinHomeModal) window.showJoinHomeModal();" class="dropdown-item" style="color: var(--primary-purple); padding: 8px 12px; margin-top: 4px;">
+                                    <span class="material-symbols-rounded">login</span>
+                                    Join Existing Home
+                                </a>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+                            <a href="#" onclick="document.getElementById('unifiedSettingsModal').classList.add('active');" class="dropdown-item">
+                                <span class="material-symbols-rounded">manage_accounts</span>
+                                Settings & Profile
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" onclick="document.getElementById('logoutConfirmModal').classList.add('active'); event.preventDefault();" class="dropdown-item text-danger">
+                                <span class="material-symbols-rounded">logout</span>
+                                Log Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Specific Content -->
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Global Scripts -->
+    <script src="/static/js/api.js?v=3"></script>
+    <script>
+        // Update header dynamically
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const meRes = await window.HomeAPI.fetch('/auth/me');
+                if (meRes.ok) {
+                    const me = await meRes.json();
+                    
+                    // --- Empty State Onboarding Check ---
+                    const emptyState = document.getElementById('emptyStateDashboard');
+                    if (emptyState) {
+                        if (!me.home) {
+                            // Hide everything else in main-content
+                            const sections = document.querySelectorAll('.main-content > section:not(#emptyStateDashboard), .main-content > div:not(.header)');
+                            sections.forEach(s => s.style.display = 'none');
+                            // Show empty state
+                            emptyState.style.display = 'flex';
+                            
+                            // Hide right panel
+                            const rightPanel = document.querySelector('.right-panel');
+                            if (rightPanel) rightPanel.style.display = 'none';
+                        }
+                    }
+
+                    const headerUsername = document.getElementById('headerUsername');
+                    const headerAvatar = document.getElementById('headerAvatar');
+                    
+                    if (headerUsername) headerUsername.textContent = me.user.display_name || me.user.username;
+                    
+                    const dropdownUsername = document.getElementById('dropdownUsername');
+                    const dropdownFacility = document.getElementById('dropdownFacility');
+                    const dropdownAvatar = document.getElementById('dropdownAvatar');
+                    
+                    if (dropdownUsername) dropdownUsername.textContent = me.user.display_name || me.user.username;
+                    if (dropdownFacility && me.home) {
+                        dropdownFacility.textContent = me.home.name;
+                    }
+
+                    // Populate Workspace Switcher
+                    if (me.homes && me.homes.length > 0) {
+                        const workspaceList = document.getElementById('workspaceList');
+                        if (workspaceList) {
+                            workspaceList.innerHTML = '';
+                            me.homes.forEach(h => {
+                                const isCurrent = me.home && h.id === me.home.id;
+                                const item = document.createElement('a');
+                                item.href = '#';
+                                item.className = 'dropdown-item';
+                                item.style.padding = '8px 12px';
+                                item.style.margin = '2px 0';
+                                item.style.fontSize = '13px';
+                                item.onclick = (e) => { e.preventDefault(); switchHome(h.id); };
+                                
+                                item.innerHTML = `
+                                    <div style="display:flex; flex-direction:column;">
+                                        <span style="font-weight: 600; color: ${isCurrent ? 'var(--primary-purple)' : '#111827'};">${h.name}</span>
+                                        <span style="font-size: 11px; color: #6b7280; text-transform: capitalize;">${h.role}</span>
+                                    </div>
+                                    ${isCurrent ? '<span class="material-symbols-rounded" style="margin-left: auto; color: var(--primary-purple); font-size: 18px;">check_circle</span>' : ''}
+                                `;
+                                workspaceList.appendChild(item);
+                            });
+                        }
+                    }
+
+                    if (headerAvatar) {
+                        const defaultAvatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(me.user.display_name || me.user.username) + '&background=random';
+                        headerAvatar.src = me.user.avatar || defaultAvatar;
+                        headerAvatar.style.display = 'inline-block';
+                        
+                        if (dropdownAvatar) {
+                            dropdownAvatar.src = headerAvatar.src;
+                            dropdownAvatar.style.display = 'inline-block';
+                        }
+                        
+                        const settingsAvatarPreview = document.getElementById('settingsAvatarPreview');
+                        if (settingsAvatarPreview) settingsAvatarPreview.src = headerAvatar.src;
+                    }
+                    
+                    const settingsDisplayName = document.getElementById('settingsDisplayName');
+                    if (settingsDisplayName) settingsDisplayName.value = me.user.display_name || me.user.username;
+                    
+                    const settingsHomeName = document.getElementById('settingsHomeName');
+                    if (settingsHomeName && me.home) settingsHomeName.value = me.home.name;
+                    
+                    const settingsJoinCode = document.getElementById('settingsJoinCode');
+                    if (settingsJoinCode && me.home) settingsJoinCode.textContent = me.home.join_code;
+                }
+            } catch(e) {}
+        });
+    </script>
+    <!-- Notification System JS -->
+    <script>
+        function getRelativeTimeShort(isoStr) {
+            const diff = Date.now() - new Date(isoStr).getTime();
+            const m = Math.floor(diff / 60000);
+            if (m < 1) return 'Just now';
+            if (m < 60) return `${m}m ago`;
+            const h = Math.floor(m / 60);
+            if (h < 24) return `${h}h ago`;
+            return `${Math.floor(h / 24)}d ago`;
+        }
+
+        window.refreshNotifications = async function() {
+            const badge = document.getElementById('notifBadge');
+            const list = document.getElementById('notifList');
+            if (!badge || !list) return;
+
+            const data = await window.HomeAPI.getNotifications();
+            const { notifications = [], unread_count = 0 } = data;
+
+            // Update badge
+            if (unread_count > 0) {
+                badge.textContent = unread_count > 9 ? '9+' : unread_count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            // Render list
+            if (notifications.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
+                        <span class="material-symbols-rounded" style="font-size:40px; display:block; margin-bottom:10px; opacity:0.4;">notifications_off</span>
+                        <p style="margin:0; font-size:14px;">No notifications yet</p>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            notifications.forEach(n => {
+                const isUnread = !n.is_read;
+                const avatarUrl = n.actor_avatar
+                    ? n.actor_avatar
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(n.actor_name)}&background=random&size=40`;
+
+                const item = document.createElement('div');
+                item.id = `notif-item-${n.id}`;
+                item.style.cssText = `display:flex; gap:12px; align-items:flex-start; padding:14px 20px; cursor:pointer; border-bottom:1px solid var(--border-color); transition:background 0.15s; background:${isUnread ? 'rgba(140,82,255,0.05)' : 'transparent'};`;
+                item.innerHTML = `
+                    <div style="position:relative; flex-shrink:0;">
+                        <img src="${avatarUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" alt="${n.actor_name}">
+                        <span class="material-symbols-rounded" style="position:absolute;bottom:-2px;right:-2px;font-size:16px;background:var(--primary-purple);color:#fff;border-radius:50%;padding:2px;font-variation-settings:'FILL' 1;">task_alt</span>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <p style="margin:0 0 3px 0; font-size:14px; font-weight:${isUnread ? '600' : '400'}; color:var(--text-main); line-height:1.4;">${n.body}</p>
+                        <span style="font-size:12px; color:var(--text-muted);">${getRelativeTimeShort(n.timestamp)}</span>
+                    </div>
+                    ${isUnread ? '<span style="width:8px;height:8px;background:var(--primary-purple);border-radius:50%;flex-shrink:0;margin-top:6px;"></span>' : ''}
+                `;
+
+                item.addEventListener('mouseenter', () => { item.style.background = 'var(--surface-main)'; });
+                item.addEventListener('mouseleave', () => { item.style.background = isUnread ? 'rgba(140,82,255,0.05)' : 'transparent'; });
+
+                if (isUnread) {
+                    item.addEventListener('click', async () => {
+                        await window.HomeAPI.markNotificationRead(n.id);
+                        window.refreshNotifications();
+                    });
+                }
+
+                list.appendChild(item);
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const bell = document.getElementById('notifBellBtn');
+            const dropdown = document.getElementById('notifDropdown');
+            const readAllBtn = document.getElementById('notifReadAllBtn');
+
+            if (bell && dropdown) {
+                bell.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = dropdown.style.display !== 'none';
+                    if (isOpen) {
+                        dropdown.style.display = 'none';
+                    } else {
+                        // Responsive positioning
+                        if (window.innerWidth <= 500) {
+                            // Mobile: fixed full-width panel below header
+                            dropdown.style.position = 'fixed';
+                            dropdown.style.top = '70px';
+                            dropdown.style.left = '12px';
+                            dropdown.style.right = '12px';
+                            dropdown.style.width = 'auto';
+                        } else {
+                            // Desktop: absolute dropdown anchored to right of bell
+                            dropdown.style.position = 'absolute';
+                            dropdown.style.top = 'calc(100% + 12px)';
+                            dropdown.style.left = 'auto';
+                            dropdown.style.right = '0';
+                            dropdown.style.width = '340px';
+                        }
+                        dropdown.style.display = 'block';
+                        window.refreshNotifications();
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!document.getElementById('notifBellWrapper').contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+            }
+
+            if (readAllBtn) {
+                readAllBtn.addEventListener('click', async () => {
+                    await window.HomeAPI.markAllNotificationsRead();
+                    window.refreshNotifications();
+                });
+            }
+
+            // Initial fetch after auth is ready (slight delay for token load)
+            setTimeout(() => {
+                if (window.HomeAPI && window.HomeAPI.getToken()) {
+                    window.refreshNotifications();
+                }
+            }, 1500);
+        });
+    </script>
+    <script src="/static/js/navbar-arc.js"></script>
+    
+    <!-- Profile Dropdown Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const profileBtn = document.getElementById('userProfileBtn');
+            const dropdown = document.getElementById('profileDropdown');
+
+            if (profileBtn && dropdown) {
+                profileBtn.addEventListener('click', (e) => {
+                    // Prevent immediate closing by the document click listener
+                    e.stopPropagation();
+                    profileBtn.classList.toggle('active');
+                });
+
+                // Close dropdown if clicked outside
+                document.addEventListener('click', (e) => {
+                    if (!profileBtn.contains(e.target)) {
+                        profileBtn.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Extra Scripts for specific pages -->
+    {% block scripts %}{% endblock %}
+    
+    <!-- Unified Settings Logic & Workspace Switcher -->
+    <script>
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Settings Tabs Logic
+            const tabs = document.querySelectorAll('.settings-tab');
+            const panes = document.querySelectorAll('.settings-pane');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panes.forEach(p => p.style.display = 'none');
+                    
+                    tab.classList.add('active');
+                    const targetId = tab.getAttribute('data-target');
+                    document.getElementById(targetId).style.display = 'block';
+                });
+            });
+
+            // Workspace Switcher Logic
+            const switcherBtn = document.getElementById('workspaceSwitcherBtn');
+            const submenu = document.getElementById('workspaceSubmenu');
+            
+            if (switcherBtn && submenu) {
+                switcherBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (submenu.style.display === 'none') {
+                        submenu.style.display = 'block';
+                        switcherBtn.style.background = '#f3f4f6';
+                    } else {
+                        submenu.style.display = 'none';
+                        switcherBtn.style.background = 'transparent';
+                    }
+                });
+            }
+        });
+        
+        async function switchHome(homeId) {
+            try {
+                const res = await window.HomeAPI.fetch('/auth/switch_home', {
+                    method: 'POST',
+                    body: JSON.stringify({ home_id: homeId })
+                });
+                if (res.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error switching home.");
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    </script>
+</body>
+</html>

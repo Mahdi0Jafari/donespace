@@ -1,0 +1,93 @@
+/* Members List Redesign */
+.members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.member {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.member:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(5px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    border-color: white;
+}
+
+.member img {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px; /* Squircle instead of full circle for a modern look */
+    border: none; /* Removed ugly white border */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    object-fit: cover;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.member:hover img {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 8px 16px rgba(140, 82, 255, 0.2);
+}
+
+.member .name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-main);
+    flex-grow: 1;
+}
+
+.member .role {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.member .role.points {
+    background: rgba(0, 0, 0, 0.04);
+    color: #4b5563;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+    box-shadow: none;
+    transition: all 0.3s ease;
+}
+
+/* First place styling */
+.member:nth-child(1) {
+    background: linear-gradient(135deg, rgba(140, 82, 255, 0.05), rgba(140, 82, 255, 0.01));
+    border-color: rgba(140, 82, 255, 0.15);
+}
+.member:nth-child(1):hover {
+    background: linear-gradient(135deg, rgba(140, 82, 255, 0.1), rgba(140, 82, 255, 0.03));
+}
+.member:nth-child(1) .role.points {
+    background: rgba(140, 82, 255, 0.1);
+    color: var(--primary-purple);
+    border: 1px solid rgba(140, 82, 255, 0.2);
+}
+
+/* Second place styling */
+.member:nth-child(2) .role.points {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* Third place styling */
+.member:nth-child(3) .role.points {
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}

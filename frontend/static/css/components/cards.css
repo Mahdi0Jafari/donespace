@@ -1,0 +1,182 @@
+/* Cards */
+.dropdown {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--bg-color);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.facilities-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.facility-card {
+    border-radius: 28px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    color: white;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle gradient overlay to make it look premium */
+.facility-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.facility-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.card-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    width: 100%;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+}
+
+.card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.facility-card .icon {
+    font-size: 32px;
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.progress-badge {
+    background-color: rgba(255, 255, 255, 0.25);
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 700;
+    backdrop-filter: blur(10px);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    letter-spacing: 0.5px;
+}
+
+.card-summary h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 5px 0 0 0;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Chevron for accordion */
+.card-summary::after {
+    content: 'expand_more';
+    font-family: 'Material Symbols Rounded';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    font-size: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.facility-card.active .card-summary::after {
+    transform: rotate(180deg);
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.card-details {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease, margin-top 0.3s ease;
+    overflow: hidden;
+}
+
+.card-details > .task-list {
+    overflow: hidden;
+    min-height: 0;
+    margin-top: 0;
+}
+
+.facility-card.active .card-details {
+    grid-template-rows: 1fr;
+    margin-top: 20px;
+}
+
+.devices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.device-card {
+    padding: 20px;
+    border-radius: var(--border-radius-md);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+.device-card:hover { transform: translateY(-3px); }
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.device-card .material-symbols-rounded { font-size: 28px; }
+.device-card p {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.device-card.purple, .facility-card.purple { background-color: #8c52ff; }
+.device-card.yellow, .facility-card.yellow { background-color: #ffc107; color: #333; }
+.device-card.yellow .icon, .facility-card.yellow .icon { color: #333; }
+.device-card.orange, .facility-card.orange { background-color: #ff914d; }
+.device-card.cyan, .facility-card.cyan { background-color: #00bcd4; }
+.device-card.green, .facility-card.green { background-color: #20bf6b; }
+.device-card.blue, .facility-card.blue { background-color: #3b82f6; }
+.device-card.orange, .facility-card.orange { background-color: #fd7e14; }
+
+@media (max-width: 900px) {
+    .facilities-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+    .facilities-grid { grid-template-columns: 1fr; }
+    .devices-grid { grid-template-columns: 1fr; }
+}
