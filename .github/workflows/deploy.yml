@@ -32,6 +32,7 @@ jobs:
               # 3. Inject Secrets into .env and credentials.json
               echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" > .env
               echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+              echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
               
               echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > credentials.json
               

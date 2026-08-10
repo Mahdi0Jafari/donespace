@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, g, redirect
+from flask import Blueprint, request, jsonify, g, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import urllib.parse
 import time
@@ -82,7 +82,7 @@ def register():
     if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
         return jsonify({'error': 'Invalid email format'}), 400
         
-    if not password.isascii():
+    if password and not password.isascii():
         return jsonify({'error': 'Password must contain only English/ASCII characters'}), 400
         
     if User.query.filter_by(email=email).first():
@@ -164,6 +164,40 @@ def register():
         'user': user.to_dict(),
         'home': {'name': home.name, 'join_code': home.join_code} if home else None
     }), 201
+
+@auth_bp.route('/check-email', methods=['POST'])
+def check_email():
+    """Check if an email exists and what auth method the user has.
+    Returns status to guide the frontend on what to show next.
+    """
+    data = request.json
+    email = data.get('email', '').strip().lower()
+    
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+        
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        # Brand new user - show signup form
+        return jsonify({'status': 'new_user'})
+    
+    if user.google_id and not user.password_hash.startswith('pbkdf2:'):
+        # Registered via Google only - no real password set
+        # (dummy passwords we generated don't count)
+        # Actually check if they have google_id set
+        pass
+    
+    has_google = bool(user.google_id)
+    # A user has a "real" password if they registered manually
+    # We can't easily tell the difference from the hash alone,
+    # but google_id being set is a strong signal they used Google.
+    has_password = not has_google  # if they have google_id, assume no real password
+    
+    if has_google and not has_password:
+        return jsonify({'status': 'google_user'})
+    
+    return jsonify({'status': 'existing_user', 'has_password': True})
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -325,20 +359,25 @@ def get_invite_preview(code):
 
 @auth_bp.route('/google/login')
 def google_login():
-    # Build OAuth Flow
+    # Preserve join_code across OAuth redirect via server-side session
+    join_code = request.args.get('join', '')
+    if join_code:
+        session['pending_join_code'] = join_code
+
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
         redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') else 'https://donespace.ir/api/auth/google/callback'
     )
-    
+
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true',
         prompt='consent'
     )
-    
-    return jsonify({'url': authorization_url})
+
+    # Redirect the browser directly to Google
+    return redirect(authorization_url)
 
 @auth_bp.route('/google/callback')
 def google_callback():
@@ -351,31 +390,30 @@ def google_callback():
         redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') else 'https://donespace.ir/api/auth/google/callback'
     )
     
-    # Use the authorization server response to fetch the OAuth 2.0 tokens.
     authorization_response = request.url
-    # For local dev without HTTPS
     if "http://" in authorization_response:
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
         
     flow.fetch_token(authorization_response=authorization_response)
     credentials = flow.credentials
     
-    # Get user info from id_token
     try:
         user_info = id_token.verify_oauth2_token(credentials.id_token, google_requests.Request(), flow.client_config['client_id'])
     except ValueError:
         return jsonify({'error': 'Invalid token'}), 400
         
-    google_id = user_info['sub']
-    email = user_info['email']
-    name = user_info.get('name', '')
-    picture = user_info.get('picture', '')
+    google_id  = user_info['sub']
+    email      = user_info['email']
+    name       = user_info.get('name', '')
+    picture    = user_info.get('picture', '')
     
-    # Find existing user or create new
+    # Retrieve any pending join_code stored before the OAuth redirect
+    pending_join = session.pop('pending_join_code', None)
+
     user = User.query.filter_by(email=email).first()
     
     if not user:
-        # Redirect to the Google Confirm Details screen
+        # New user — send to Confirm Details screen
         params = {
             'google_signup': '1',
             'email': email,
@@ -383,18 +421,20 @@ def google_callback():
             'avatar': picture,
             'google_id': google_id
         }
+        if pending_join:
+            params['join'] = pending_join
         query_string = urllib.parse.urlencode(params)
         return redirect(f'/login?{query_string}')
         
-    # If user already exists, update tokens and log them in
-    user.google_access_token = credentials.token
+    # Existing user — update OAuth tokens and log in
+    user.google_access_token  = credentials.token
     user.google_refresh_token = credentials.refresh_token if credentials.refresh_token else user.google_refresh_token
-    user.google_token_expiry = credentials.expiry
-    
-    # Also log them in to our system
+    user.google_token_expiry  = credentials.expiry
     user.token = secrets.token_hex(32)
     db.session.commit()
     
-    # Redirect to frontend app
-    frontend_url = "http://localhost:3004/app" if request.host.startswith('localhost') else "https://donespace.ir/app"
-    return redirect(f"{frontend_url}?token={user.token}")
+    # Redirect to app, preserving join_code if present
+    dest = f'/app?token={user.token}'
+    if pending_join:
+        dest += f'&join={pending_join}'
+    return redirect(dest)

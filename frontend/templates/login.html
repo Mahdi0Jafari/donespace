@@ -3,52 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log in or Sign up to DoneSpace</title>
-    <meta name="description" content="DoneSpace is the modern way to manage your home. Coordinate chores, plan meals, and earn points with your family or roommates.">
+    <title>Sign in to DoneSpace</title>
+    <meta name="description" content="DoneSpace — the modern way to manage your home with your family or roommates.">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-    <link rel="canonical" href="https://donespace.ir/">
-    
-    <!-- Open Graph / Social Media Meta Tags -->
+    <link rel="canonical" href="https://donespace.ir/login">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://donespace.ir/">
     <meta property="og:title" content="DoneSpace — Home Management">
     <meta property="og:description" content="Coordinate chores, plan meals, and earn points with your family or roommates.">
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://donespace.ir/">
-    <meta property="twitter:title" content="DoneSpace — Home Management">
     <link rel="stylesheet" href="/static/css/main.css">
-    
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" as="style">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"/>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "DoneSpace",
-      "url": "https://donespace.ir",
-      "applicationCategory": "ProductivityApplication",
-      "operatingSystem": "Web",
-      "description": "A gamified home management and chore-tracking web application designed for families, couples, and roommates."
-    }
-    </script>
     <style>
-        /* Auth View Sliding (Login vs Signup) */
-        .auth-container {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-            min-height: 350px;
-        }
+        /* ── Sliding panel system ── */
+        .auth-container { position: relative; width: 100%; overflow: hidden; }
         .views-wrapper {
             display: flex;
-            width: 300%; /* 3 views */
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            width: 200%;   /* 2 panels */
+            transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
             align-items: flex-start;
         }
         .auth-view {
-            width: 33.3333%; /* third of wrapper */
+            width: 50%;
             flex-shrink: 0;
             padding: 5px;
             box-sizing: border-box;
@@ -56,583 +32,345 @@
             transition: opacity 0.3s;
             pointer-events: none;
         }
-        .auth-view.active-view {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .auth-view.active-view { opacity: 1; pointer-events: auto; }
 
-        /* Wizard Sliding inside Signup View */
-        .wizard-container {
-            position: relative;
-            overflow: hidden;
-        }
-        .wizard-steps-wrapper {
-            display: flex;
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            width: 200%; /* 2 steps = 200% */
-        }
-        .wizard-step {
-            width: 50%; /* 1/2 of the wrapper */
-            flex-shrink: 0;
-            padding: 5px;
-            box-sizing: border-box;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-        .wizard-step.active-step {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        /* Wizard specific components */
-        .wizard-header-progress {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        .progress-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #e5e7eb;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-        .progress-dot.active {
-            background-color: #4F52FF;
-            transform: scale(1.3);
-        }
-        .progress-dot.completed {
-            background-color: #7D97F4;
-        }
-
-        .photo-upload-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .photo-circle {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background-color: #f3f4f6;
-            border: 2px dashed #ccc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            overflow: hidden;
-            position: relative;
-            color: #999;
-            transition: all 0.2s;
-        }
-        .photo-circle:hover {
-            border-color: #4F52FF;
-            color: #4F52FF;
-            background-color: #E9EFFD;
-        }
-        .photo-circle img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-        }
-        .photo-circle input[type="file"] {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .wizard-navigation {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .btn-back {
-            background-color: #f3f4f6;
-            color: #333;
-            width: 40%;
-        }
-        .btn-back:hover {
-            background-color: #e5e7eb;
-            transform: translateY(-2px);
-        }
-        .btn-next {
-            width: 60%;
-        }
-        
-        .invite-box {
-            text-align: center;
-            padding: 20px;
-            background: #fdfbf7;
-            border: 1px dashed #FF928E;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
-        .invite-box .material-symbols-rounded {
-            color: #FF928E;
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        
-        /* New prominent Google Button */
+        /* ── Google Button ── */
         .btn-google {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
             width: 100%;
-            background-color: white;
+            background: white;
             color: #3c4043;
-            border: 1px solid #dadce0;
+            border: 1.5px solid #dadce0;
             border-radius: 12px;
-            padding: 14px 20px;
+            padding: 15px 20px;
             font-family: 'Outfit', sans-serif;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
+            transition: box-shadow 0.2s, background 0.2s;
             text-decoration: none;
-            margin-bottom: 25px;
+            box-shadow: 0 1px 4px rgba(60,64,67,0.1);
         }
         .btn-google:hover {
-            background-color: #f8f9fa;
-            box-shadow: 0 1px 3px rgba(60,64,67,0.3);
+            background: #f8f9fa;
+            box-shadow: 0 3px 12px rgba(60,64,67,0.22);
         }
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            color: #888;
-            font-size: 14px;
-            margin-bottom: 25px;
+
+        /* ── Photo circle ── */
+        .photo-upload-wrapper {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 8px; margin-bottom: 20px;
         }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #e5e7eb;
+        .photo-circle {
+            width: 88px; height: 88px; border-radius: 50%;
+            background: #f3f4f6; border: 2.5px dashed #d1d5db;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; overflow: hidden; position: relative;
+            color: #9ca3af; transition: all 0.2s;
         }
-        .divider:not(:empty)::before {
-            margin-right: .5em;
+        .photo-circle:hover { border-color: #4F52FF; color: #4F52FF; background: #eef0ff; }
+        .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-circle input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer;
         }
-        .divider:not(:empty)::after {
-            margin-left: .5em;
+        .photo-hint { font-size: 12px; color: #9ca3af; }
+
+        /* ── Back button ── */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 5px;
+            color: #9ca3af; font-size: 13px; cursor: pointer;
+            background: none; border: none; padding: 0 0 18px 0;
+            font-family: 'Outfit', sans-serif;
+        }
+        .back-link:hover { color: #4F52FF; }
+
+        /* ── Privacy note ── */
+        .privacy-note {
+            font-size: 12px; color: #9ca3af; text-align: center;
+            margin-top: 18px; line-height: 1.6;
+        }
+        .privacy-note a { color: #6b7280; text-decoration: underline; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body class="login-page">
-    <div id="inviteBanner" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000; background: linear-gradient(135deg, #f0f4ff 0%, #e5edff 100%); border: 1px dashed #a5b4fc; border-radius: 16px; padding: 12px 16px; box-shadow: 0 10px 25px rgba(79, 82, 255, 0.15); align-items: center; gap: 12px; text-align: left;">
-        <div style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; background: #ffffff; color: var(--primary-purple); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-            <span class="material-symbols-rounded" style="font-size: 20px; animation: wave 2s infinite; transform-origin: bottom center;">waving_hand</span>
+
+    <!-- Invite Banner -->
+    <div id="inviteBanner" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); width:90%; max-width:420px; z-index:1000; background:linear-gradient(135deg,#f0f4ff,#e5edff); border:1px dashed #a5b4fc; border-radius:16px; padding:12px 16px; box-shadow:0 10px 25px rgba(79,82,255,0.15); align-items:center; gap:12px;">
+        <div style="width:36px;height:36px;flex-shrink:0;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;">
+            <span class="material-symbols-rounded" style="font-size:20px;color:#6366f1;">waving_hand</span>
         </div>
-        <div style="flex: 1;">
-            <h3 style="margin: 0 0 2px 0; font-size: 14px; color: #1e1b4b; font-weight: 700;">You've been invited!</h3>
-            <p style="margin: 0; font-size: 12px; color: #4338ca; line-height: 1.3;" id="inviteBannerText"></p>
+        <div style="flex:1;">
+            <p style="margin:0;font-size:13px;color:#4338ca;line-height:1.4;" id="inviteBannerText"></p>
         </div>
-        <button onclick="dismissInvite()" style="background: none; border: none; cursor: pointer; color: #6366f1; display: flex; padding: 4px;">
-            <span class="material-symbols-rounded" style="font-size: 20px;">close</span>
+        <button onclick="dismissInvite()" style="background:none;border:none;cursor:pointer;color:#6366f1;display:flex;padding:4px;">
+            <span class="material-symbols-rounded" style="font-size:20px;">close</span>
         </button>
     </div>
+
     <script src="/static/js/api.js" defer></script>
+
     <header class="login-header-nav">
         <div class="nav-left">
             <h1 class="brand-logo">DoneSpace</h1>
-            <a href="#" class="support-link"><span class="material-symbols-rounded" style="font-size: 16px;">help</span> Support</a>
+            <a href="#" class="support-link"><span class="material-symbols-rounded" style="font-size:16px;">help</span> Support</a>
         </div>
         <div class="nav-right">
             <button class="icon-btn" aria-label="Change Language"><span class="material-symbols-rounded">language</span></button>
-            <a href="#" onclick="toggleView('signup')" class="nav-link">Sign up</a>
-            <button class="primary-btn demo-btn" aria-label="Request Demo">Request Demo</button>
         </div>
     </header>
 
     <div class="login-background-art">
-        <img src="/static/illustration.svg" alt="Illustration" class="bg-illustration">
+        <img src="/static/illustration.svg" alt="" class="bg-illustration">
     </div>
 
     <main class="login-main">
         <div class="login-card-center">
             <div class="auth-container">
                 <div class="views-wrapper" id="viewsWrapper">
-                    
-                    <!-- VIEW 1: LOGIN -->
-                    <div class="auth-view active-view" id="viewLogin">
-                        <div class="card-header">
-                            <h1>Welcome Back</h1>
-                            <p>Hey, Enter your details to get sign in to your account</p>
+
+                    <!-- ══════════════════════════════════ -->
+                    <!-- PANEL 0 · Entry                   -->
+                    <!-- ══════════════════════════════════ -->
+                    <div class="auth-view active-view" id="viewEntry">
+                        <div class="card-header" style="text-align:center; padding-bottom: 8px;">
+                            <h1>Welcome to DoneSpace 🏠</h1>
+                            <p>Organize your home, sync your calendar, and earn points together.</p>
                         </div>
-                        
-                        <a href="/api/auth/google/login" class="btn-google">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 24px; height: 24px;">
-                            Continue with Google
-                        </a>
-                        
-                        <div class="divider">OR</div>
 
-                        <form class="login-form-center" id="loginForm">
-                            <div class="input-wrap">
-                                <span class="material-symbols-rounded input-icon">mail</span>
-                                <input type="text" placeholder="Enter Email or Username" dir="ltr" inputmode="url" pattern="[a-zA-Z0-9_@.-]+" title="English characters only" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_@.-]/g, '')" required>
-                            </div>
-                            <div class="input-wrap">
-                                <span class="material-symbols-rounded input-icon">lock</span>
-                                <input type="password" class="pwd-input" placeholder="Passcode" required>
-                                <button type="button" class="text-btn toggle-password">Show</button>
-                            </div>
-                            
-                            <div class="form-help">
-                                <a href="#">Having trouble in sign in?</a>
-                            </div>
+                        <div style="margin-top: 28px;">
+                            <!-- href built by JS to preserve join_code -->
+                            <a href="/api/auth/google/login" class="btn-google" id="googleLoginBtn">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:22px;height:22px;">
+                                Continue with Google
+                            </a>
+                        </div>
 
-                            <button type="submit" class="primary-btn submit-btn" id="loginSubmitBtn">Sign in</button>
-                            
-                            <div class="card-footer" style="margin-top: 20px;">
-                                <p>Don't have an account? <a href="#" onclick="toggleView('signup')">Sign up</a></p>
-                            </div>
-                        </form>
+                        <p class="privacy-note">
+                            By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.<br>
+                            We only access your name, email, and calendar — nothing else.
+                        </p>
                     </div>
 
-                    <!-- VIEW 2: SIGNUP -->
-                    <div class="auth-view" id="viewSignup">
-                        <div class="card-header">
-                            <h1>Create Account</h1>
-                            <p>Join DoneSpace to organize your home today.</p>
-                        </div>
-                        
-                        <a href="/api/auth/google/login" class="btn-google">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 24px; height: 24px;">
-                            Sign up with Google
-                        </a>
-                        
-                        <div class="divider">OR</div>
-
-                        <form class="login-form-center" id="signupForm" onsubmit="event.preventDefault(); submitRegistration();">
-                            <div class="input-wrap">
-                                <span class="material-symbols-rounded input-icon">badge</span>
-                                <input type="text" id="signupDisplayName" placeholder="Display Name (e.g. Alex)" maxlength="50" required>
-                            </div>
-                            <div class="input-wrap">
-                                <span class="material-symbols-rounded input-icon">mail</span>
-                                <input type="email" placeholder="Email Address" dir="ltr" inputmode="email" pattern="[a-zA-Z0-9_@.-]+" maxlength="100" title="English characters only" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_@.-]/g, '')" required>
-                            </div>
-                            <div class="input-wrap">
-                                <span class="material-symbols-rounded input-icon">lock</span>
-                                <input type="password" id="signupPassword" class="pwd-input" placeholder="Password" maxlength="255" required>
-                                <button type="button" class="text-btn toggle-password">Show</button>
-                            </div>
-                            <button type="submit" id="registerSubmitBtn" class="primary-btn submit-btn">Create Account</button>
-                        </form>
-                        
-                        <div class="card-footer" style="margin-top: 20px;">
-                            <p>Already have an account? <a href="#" onclick="toggleView('login')">Sign in</a></p>
-                        </div>
-                    </div>
-                    
-                    <!-- VIEW 3: GOOGLE CONFIRM DETAILS -->
+                    <!-- ══════════════════════════════════ -->
+                    <!-- PANEL 1 · Google Confirm Details  -->
+                    <!-- ══════════════════════════════════ -->
                     <div class="auth-view" id="viewGoogleConfirm">
+
                         <div class="card-header">
-                            <h1 id="googleConfirmTitle">Welcome!</h1>
-                            <p>Please confirm your details to finish setting up your account.</p>
+                            <h1 id="googleConfirmTitle">One last step!</h1>
+                            <p>Confirm or update your profile info before we get started.</p>
                         </div>
 
-                        <form class="login-form-center" id="googleConfirmForm" onsubmit="event.preventDefault(); submitGoogleRegistration();">
+                        <form id="googleConfirmForm" onsubmit="event.preventDefault(); submitGoogleRegistration();">
                             <input type="hidden" id="googleIdInput">
                             <input type="hidden" id="googleEmailInput">
-                            
+
+                            <!-- Avatar -->
                             <div class="photo-upload-wrapper">
-                                <div class="photo-circle" id="photoPreviewBox">
-                                    <span class="material-symbols-rounded" id="photoIcon" style="font-size: 32px; display: none;">add_a_photo</span>
-                                    <img src="" id="photoImage" alt="Profile Preview" style="display: block;">
+                                <div class="photo-circle" id="photoPreviewBox" title="Click to change photo">
+                                    <span class="material-symbols-rounded" id="photoIcon" style="font-size:32px; display:none;">add_a_photo</span>
+                                    <img src="" id="photoImage" alt="Profile photo" style="display:block;">
                                     <input type="file" id="profileUpload" accept="image/jpeg,image/png,image/webp,image/gif" onchange="previewImage(event)">
                                 </div>
-                                <span style="font-size: 12px; color: #666;">Tap to change photo</span>
+                                <span class="photo-hint">Tap to change photo</span>
                             </div>
 
-                            <div class="input-wrap">
-                                <span class="material-symbols-rounded input-icon">person</span>
-                                <input type="text" id="googleUsername" placeholder="Username" dir="ltr" inputmode="url" pattern="[a-zA-Z0-9_]+" maxlength="20" title="Only English letters, numbers, and underscores" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g, '')" required>
-                            </div>
+                            <!-- Display Name -->
                             <div class="input-wrap">
                                 <span class="material-symbols-rounded input-icon">badge</span>
-                                <input type="text" id="googleDisplayName" placeholder="Display Name" maxlength="50" required>
+                                <input type="text" id="googleDisplayName"
+                                    placeholder="Display Name (e.g. Alex)"
+                                    maxlength="50" autocomplete="name" required>
                             </div>
 
-                            <button type="submit" id="googleRegisterSubmitBtn" class="primary-btn submit-btn" style="margin-top: 15px;">Complete Registration</button>
+                            <!-- Username -->
+                            <div class="input-wrap">
+                                <span class="material-symbols-rounded input-icon">alternate_email</span>
+                                <input type="text" id="googleUsername"
+                                    placeholder="username"
+                                    dir="ltr" maxlength="20"
+                                    pattern="[a-zA-Z0-9_]+"
+                                    title="Only letters, numbers, and underscores"
+                                    oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'')"
+                                    required>
+                            </div>
+
+                            <button type="submit" id="googleRegisterSubmitBtn"
+                                class="primary-btn submit-btn" style="margin-top:8px;">
+                                Get Started
+                            </button>
                         </form>
                     </div>
 
                 </div>
             </div>
-            
         </div>
     </main>
 
+    <!-- Modal overlay -->
+    <div id="authModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:20px; padding:30px; max-width:380px; width:90%; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.1); animation:fadeUp 0.3s ease;">
+            <h2 id="authModalTitle" style="margin-bottom:10px; font-size:20px;"></h2>
+            <p id="authModalMessage" style="color:#6b7280; font-size:15px; margin-bottom:25px; line-height:1.5;"></p>
+            <button id="authModalBtn" class="primary-btn submit-btn" style="width:100%;">OK</button>
+        </div>
+    </div>
+
     <script>
-        // Password Toggle Logic (multiple inputs)
-        document.querySelectorAll('.toggle-password').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const input = e.target.previousElementSibling;
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    e.target.textContent = 'Hide';
-                } else {
-                    input.type = 'password';
-                    e.target.textContent = 'Show';
-                }
-            });
-        });
-
-        // Toggle Auth Views
+        // ─── View system (2 panels) ──────────────────────────────────
         const viewsWrapper = document.getElementById('viewsWrapper');
-        const viewLogin = document.getElementById('viewLogin');
-        const viewSignup = document.getElementById('viewSignup');
-        const viewGoogleConfirm = document.getElementById('viewGoogleConfirm');
+        const panels = {
+            entry:  { index: 0, el: document.getElementById('viewEntry') },
+            confirm: { index: 1, el: document.getElementById('viewGoogleConfirm') },
+        };
 
-        function toggleView(view) {
-            viewLogin.classList.remove('active-view');
-            viewSignup.classList.remove('active-view');
-            viewGoogleConfirm.classList.remove('active-view');
-            
-            if (view === 'signup') {
-                viewsWrapper.style.transform = `translateX(-33.3333%)`;
-                viewSignup.classList.add('active-view');
-            } else if (view === 'googleConfirm') {
-                viewsWrapper.style.transform = `translateX(-66.6666%)`;
-                viewGoogleConfirm.classList.add('active-view');
+        function showPanel(name) {
+            Object.values(panels).forEach(p => p.el.classList.remove('active-view'));
+            viewsWrapper.style.transform = 'translateX(-' + (panels[name].index * 50) + '%)';
+            panels[name].el.classList.add('active-view');
+        }
+
+        // ─── Google Confirm submit ───────────────────────────────────
+        async function submitGoogleRegistration() {
+            const email     = document.getElementById('googleEmailInput').value;
+            const googleId  = document.getElementById('googleIdInput').value;
+            const username  = document.getElementById('googleUsername').value.trim();
+            const displayName = document.getElementById('googleDisplayName').value.trim();
+            const avatarImg = document.getElementById('photoImage');
+            const avatar = (avatarImg.dataset.uploaded === '1') ? avatarImg.src : avatarImg.src || null;
+            // Preserve join_code passed in URL for new users coming from invite links
+            const joinCode = document.getElementById('pendingJoinCode') ? document.getElementById('pendingJoinCode').value : null;
+
+            const btn = document.getElementById('googleRegisterSubmitBtn');
+            btn.textContent = 'Setting up…'; btn.disabled = true;
+
+            const res = await window.HomeAPI.register({
+                email, google_id: googleId, username, display_name: displayName,
+                avatar, password: null, join_code: joinCode || null, home_name: null
+            });
+
+            if (res.error) {
+                showModal('Oops!', res.error);
+                btn.textContent = 'Get Started'; btn.disabled = false;
             } else {
-                viewsWrapper.style.transform = `translateX(0%)`;
-                viewLogin.classList.add('active-view');
+                window.HomeAPI.setToken(res.token);
+                window.location.href = '/app';
             }
         }
 
-        // --- Handle URL Params (Invite & Google Signup) ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            const params = new URLSearchParams(window.location.search);
-            const joinCode = params.get('join');
-            const googleSignup = params.get('google_signup');
-            
-            if (googleSignup === '1') {
-                // Show Google Confirm view
-                const email = params.get('email');
-                const name = params.get('name');
-                const avatar = params.get('avatar');
-                const googleId = params.get('google_id');
-                
-                document.getElementById('googleIdInput').value = googleId;
-                document.getElementById('googleEmailInput').value = email;
-                
-                if (name) {
-                    document.getElementById('googleDisplayName').value = name;
-                    document.getElementById('googleConfirmTitle').textContent = `Hi ${name.split(' ')[0]}!`;
-                }
-                
-                if (email) {
-                    document.getElementById('googleUsername').value = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
-                }
-                
-                if (avatar) {
-                    document.getElementById('photoImage').src = avatar;
-                    document.getElementById('photoImage').style.display = 'block';
-                    document.getElementById('photoIcon').style.display = 'none';
-                }
-                
-                // Clean URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-                toggleView('googleConfirm');
+        // ─── Photo preview ───────────────────────────────────────────
+        function previewImage(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            if (!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)) {
+                alert('Please use JPEG, PNG, WebP, or GIF.'); event.target.value=''; return;
             }
-            
-            if (joinCode) {
-                try {
-                    const res = await fetch('/api/auth/invite/' + joinCode);
-                    if (res.ok) {
-                        const data = await res.json();
-                        const banner = document.getElementById('inviteBanner');
-                        const text = document.getElementById('inviteBannerText');
-                        
-                        let memberNames = data.members.map(m => m.display_name).join(', ');
-                        if (data.total_members > data.members.length) {
-                            memberNames += ` and ${data.total_members - data.members.length} others`;
-                        }
-                        
-                        text.innerHTML = `Join <strong>${data.name}</strong> with ${memberNames}. Create an account or log in to continue.`;
-                        banner.style.display = 'flex';
-                    }
-                } catch (e) {
-                    console.error('Failed to load invite preview', e);
-                }
-            }
-        });
+            if (file.size > 5*1024*1024) { alert('Max 5MB.'); event.target.value=''; return; }
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = document.getElementById('photoImage');
+                img.src = reader.result;
+                img.style.display = 'block';
+                img.dataset.uploaded = '1';
+                document.getElementById('photoIcon').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
 
+        // ─── Modal ───────────────────────────────────────────────────
+        function showModal(title, message) {
+            document.getElementById('authModalTitle').innerHTML = title;
+            document.getElementById('authModalMessage').innerHTML = message;
+            document.getElementById('authModalBtn').textContent = 'OK';
+            document.getElementById('authModalBtn').onclick = () =>
+                document.getElementById('authModalOverlay').style.display = 'none';
+            document.getElementById('authModalOverlay').style.display = 'flex';
+        }
+
+        // ─── Invite banner ───────────────────────────────────────────
         function dismissInvite() {
             document.getElementById('inviteBanner').style.display = 'none';
-            // Remove 'join' param from URL so they don't get forced to join on registration
             const url = new URL(window.location);
             url.searchParams.delete('join');
             window.history.replaceState({}, document.title, url);
         }
 
-        // API Integration
-        document.querySelector('#viewLogin form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = e.target.querySelector('input[type="text"]').value;
-            const pwd = e.target.querySelector('.pwd-input').value;
-            
-            const btn = document.getElementById('loginSubmitBtn');
-            const originalText = btn.textContent;
-            btn.textContent = 'Signing in...';
-            btn.disabled = true;
-            
-            // Note: email input is currently serving as username
-            const res = await window.HomeAPI.login(email, pwd);
-            
-            if (res.error) {
-                showModal("Login Failed", res.error);
-                btn.textContent = originalText;
-                btn.disabled = false;
-            } else {
-                window.HomeAPI.setToken(res.token);
-                window.location.href = '/app' + window.location.search;
+        // ─── On load: handle URL params ──────────────────────────────
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+
+            // Dynamically add join param to Google button if present
+            const joinCode = params.get('join');
+            if (joinCode) {
+                const btn = document.getElementById('googleLoginBtn');
+                btn.href = '/api/auth/google/login?join=' + encodeURIComponent(joinCode);
+            }
+
+            // Google new-user redirect
+            if (params.get('google_signup') === '1') {
+                const email    = params.get('email')     || '';
+                const name     = params.get('name')      || '';
+                const avatar   = params.get('avatar')    || '';
+                const googleId = params.get('google_id') || '';
+                const join     = params.get('join')      || '';
+
+                document.getElementById('googleIdInput').value    = googleId;
+                document.getElementById('googleEmailInput').value = email;
+
+                // Store join code in a hidden field so submitGoogleRegistration can read it
+                const joinInput = document.createElement('input');
+                joinInput.type = 'hidden';
+                joinInput.id = 'pendingJoinCode';
+                joinInput.value = join;
+                document.getElementById('googleConfirmForm').appendChild(joinInput);
+
+                if (name) {
+                    document.getElementById('googleDisplayName').value = name;
+                    document.getElementById('googleConfirmTitle').textContent = 'Hi ' + name.split(' ')[0] + '! 👋';
+                }
+
+                if (email) {
+                    const suggested = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').substring(0, 20);
+                    document.getElementById('googleUsername').value = suggested;
+                }
+
+                if (avatar) {
+                    const img = document.getElementById('photoImage');
+                    img.src = avatar;
+                    img.style.display = 'block';
+                    document.getElementById('photoIcon').style.display = 'none';
+                }
+
+                // Clean URL
+                window.history.replaceState({}, document.title, '/login');
+                showPanel('confirm');
+            }
+
+            // Invite link preview
+            const joinCode = params.get('join');
+            if (joinCode) {
+                try {
+                    const res = await fetch('/api/auth/invite/' + joinCode);
+                    if (res.ok) {
+                        const data = await res.json();
+                        let names = data.members.map(m => m.display_name).join(', ');
+                        if (data.total_members > data.members.length)
+                            names += ' and ' + (data.total_members - data.members.length) + ' others';
+                        document.getElementById('inviteBannerText').innerHTML =
+                            'You\'re invited to join <strong>' + data.name + '</strong> with ' + names + '. Sign in to continue.';
+                        document.getElementById('inviteBanner').style.display = 'flex';
+                    }
+                } catch(e) { console.error('Invite preview failed', e); }
             }
         });
-
-        async function submitRegistration() {
-            const email = document.querySelector('#signupForm input[type="email"]').value;
-            const password = document.getElementById('signupPassword').value;
-            const displayName = document.getElementById('signupDisplayName').value;
-            
-            const btn = document.getElementById('registerSubmitBtn');
-            const originalText = btn.textContent;
-            btn.textContent = 'Registering...';
-            btn.disabled = true;
-
-            const payload = {
-                email: email,
-                password: password,
-                display_name: displayName,
-                username: null,
-                avatar: null,
-                join_code: null,
-                home_name: null
-            };
-
-            const res = await window.HomeAPI.register(payload);
-            if (res.error) {
-                showModal("Registration Failed", res.error);
-                btn.textContent = originalText;
-                btn.disabled = false;
-            } else {
-                window.HomeAPI.setToken(res.token);
-                window.location.href = '/app' + window.location.search;
-            }
-        }
-
-        async function submitGoogleRegistration() {
-            const email = document.getElementById('googleEmailInput').value;
-            const googleId = document.getElementById('googleIdInput').value;
-            const username = document.getElementById('googleUsername').value;
-            const displayName = document.getElementById('googleDisplayName').value;
-            
-            const avatarImg = document.getElementById('photoImage');
-            const avatar = avatarImg.src && avatarImg.src !== "" ? avatarImg.src : null;
-            
-            const btn = document.getElementById('googleRegisterSubmitBtn');
-            const originalText = btn.textContent;
-            btn.textContent = 'Completing...';
-            btn.disabled = true;
-
-            const payload = {
-                email: email,
-                google_id: googleId,
-                username: username,
-                display_name: displayName,
-                avatar: avatar,
-                password: null,
-                join_code: null,
-                home_name: null
-            };
-
-            const res = await window.HomeAPI.register(payload);
-            if (res.error) {
-                showModal("Registration Failed", res.error);
-                btn.textContent = originalText;
-                btn.disabled = false;
-            } else {
-                window.HomeAPI.setToken(res.token);
-                window.location.href = '/app' + window.location.search;
-            }
-        }
-
-        // Custom Modal Logic
-        function showModal(title, message, isSuccess = false) {
-            document.getElementById('authModalTitle').innerHTML = title;
-            document.getElementById('authModalMessage').innerHTML = message;
-            
-            const btn = document.getElementById('authModalBtn');
-            if (isSuccess) {
-                btn.textContent = "Go to Dashboard";
-                btn.onclick = () => window.location.href = '/app';
-            } else {
-                btn.textContent = "Try Again";
-                btn.onclick = () => document.getElementById('authModalOverlay').style.display = 'none';
-            }
-            
-            document.getElementById('authModalOverlay').style.display = 'flex';
-        }
-
-        // Image Preview Logic (Visual only for now)
-        function previewImage(event) {
-            const input = event.target;
-            const file = input.files && input.files[0];
-            if (!file) return;
-            
-            // Whitelist: only allow raster formats, no SVG or other vector/unsafe formats
-            const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-            if (!allowed.includes(file.type)) {
-                alert('Invalid file format. Please upload a JPEG, PNG, WebP, or GIF image.');
-                input.value = ''; // Reset input
-                return;
-            }
-            
-            // Optional size limit: 5MB
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Image is too large. Maximum allowed size is 5MB.');
-                input.value = '';
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(){
-                const img = document.getElementById('photoImage');
-                const icon = document.getElementById('photoIcon');
-                img.src = reader.result;
-                img.style.display = 'block';
-                icon.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        }
     </script>
-    
-    <!-- Custom Auth Modal -->
-    <div id="authModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
-        <div style="background: white; border-radius: 20px; padding: 30px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); animation: fadeUp 0.3s ease;">
-            <h2 id="authModalTitle" style="margin-bottom: 10px; font-size: 20px;"></h2>
-            <p id="authModalMessage" style="color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.5;"></p>
-            <button id="authModalBtn" class="primary-btn submit-btn" style="width: 100%;">OK</button>
-        </div>
-    </div>
-    <style>
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
 </body>
 </html>

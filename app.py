@@ -1,8 +1,16 @@
 import os
+import secrets
 from flask import Flask, request, jsonify, g, render_template, send_from_directory, redirect
 from flask_cors import CORS
 from backend.extensions import db
 from backend.models import User
+
+# Load .env if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # Import Blueprints
 from backend.routes.auth import auth_bp
@@ -16,6 +24,8 @@ CORS(app)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'database', 'donespace.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Secret key for Flask sessions (used during OAuth flow)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
 db.init_app(app)
 
@@ -33,8 +43,8 @@ def require_auth():
     if request.method == 'OPTIONS':
         return
     # Exempt auth routes, static files, and public pages
-    exempt_routes = ['/api/auth/login', '/api/auth/register', '/login', '/']
-    if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/static/'):
+    exempt_routes = ['/api/auth/login', '/api/auth/register', '/api/auth/check-email', '/login', '/']
+    if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/api/auth/google/') or request.path.startswith('/static/'):
         return
         
     # Check for SSE stream auth
