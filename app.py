@@ -25,7 +25,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'database', 'donespace.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Secret key for Flask sessions (used during OAuth flow)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
 
 db.init_app(app)
 
