@@ -321,7 +321,6 @@ window.refreshAllData = async function() {
     // Fetch Me to ensure we are logged in and get user data
     
     // Check for join parameter and attempt auto-join
-    const urlParams = new URLSearchParams(window.location.search);
     const joinCode = urlParams.get('join');
     if (joinCode && window.HomeAPI.getToken()) {
         // Strip from URL immediately to prevent loop
