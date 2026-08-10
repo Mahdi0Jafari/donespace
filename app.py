@@ -47,11 +47,10 @@ def require_auth():
     if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/api/auth/google/') or request.path.startswith('/static/'):
         return
         
-    # Check for SSE stream auth
-    token = None
-    if request.path == '/api/stream':
-        token = request.args.get('token')
-    else:
+    # Check for SSE stream auth or URL token auth (e.g. from OAuth redirect)
+    token = request.args.get('token')
+    
+    if not token:
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
