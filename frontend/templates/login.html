@@ -43,12 +43,12 @@
         }
         .views-wrapper {
             display: flex;
-            width: 200%; /* 2 views */
+            width: 300%; /* 3 views */
             transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             align-items: flex-start;
         }
         .auth-view {
-            width: 50%; /* half of wrapper */
+            width: 33.3333%; /* third of wrapper */
             flex-shrink: 0;
             padding: 5px;
             box-sizing: border-box;
@@ -182,6 +182,50 @@
             font-size: 32px;
             margin-bottom: 10px;
         }
+        
+        /* New prominent Google Button */
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            background-color: white;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            margin-bottom: 25px;
+        }
+        .btn-google:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(60,64,67,0.3);
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+        .divider:not(:empty)::after {
+            margin-left: .5em;
+        }
     </style>
 </head>
 <body class="login-page">
@@ -225,6 +269,14 @@
                             <h1>Welcome Back</h1>
                             <p>Hey, Enter your details to get sign in to your account</p>
                         </div>
+                        
+                        <a href="/api/auth/google/login" class="btn-google">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 24px; height: 24px;">
+                            Continue with Google
+                        </a>
+                        
+                        <div class="divider">OR</div>
+
                         <form class="login-form-center" id="loginForm">
                             <div class="input-wrap">
                                 <span class="material-symbols-rounded input-icon">mail</span>
@@ -242,101 +294,79 @@
 
                             <button type="submit" class="primary-btn submit-btn" id="loginSubmitBtn">Sign in</button>
                             
-                            <div class="google-btn-wrapper" style="margin-top: 20px; margin-bottom: 10px; text-align: center;">
-                                <p style="font-size: 13px; color: #888; margin-bottom: 15px;">— OR —</p>
-                                <a href="/api/auth/google/login" class="primary-btn" style="background-color: white; color: #333; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none;">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 20px; height: 20px;">
-                                    Continue with Google
-                                </a>
-                            </div>
-                            
                             <div class="card-footer" style="margin-top: 20px;">
                                 <p>Don't have an account? <a href="#" onclick="toggleView('signup')">Sign up</a></p>
                             </div>
                         </form>
                     </div>
 
-                    <!-- VIEW 2: SIGNUP WIZARD -->
+                    <!-- VIEW 2: SIGNUP -->
                     <div class="auth-view" id="viewSignup">
-                        
-                        <div class="wizard-header-progress" id="progressDots">
-                            <div class="progress-dot active"></div>
-                            <div class="progress-dot"></div>
-                        </div>
-
-                        <div class="wizard-container">
-                            <div class="wizard-steps-wrapper" id="wizardStepsWrapper">
-                                
-                                <!-- STEP 1: Account Login Details -->
-                                <div class="wizard-step active-step">
-                                    <div class="card-header">
-                                        <h1>Create Account</h1>
-                                        <p>Enter your details to get started with DoneSpace.</p>
-                                    </div>
-                                    <form class="login-form-center" id="signupForm1" onsubmit="event.preventDefault(); nextStep();">
-                                        <div class="input-wrap">
-                                            <span class="material-symbols-rounded input-icon">mail</span>
-                                            <input type="email" placeholder="Email Address" dir="ltr" inputmode="email" pattern="[a-zA-Z0-9_@.-]+" maxlength="100" title="English characters only" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_@.-]/g, '')" required>
-                                        </div>
-                                        <div class="input-wrap">
-                                            <span class="material-symbols-rounded input-icon">lock</span>
-                                            <input type="password" id="signupPassword" class="pwd-input" placeholder="Password" maxlength="255" required>
-                                            <button type="button" class="text-btn toggle-password">Show</button>
-                                        </div>
-                                        <div class="input-wrap">
-                                            <span class="material-symbols-rounded input-icon">lock_reset</span>
-                                            <input type="password" id="signupConfirmPassword" class="pwd-input" placeholder="Confirm Password" maxlength="255" required>
-                                            <button type="button" class="text-btn toggle-password">Show</button>
-                                        </div>
-                                        <button type="submit" class="primary-btn submit-btn">Continue</button>
-                                        
-                                        <div class="google-btn-wrapper" style="margin-top: 20px; margin-bottom: 10px; text-align: center;">
-                                            <p style="font-size: 13px; color: #888; margin-bottom: 15px;">— OR —</p>
-                                            <a href="/api/auth/google/login" class="primary-btn" style="background-color: white; color: #333; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none;">
-                                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 20px; height: 20px;">
-                                                Sign up with Google
-                                            </a>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <!-- STEP 2: Personal Profile -->
-                                <div class="wizard-step">
-                                    <div class="card-header">
-                                        <h1>Personal Profile</h1>
-                                        <p>Add a photo and your name so your housemates recognize you.</p>
-                                    </div>
-                                    <form class="login-form-center" id="signupForm2" onsubmit="event.preventDefault(); submitRegistration();">
-                                        <div class="photo-upload-wrapper">
-                                            <div class="photo-circle" id="photoPreviewBox">
-                                                <span class="material-symbols-rounded" id="photoIcon" style="font-size: 32px;">add_a_photo</span>
-                                                <img src="" id="photoImage" alt="Profile Preview">
-                                                <input type="file" id="profileUpload" accept="image/jpeg,image/png,image/webp,image/gif" onchange="previewImage(event)">
-                                            </div>
-                                            <span style="font-size: 12px; color: #666;">Upload Profile Photo</span>
-                                        </div>
-
-                                        <div class="input-wrap">
-                                            <span class="material-symbols-rounded input-icon">person</span>
-                                            <input type="text" id="signupUsername" placeholder="Username (English only)" dir="ltr" inputmode="url" pattern="[a-zA-Z0-9_]+" maxlength="20" title="Only English letters, numbers, and underscores" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g, '')" required>
-                                        </div>
-                                        <div class="input-wrap">
-                                            <span class="material-symbols-rounded input-icon">badge</span>
-                                            <input type="text" id="signupDisplayName" placeholder="Display Name (Optional, e.g. Alex)" maxlength="50" required>
-                                        </div>
-
-                                        <div class="wizard-navigation">
-                                            <button type="button" class="primary-btn submit-btn btn-back" onclick="prevStep()">Back</button>
-                                            <button type="submit" id="registerSubmitBtn" class="primary-btn submit-btn btn-next">Complete Sign up</button>
-                                        </div>
-                                    </form>
-                                </div>
-
+                        <div class="card-header">
+                            <h1>Create Account</h1>
+                            <p>Join DoneSpace to organize your home today.</p>
                         </div>
                         
-                        <div class="card-footer" style="margin-top: 15px;">
+                        <a href="/api/auth/google/login" class="btn-google">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 24px; height: 24px;">
+                            Sign up with Google
+                        </a>
+                        
+                        <div class="divider">OR</div>
+
+                        <form class="login-form-center" id="signupForm" onsubmit="event.preventDefault(); submitRegistration();">
+                            <div class="input-wrap">
+                                <span class="material-symbols-rounded input-icon">badge</span>
+                                <input type="text" id="signupDisplayName" placeholder="Display Name (e.g. Alex)" maxlength="50" required>
+                            </div>
+                            <div class="input-wrap">
+                                <span class="material-symbols-rounded input-icon">mail</span>
+                                <input type="email" placeholder="Email Address" dir="ltr" inputmode="email" pattern="[a-zA-Z0-9_@.-]+" maxlength="100" title="English characters only" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_@.-]/g, '')" required>
+                            </div>
+                            <div class="input-wrap">
+                                <span class="material-symbols-rounded input-icon">lock</span>
+                                <input type="password" id="signupPassword" class="pwd-input" placeholder="Password" maxlength="255" required>
+                                <button type="button" class="text-btn toggle-password">Show</button>
+                            </div>
+                            <button type="submit" id="registerSubmitBtn" class="primary-btn submit-btn">Create Account</button>
+                        </form>
+                        
+                        <div class="card-footer" style="margin-top: 20px;">
                             <p>Already have an account? <a href="#" onclick="toggleView('login')">Sign in</a></p>
                         </div>
+                    </div>
+                    
+                    <!-- VIEW 3: GOOGLE CONFIRM DETAILS -->
+                    <div class="auth-view" id="viewGoogleConfirm">
+                        <div class="card-header">
+                            <h1 id="googleConfirmTitle">Welcome!</h1>
+                            <p>Please confirm your details to finish setting up your account.</p>
+                        </div>
+
+                        <form class="login-form-center" id="googleConfirmForm" onsubmit="event.preventDefault(); submitGoogleRegistration();">
+                            <input type="hidden" id="googleIdInput">
+                            <input type="hidden" id="googleEmailInput">
+                            
+                            <div class="photo-upload-wrapper">
+                                <div class="photo-circle" id="photoPreviewBox">
+                                    <span class="material-symbols-rounded" id="photoIcon" style="font-size: 32px; display: none;">add_a_photo</span>
+                                    <img src="" id="photoImage" alt="Profile Preview" style="display: block;">
+                                    <input type="file" id="profileUpload" accept="image/jpeg,image/png,image/webp,image/gif" onchange="previewImage(event)">
+                                </div>
+                                <span style="font-size: 12px; color: #666;">Tap to change photo</span>
+                            </div>
+
+                            <div class="input-wrap">
+                                <span class="material-symbols-rounded input-icon">person</span>
+                                <input type="text" id="googleUsername" placeholder="Username" dir="ltr" inputmode="url" pattern="[a-zA-Z0-9_]+" maxlength="20" title="Only English letters, numbers, and underscores" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g, '')" required>
+                            </div>
+                            <div class="input-wrap">
+                                <span class="material-symbols-rounded input-icon">badge</span>
+                                <input type="text" id="googleDisplayName" placeholder="Display Name" maxlength="50" required>
+                            </div>
+
+                            <button type="submit" id="googleRegisterSubmitBtn" class="primary-btn submit-btn" style="margin-top: 15px;">Complete Registration</button>
+                        </form>
                     </div>
 
                 </div>
@@ -360,30 +390,64 @@
             });
         });
 
-        // Toggle Auth Views (Login <-> Signup)
+        // Toggle Auth Views
         const viewsWrapper = document.getElementById('viewsWrapper');
         const viewLogin = document.getElementById('viewLogin');
         const viewSignup = document.getElementById('viewSignup');
+        const viewGoogleConfirm = document.getElementById('viewGoogleConfirm');
 
         function toggleView(view) {
+            viewLogin.classList.remove('active-view');
+            viewSignup.classList.remove('active-view');
+            viewGoogleConfirm.classList.remove('active-view');
+            
             if (view === 'signup') {
-                viewsWrapper.style.transform = `translateX(-50%)`;
-                viewLogin.classList.remove('active-view');
+                viewsWrapper.style.transform = `translateX(-33.3333%)`;
                 viewSignup.classList.add('active-view');
-                // Reset wizard when opening signup
-                currentStep = 0;
-                updateWizard();
+            } else if (view === 'googleConfirm') {
+                viewsWrapper.style.transform = `translateX(-66.6666%)`;
+                viewGoogleConfirm.classList.add('active-view');
             } else {
                 viewsWrapper.style.transform = `translateX(0%)`;
-                viewSignup.classList.remove('active-view');
                 viewLogin.classList.add('active-view');
             }
         }
 
-        // --- Invite Link Logic ---
+        // --- Handle URL Params (Invite & Google Signup) ---
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
             const joinCode = params.get('join');
+            const googleSignup = params.get('google_signup');
+            
+            if (googleSignup === '1') {
+                // Show Google Confirm view
+                const email = params.get('email');
+                const name = params.get('name');
+                const avatar = params.get('avatar');
+                const googleId = params.get('google_id');
+                
+                document.getElementById('googleIdInput').value = googleId;
+                document.getElementById('googleEmailInput').value = email;
+                
+                if (name) {
+                    document.getElementById('googleDisplayName').value = name;
+                    document.getElementById('googleConfirmTitle').textContent = `Hi ${name.split(' ')[0]}!`;
+                }
+                
+                if (email) {
+                    document.getElementById('googleUsername').value = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+                }
+                
+                if (avatar) {
+                    document.getElementById('photoImage').src = avatar;
+                    document.getElementById('photoImage').style.display = 'block';
+                    document.getElementById('photoIcon').style.display = 'none';
+                }
+                
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                toggleView('googleConfirm');
+            }
             
             if (joinCode) {
                 try {
@@ -415,58 +479,6 @@
             window.history.replaceState({}, document.title, url);
         }
 
-        // Tab Switching Logic
-        let currentStep = 0;
-        const totalSteps = 2;
-        const wizardWrapper = document.getElementById('wizardStepsWrapper');
-        const steps = document.querySelectorAll('.wizard-step');
-        const dots = document.querySelectorAll('.progress-dot');
-
-        function updateWizard() {
-            wizardWrapper.style.transform = `translateX(-${currentStep * (100 / totalSteps)}%)`;
-            
-            steps.forEach((step, index) => {
-                if (index === currentStep) {
-                    step.classList.add('active-step');
-                    step.style.visibility = 'visible'; // Allow focus
-                } else {
-                    step.classList.remove('active-step');
-                    step.style.visibility = 'hidden'; // Prevent tabbing into invisible steps
-                }
-            });
-
-            dots.forEach((dot, index) => {
-                dot.className = 'progress-dot'; 
-                if (index < currentStep) dot.classList.add('completed');
-                else if (index === currentStep) dot.classList.add('active');
-            });
-        }
-        
-        // Initialize visibility
-        updateWizard();
-
-        function nextStep() {
-            if (currentStep === 0) {
-                const pwd = document.getElementById('signupPassword').value;
-                const confirmPwd = document.getElementById('signupConfirmPassword').value;
-                if (pwd !== confirmPwd) {
-                    showModal("Passwords Mismatch", "Please make sure both passwords match perfectly.");
-                    return;
-                }
-            }
-            if (currentStep < totalSteps - 1) {
-                currentStep++;
-                updateWizard();
-            }
-        }
-
-        function prevStep() {
-            if (currentStep > 0) {
-                currentStep--;
-                updateWizard();
-            }
-        }
-
         // API Integration
         document.querySelector('#viewLogin form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -492,13 +504,9 @@
         });
 
         async function submitRegistration() {
-            const email = document.querySelector('#signupForm1 input[type="email"]').value;
+            const email = document.querySelector('#signupForm input[type="email"]').value;
             const password = document.getElementById('signupPassword').value;
-            
-            const username = document.getElementById('signupUsername').value;
             const displayName = document.getElementById('signupDisplayName').value;
-            const avatarImg = document.getElementById('photoImage');
-            const avatar = avatarImg.src && !avatarImg.src.includes(window.location.origin) ? avatarImg.src : null;
             
             const btn = document.getElementById('registerSubmitBtn');
             const originalText = btn.textContent;
@@ -506,11 +514,47 @@
             btn.disabled = true;
 
             const payload = {
-                username: username,
-                display_name: displayName,
                 email: email,
                 password: password,
+                display_name: displayName,
+                username: null,
+                avatar: null,
+                join_code: null,
+                home_name: null
+            };
+
+            const res = await window.HomeAPI.register(payload);
+            if (res.error) {
+                showModal("Registration Failed", res.error);
+                btn.textContent = originalText;
+                btn.disabled = false;
+            } else {
+                window.HomeAPI.setToken(res.token);
+                window.location.href = '/app' + window.location.search;
+            }
+        }
+
+        async function submitGoogleRegistration() {
+            const email = document.getElementById('googleEmailInput').value;
+            const googleId = document.getElementById('googleIdInput').value;
+            const username = document.getElementById('googleUsername').value;
+            const displayName = document.getElementById('googleDisplayName').value;
+            
+            const avatarImg = document.getElementById('photoImage');
+            const avatar = avatarImg.src && avatarImg.src !== "" ? avatarImg.src : null;
+            
+            const btn = document.getElementById('googleRegisterSubmitBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Completing...';
+            btn.disabled = true;
+
+            const payload = {
+                email: email,
+                google_id: googleId,
+                username: username,
+                display_name: displayName,
                 avatar: avatar,
+                password: null,
                 join_code: null,
                 home_name: null
             };

@@ -1,5 +1,6 @@
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify, g, redirect
 from werkzeug.security import generate_password_hash, check_password_hash
+import urllib.parse
 import time
 import secrets
 import string
@@ -40,15 +41,31 @@ def generate_join_code():
 def register():
     data = request.json
     username = data.get('username')
-    display_name = data.get('display_name') or username
     email = data.get('email')
     password = data.get('password')
     join_code = data.get('join_code')
     home_name = data.get('home_name')
     avatar_data = data.get('avatar')
+    google_id = data.get('google_id')
+    display_name = data.get('display_name')
     
-    if not username or not email or not password:
-        return jsonify({'error': 'Missing required fields (username, email, password)'}), 400
+    if not email:
+        return jsonify({'error': 'Missing required fields (email)'}), 400
+        
+    if not google_id and not password:
+        return jsonify({'error': 'Password is required for manual signup'}), 400
+        
+    if not username:
+        # Generate username from email
+        base_username = email.split('@')[0]
+        username = base_username
+        counter = 1
+        while User.query.filter_by(username=username).first():
+            username = f"{base_username}{counter}"
+            counter += 1
+            
+    if not display_name:
+        display_name = username
         
     if len(username) > 20:
         return jsonify({'error': 'Username must be 20 characters or less'}), 400
@@ -126,9 +143,10 @@ def register():
         display_name=display_name,
         email=email,
         avatar=avatar_url,
-        password_hash=generate_password_hash(password),
+        password_hash=generate_password_hash(password) if password else generate_password_hash(secrets.token_urlsafe(16)),
         home_id=home.id if home else None, # their current active home
-        token=secrets.token_hex(32)
+        token=secrets.token_hex(32),
+        google_id=google_id
     )
     db.session.add(user)
     db.session.flush()
@@ -357,43 +375,26 @@ def google_callback():
     user = User.query.filter_by(email=email).first()
     
     if not user:
-        # Generate a unique username
-        base_username = email.split('@')[0]
-        username = base_username
-        counter = 1
-        while User.query.filter_by(username=username).first():
-            username = f"{base_username}{counter}"
-            counter += 1
-            
-        user = User(
-            username=username,
-            display_name=name,
-            email=email,
-            avatar=picture,
-            password_hash=generate_password_hash(secrets.token_urlsafe(16)), # Dummy password
-            token=secrets.token_hex(32),
-            google_id=google_id
-        )
-        db.session.add(user)
-        db.session.flush()
-    else:
-        # Update google_id if not present
-        if not user.google_id:
-            user.google_id = google_id
-        # Update avatar if they didn't have one
-        if not user.avatar and picture:
-            user.avatar = picture
-            
-        user.token = secrets.token_hex(32)
+        # Redirect to the Google Confirm Details screen
+        params = {
+            'google_signup': '1',
+            'email': email,
+            'name': name,
+            'avatar': picture,
+            'google_id': google_id
+        }
+        query_string = urllib.parse.urlencode(params)
+        return redirect(f'/login?{query_string}')
         
-    # Store credentials for Calendar API
+    # If user already exists, update tokens and log them in
     user.google_access_token = credentials.token
     user.google_refresh_token = credentials.refresh_token if credentials.refresh_token else user.google_refresh_token
     user.google_token_expiry = credentials.expiry
     
+    # Also log them in to our system
+    user.token = secrets.token_hex(32)
     db.session.commit()
     
-    # Redirect back to frontend
-    from flask import redirect
+    # Redirect to frontend app
     frontend_url = "http://localhost:3004/app" if request.host.startswith('localhost') else "https://donespace.ir/app"
     return redirect(f"{frontend_url}?token={user.token}")
