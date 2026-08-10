@@ -355,7 +355,6 @@
             }
 
             // Invite link preview
-            const joinCode = params.get('join');
             if (joinCode) {
                 try {
                     const res = await fetch('/api/auth/invite/' + joinCode);
