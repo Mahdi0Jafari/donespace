@@ -3,6 +3,8 @@ services:
     build: .
     container_name: donespace_web
     restart: always
+    env_file:
+      - .env
     ports:
       # Mapping to 8096 on the host to avoid conflict with Khonshu (8095)
       - "8096:3004"
