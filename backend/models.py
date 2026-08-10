@@ -61,6 +61,7 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     home_id = db.Column(db.Integer, db.ForeignKey('home.id', ondelete='CASCADE'), nullable=False)
     title = db.Column(db.String(200), nullable=False)
+    color = db.Column(db.String(20), nullable=True, default="purple")  # UI colour for Google Calendar mapping
     description = db.Column(db.Text)
     icon = db.Column(db.String(50))
     room = db.Column(db.String(50))
@@ -88,6 +89,7 @@ class Task(db.Model):
         return {
             'id': self.id,
             'title': self.title,
+            'color': self.color,
             'description': self.description,
             'icon': self.icon,
             'roomId': self.room,

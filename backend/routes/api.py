@@ -1,14 +1,22 @@
 # pyright: reportCallIssue=false
 from flask import Blueprint, request, jsonify, Response, g
+from backend.extensions import db, notify_clients, clients
 from queue import Queue, Empty
-from backend.extensions import db, clients, notify_clients
+from backend.utils.logger import log_task
 from backend.models import Task, Meal, Recipe, TaskCompletion, ActivityLog, User, Notification
 from backend.utils.gcal import sync_task_to_gcal, sync_meal_to_gcal, delete_event
 import json
 import time
 from datetime import datetime
 
+# Global dictionary to keep SSE client queues per home_id (imported from extensions)
+# clients dict is defined in backend.extensions, no need to redefine here.
+
+
 api_bp = Blueprint('api', __name__)
+
+# Global dictionary to keep SSE client queues per home_id
+
 
 @api_bp.route('/logs', methods=['GET'])
 def get_logs():
@@ -139,8 +147,10 @@ def save_tasks():
     db.session.commit()
     
     # Sync with Google Calendar if enabled
+    # Sync with Google Calendar if enabled and log result
     if g.user.google_access_token:
-        sync_task_to_gcal(g.user, task)
+        sync_success = sync_task_to_gcal(g.user, task)
+        log_task('gcal_sync', task.to_dict(), {'success': sync_success})
     
     
     # Activity Log

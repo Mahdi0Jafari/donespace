@@ -138,6 +138,23 @@ def register():
             print(f"Error processing avatar: {e}")
             avatar_url = None
             
+    if avatar_url and avatar_url.startswith('http'):
+        try:
+            import requests
+            import time
+            resp = requests.get(avatar_url, timeout=5)
+            if resp.status_code == 200:
+                ext = "webp"
+                filename = f"{username}_{int(time.time())}.{ext}"
+                filepath = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '..', 'database', 'photos', filename)
+                os.makedirs(os.path.dirname(filepath), exist_ok=True)
+                with open(filepath, 'wb') as f:
+                    f.write(resp.content)
+                avatar_url = f"/database/photos/{filename}"
+                print(f"Successfully downloaded Google avatar to {filepath}")
+        except Exception as e:
+            print(f"Error downloading Google avatar: {e}")
+            
     user = User(
         username=username,
         display_name=display_name,
@@ -373,7 +390,7 @@ def google_login():
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
-        redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') else 'https://donespace.ir/api/auth/google/callback'
+        redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') or request.host.startswith('127.0.0.1') else 'https://donespace.ir/api/auth/google/callback'
     )
 
     authorization_url, state = flow.authorization_url(
@@ -396,7 +413,7 @@ def google_callback():
         CLIENT_SECRETS_FILE,
         scopes=SCOPES,
         state=state,
-        redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') else 'https://donespace.ir/api/auth/google/callback'
+        redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') or request.host.startswith('127.0.0.1') else 'https://donespace.ir/api/auth/google/callback'
     )
     
     if 'code_verifier' in session:
@@ -440,7 +457,10 @@ def google_callback():
             'email': email,
             'name': name,
             'avatar': picture,
-            'google_id': google_id
+            'google_id': google_id,
+            'access_token': credentials.token,
+            'refresh_token': credentials.refresh_token if credentials.refresh_token else '',
+            'token_expiry': credentials.expiry.isoformat() if credentials.expiry else ''
         }
         if pending_join:
             params['join'] = pending_join

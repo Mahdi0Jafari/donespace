@@ -47,8 +47,25 @@
     transform: translateY(-2px);
     background: #1f2937;
 }
-.primary-btn:active {
-    transform: translateY(0) scale(0.95);
+.primary-btn.loading {
+    cursor: not-allowed;
+    opacity: 0.7;
+    pointer-events: none;
+    position: relative;
+    color: var(--text-main);
+}
+
+.primary-btn.loading .spinner {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 .icon-btn:active {
     transform: scale(0.95);

@@ -659,6 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 description: descInput.value.trim(),
                 icon: currentTaskIcon,
                 room: roomInput.value,
+                color: document.getElementById('hiddenTaskColor')?.value || '#3b82f6',
                 recurrence: finalRecurrence,
                 interval: finalInterval,
                 customDays: finalCustomDays,
@@ -673,12 +674,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 createdAt: new Date().toISOString()
             };
             
-            if (window.HomeAPI) {
-                await window.HomeAPI.saveTask(newTask);
-            } else {
-                const scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
-                scheduledTasks.push(newTask);
-                localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+            saveBtn.disabled = true;
+            const originalBtnText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<span class="material-symbols-rounded spin">sync</span> Saving...';
+
+            try {
+                if (window.HomeAPI) {
+                    await window.HomeAPI.saveTask(newTask);
+                } else {
+                    const scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+                    scheduledTasks.push(newTask);
+                    localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+                }
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
             }
             
             closeModal();

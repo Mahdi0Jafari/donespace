@@ -13,9 +13,24 @@ SCOPES = [
     'openid'
 ]
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Mapping UI colour hex strings to Google Calendar colour IDs
+UI_COLOR_TO_GCAL = {
+    "purple": "9",
+    "yellow": "10",
+    "orange": "11",
+    "cyan": "7",
+    "green": "5",
+    "blue": "3"
+}
+
 def get_credentials(user):
     """Rebuilds credentials from the user object and refreshes if needed."""
     if not user.google_access_token:
+        logger.warning(f"[GCal] Sync skipped for user {user.email}: No google_access_token found.")
         return None
         
     client_id = os.environ.get('GOOGLE_CLIENT_ID')
@@ -23,6 +38,7 @@ def get_credentials(user):
     
     # Check if we have credentials in env, if not it won't work
     if not client_id or not client_secret:
+        logger.error("[GCal] Sync skipped: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is missing from environment.")
         return None
 
     creds = Credentials(
@@ -43,7 +59,7 @@ def get_credentials(user):
                 user.google_token_expiry = creds.expiry
             db.session.commit()
         except Exception as e:
-            print(f"Failed to refresh Google credentials: {e}")
+            logger.error(f"[GCal] Failed to refresh Google credentials for {user.email}: {e}")
             return None
 
     return creds
@@ -56,11 +72,17 @@ def get_calendar_service(user):
         service = build('calendar', 'v3', credentials=creds)
         return service
     except Exception as e:
-        print(f"Failed to build calendar service: {e}")
+        logger.error(f"[GCal] Failed to build calendar service for {user.email}: {e}")
         return None
 
+SHARED_CALENDAR_ID = None
+
 def ensure_donespace_calendar(service):
-    """Finds or creates a 'DoneSpace' calendar."""
+    """Finds or creates a single shared 'DoneSpace' calendar for the whole app."""
+    global SHARED_CALENDAR_ID
+    if SHARED_CALENDAR_ID:
+        return SHARED_CALENDAR_ID
+    
     try:
         # Check existing calendars
         page_token = None
@@ -68,7 +90,8 @@ def ensure_donespace_calendar(service):
             calendar_list = service.calendarList().list(pageToken=page_token).execute()
             for calendar_list_entry in calendar_list['items']:
                 if calendar_list_entry['summary'] == 'DoneSpace':
-                    return calendar_list_entry['id']
+                    SHARED_CALENDAR_ID = calendar_list_entry['id']
+                    return SHARED_CALENDAR_ID
             page_token = calendar_list.get('nextPageToken')
             if not page_token:
                 break
@@ -76,48 +99,100 @@ def ensure_donespace_calendar(service):
         # Not found, create it
         calendar = {
             'summary': 'DoneSpace',
-            'timeZone': 'UTC',
+            'timeZone': 'Asia/Tehran',
             'description': 'Tasks and Meals from DoneSpace.ir'
         }
         created_calendar = service.calendars().insert(body=calendar).execute()
-        return created_calendar['id']
+        SHARED_CALENDAR_ID = created_calendar['id']
+        return SHARED_CALENDAR_ID
     except Exception as e:
-        print(f"Failed to ensure calendar: {e}")
-        return 'primary' # Fallback to primary
+        logger.error(f"[GCal] Failed to ensure calendar: {e}")
+        return 'primary'  # Fallback to primary
 
-def parse_date_to_iso(date_str, time_str=None, all_day=True):
-    """Converts local date strings to ISO format for Google Calendar."""
-    # This is a simple parser. In production, we'd use robust timezone handling.
-    # date_str is usually "YYYY-MM-DD"
-    # time_str could be "14:30"
+from zoneinfo import ZoneInfo
+
+def parse_date_to_iso(date_str, time_str=None, all_day=True, tz_name='Asia/Tehran'):
+    """Converts a local date (and optional time) to a Google‑Calendar‑compatible dict.
+    Returns either {'date': 'YYYY‑MM‑DD'} for all‑day events or
+    {'dateTime': 'YYYY‑MM‑DDTHH:MM:SS+TZ', 'timeZone': tz_name} for timed events.
+    """
     if not date_str:
         date_str = datetime.datetime.now().strftime('%Y-%m-%d')
-        
     if all_day:
-        # For all-day events, Google just wants "YYYY-MM-DD"
-        return {'date': date_str}
-    
+        # Include explicit timeZone for all‑day events so Google shows correct local date.
+        return {'date': date_str, 'timeZone': tz_name}
     if not time_str:
-        time_str = "09:00" # default
-        
-    dt_str = f"{date_str}T{time_str}:00"
-    # Simple naive datetime string to let Google assume local timezone or UTC
-    return {
-        'dateTime': dt_str,
-        'timeZone': 'UTC'
-    }
+        time_str = "09:00"
+    # Build a timezone‑aware datetime and let isoformat include the offset (e.g. +03:30).
+    tz = ZoneInfo(tz_name)
+    dt = datetime.datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+    dt = dt.replace(tzinfo=tz)
+    iso_str = dt.isoformat()
+    return {'dateTime': iso_str, 'timeZone': tz_name}
+
+
+def _weekday_code(day_index):
+    """Convert Python weekday (0=Monday … 6=Sunday) to iCal two‑letter code.
+    Google Calendar uses SU, MO, TU, WE, TH, FR, SA.
+    """
+    mapping = {0: 'MO', 1: 'TU', 2: 'WE', 3: 'TH', 4: 'FR', 5: 'SA', 6: 'SU'}
+    return mapping.get(day_index % 7, 'MO')
+
+
+def _build_rrule(task):
+    """Create an RRULE string list based on task.recurrence, interval and customDays.
+    Returns a list (or empty) suitable for `event['recurrence']`.
+    """
+    if not task.recurrence or task.recurrence == 'none':
+        return []
+    rrule = []
+    freq = task.recurrence.upper()
+    base = f"RRULE:FREQ={freq};INTERVAL={task.interval or 1}"
+    # Add BYDAY if customDays provided (values 0=Sunday … 6=Saturday)
+    if getattr(task, 'customDays', None):
+        # task.customDays may be a JSON string; parse if needed
+        days = task.customDays
+        if isinstance(days, str):
+            try:
+                import json
+                days = json.loads(days)
+            except Exception:
+                days = []
+        if isinstance(days, list):
+            days_codes = [_weekday_code(d) for d in days]
+            base += f";BYDAY={','.join(days_codes)}"
+        else:
+            # fallback: no BYDAY
+            pass
+    rrule.append(base)
+    # End conditions
+    if task.endType == 'date' and task.endDate:
+        rrule[0] += f";UNTIL={task.endDate.replace('-', '')}T235959Z"
+    elif task.endType == 'occurrences' and task.endOccurrences:
+        rrule[0] += f";COUNT={task.endOccurrences}"
+    return rrule
 
 def sync_task_to_gcal(user, task):
-    """Creates or updates a task as a Google Calendar Event."""
+    """Creates or updates a task as a Google Calendar Event.
+    Returns the created/updated Google event ID (or None on failure).
+    """
     service = get_calendar_service(user)
     if not service:
+        logger.warning(f"[GCal] Aborting sync for task '{task.title}': No calendar service available.")
         return False
         
     calendar_id = ensure_donespace_calendar(service)
     
+    # Clean up icon (don't use Material Icon text like 'local_dining' as emoji)
+    icon_prefix = ""
+    if task.icon:
+        # If it's short (like a real emoji), use it. Otherwise ignore.
+        if len(task.icon) <= 4 and "_" not in task.icon:
+            icon_prefix = f"{task.icon} "
+            
     # Build event payload
     event = {
-        'summary': f"{task.icon or '📝'} {task.title}",
+        'summary': f"{icon_prefix}{task.title}",
         'description': task.description or "DoneSpace Task",
         'extendedProperties': {
             'private': {
@@ -144,34 +219,29 @@ def sync_task_to_gcal(user, task):
         event['start'] = start_date
         event['end'] = end_date
     else:
-        # Specific time
-        start_time = parse_date_to_iso(task.startDate, task.time, all_day=False)
+        start_time = parse_date_to_iso(task.startDate, task.time, all_day=False, tz_name='Asia/Tehran')
         event['start'] = start_time
-        # Default duration 1 hour
-        end_dt = datetime.datetime.strptime(start_time['dateTime'], "%Y-%m-%dT%H:%M:%S") + datetime.timedelta(hours=1)
+        # Parse ISO datetime (which may include timezone offset) and add default duration of 1 hour
+        start_dt = datetime.datetime.fromisoformat(start_time['dateTime'])
+        end_dt = start_dt + datetime.timedelta(hours=1)
         event['end'] = {
-            'dateTime': end_dt.strftime("%Y-%m-%dT%H:%M:%S"),
-            'timeZone': 'UTC'
+            'dateTime': end_dt.isoformat(),
+            'timeZone': start_time['timeZone']
         }
         
-    # Recurrence logic (simple RRule conversion if available)
-    if task.recurrence and task.recurrence != 'none':
-        rrule = []
-        if task.recurrence == 'daily':
-            rrule.append(f"RRULE:FREQ=DAILY;INTERVAL={task.interval or 1}")
-        elif task.recurrence == 'weekly':
-            rrule.append(f"RRULE:FREQ=WEEKLY;INTERVAL={task.interval or 1}")
-        elif task.recurrence == 'monthly':
-            rrule.append(f"RRULE:FREQ=MONTHLY;INTERVAL={task.interval or 1}")
-        # Could add end conditions based on task.endType here
-        if rrule:
-            event['recurrence'] = rrule
+    # Recurrence logic (using customDays, interval, and end conditions)
+    rrule = _build_rrule(task)
+    if rrule:
+        event['recurrence'] = rrule
 
-    # Check for color-coding based on assignees or room
-    if task.assignees_rel:
-        event['colorId'] = "9" # Blueberry blue
+    # Color handling – use task.color if set, otherwise default based on assignees_rel
+    if getattr(task, "color", None):
+        event['colorId'] = UI_COLOR_TO_GCAL.get(task.color, "7")
     else:
-        event['colorId'] = "1" # Lavender
+        # Default to purple if no color set, else fallback to assignees
+        default_color = "purple"
+        event['colorId'] = UI_COLOR_TO_GCAL.get(default_color, "9") if not getattr(task, "assignees_rel", None) else "9"
+    logger.debug(f"[GCal] Event payload for task '{task.title}': {event}")
 
     try:
         if task.google_event_id:
@@ -189,9 +259,10 @@ def sync_task_to_gcal(user, task):
             ).execute()
             task.google_event_id = created_event['id']
             db.session.commit()
+            logger.info(f"[GCal] Successfully created Google Calendar event for task: '{task.title}'")
         return True
     except Exception as e:
-        print(f"Error syncing task to GCal: {e}")
+        logger.error(f"[GCal] Failed to sync task '{task.title}' to GCal: {e}")
         # If event was deleted in GCal, creating it might fail or we might get 404 on update
         if "404" in str(e):
             task.google_event_id = None

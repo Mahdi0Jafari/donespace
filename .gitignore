@@ -29,3 +29,4 @@ Thumbs.db
 docker-compose.override.yml
 credentials.json
 client_secret_*.json
+logs/
