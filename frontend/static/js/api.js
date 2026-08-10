@@ -292,6 +292,17 @@ window.HomeAPI = {
 
 // Global data refresh handler (called by SSE or initial load)
 window.refreshAllData = async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Check if a token was passed in the URL (e.g. from Google OAuth)
+    const urlToken = urlParams.get('token');
+    if (urlToken) {
+        window.HomeAPI.setToken(urlToken);
+        // Remove the token from the URL for security and clean appearance
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+    }
+
     // If not authenticated, redirect to login
     if (!window.HomeAPI.getToken() && !window.location.pathname.includes('/login')) {
         window.location.href = '/login' + window.location.search;
