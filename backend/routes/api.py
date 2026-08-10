@@ -1,6 +1,6 @@
 # pyright: reportCallIssue=false
 from flask import Blueprint, request, jsonify, Response, g
-from queue import Queue
+from queue import Queue, Empty
 from backend.extensions import db, clients, notify_clients
 from backend.models import Task, Meal, Recipe, TaskCompletion, ActivityLog, User, Notification
 from backend.utils.gcal import sync_task_to_gcal, sync_meal_to_gcal, delete_event
@@ -53,7 +53,13 @@ def stream():
         clients[h_id].append(q)
         try:
             while True:
-                yield q.get()
+                try:
+                    # Wait up to 20 seconds for a message
+                    msg = q.get(timeout=20)
+                    yield msg
+                except Empty:
+                    # Send a keep-alive comment to prevent 504 timeouts on reverse proxies like Cloudflare/Nginx
+                    yield ": keepalive\n\n"
         except GeneratorExit:
             if q in clients[h_id]:
                 clients[h_id].remove(q)
