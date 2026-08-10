@@ -357,9 +357,12 @@ def get_invite_preview(code):
         'total_members': total_members
     })
 
+import logging
+logger = logging.getLogger(__name__)
+
 @auth_bp.route('/google/login')
 def google_login():
-    # Preserve join_code across OAuth redirect via server-side session
+    logger.info("[Google OAuth] Starting login flow...")
     join_code = request.args.get('join', '')
     if join_code:
         session['pending_join_code'] = join_code
@@ -403,14 +406,15 @@ def google_callback():
     try:
         flow.fetch_token(authorization_response=authorization_response)
     except Exception as e:
-        print(f"Error fetching token: {e}")
+        logger.error(f"[Google OAuth] Error fetching token: {e}")
         return jsonify({'error': 'Failed to fetch token from Google.'}), 400
         
     credentials = flow.credentials
     
     try:
         user_info = id_token.verify_oauth2_token(credentials.id_token, google_requests.Request(), flow.client_config['client_id'])
-    except ValueError:
+    except ValueError as e:
+        logger.error(f"[Google OAuth] Invalid token value error: {e}")
         return jsonify({'error': 'Invalid token'}), 400
         
     google_id  = user_info['sub']
@@ -418,12 +422,15 @@ def google_callback():
     name       = user_info.get('name', '')
     picture    = user_info.get('picture', '')
     
+    logger.info(f"[Google OAuth] Successfully verified token for email: {email}")
+
     # Retrieve any pending join_code stored before the OAuth redirect
     pending_join = session.pop('pending_join_code', None)
 
     user = User.query.filter_by(email=email).first()
     
     if not user:
+        logger.info(f"[Google OAuth] User not found in DB. Redirecting {email} to registration form.")
         # New user — send to Confirm Details screen
         params = {
             'google_signup': '1',
@@ -435,9 +442,11 @@ def google_callback():
         if pending_join:
             params['join'] = pending_join
         query_string = urllib.parse.urlencode(params)
+        logger.info(f"[Google OAuth] Redirecting to: /login?{query_string}")
         return redirect(f'/login?{query_string}')
         
     # Existing user — update OAuth tokens and log in
+    logger.info(f"[Google OAuth] Existing user {email} logged in. Generating session token.")
     user.google_access_token  = credentials.token
     user.google_refresh_token = credentials.refresh_token if credentials.refresh_token else user.google_refresh_token
     user.google_token_expiry  = credentials.expiry
@@ -448,4 +457,6 @@ def google_callback():
     dest = f'/app?token={user.token}'
     if pending_join:
         dest += f'&join={pending_join}'
+        
+    logger.info(f"[Google OAuth] Redirecting existing user to: {dest}")
     return redirect(dest)

@@ -292,22 +292,31 @@ window.HomeAPI = {
 
 // Global data refresh handler (called by SSE or initial load)
 window.refreshAllData = async function() {
+    console.log("[Auth Debug] refreshAllData started. Current URL:", window.location.href);
     const urlParams = new URLSearchParams(window.location.search);
     
     // Check if a token was passed in the URL (e.g. from Google OAuth)
     const urlToken = urlParams.get('token');
     if (urlToken) {
+        console.log("[Auth Debug] Token found in URL, saving to localStorage...");
         window.HomeAPI.setToken(urlToken);
         // Remove the token from the URL for security and clean appearance
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
+        console.log("[Auth Debug] URL token saved and cleared from address bar.");
     }
 
+    const currentToken = window.HomeAPI.getToken();
+    console.log("[Auth Debug] Current localStorage token:", currentToken ? "Exists (length: " + currentToken.length + ")" : "NULL");
+
     // If not authenticated, redirect to login
-    if (!window.HomeAPI.getToken() && !window.location.pathname.includes('/login')) {
+    if (!currentToken && !window.location.pathname.includes('/login')) {
+        console.warn("[Auth Debug] User is NOT authenticated! Redirecting to login page...");
         window.location.href = '/login' + window.location.search;
         return;
     }
+    
+    console.log("[Auth Debug] User is authenticated, proceeding to load data...");
     
     // Fetch Me to ensure we are logged in and get user data
     
