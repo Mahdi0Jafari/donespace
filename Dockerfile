@@ -13,4 +13,4 @@ COPY . .
 EXPOSE 3004
 
 # Run with Gunicorn instead of Flask development server
-CMD ["gunicorn", "-w", "2", "--timeout", "120", "-b", "0.0.0.0:3004", "app:app"]
+CMD ["gunicorn", "-k", "gevent", "-w", "1", "--worker-connections", "1000", "--timeout", "120", "-b", "0.0.0.0:3004", "app:app"]

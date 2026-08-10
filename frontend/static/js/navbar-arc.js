@@ -48,6 +48,57 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial render
     renderArc(activeIndex);
 
+    // Swipe and Haptic Feedback
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const handleSwipe = () => {
+        const deltaX = touchEndX - touchStartX;
+        if (Math.abs(deltaX) > 40) { // minimum threshold for swipe
+            if (deltaX < 0) {
+                // Swiped left, move to next item
+                activeIndex = (activeIndex + 1) % items.length;
+            } else {
+                // Swiped right, move to prev item
+                activeIndex = (activeIndex - 1 + items.length) % items.length;
+            }
+            renderArc(activeIndex);
+            
+            // Haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(15); // a subtle vibration
+            }
+
+            // Navigate to the newly selected item
+            const item = items[activeIndex];
+            const href = item.getAttribute('href');
+            setTimeout(() => {
+                if (item.hasAttribute('onclick')) {
+                    const onclickStr = item.getAttribute('onclick');
+                    if (onclickStr) {
+                        try {
+                            const func = new Function(onclickStr);
+                            func.call(item);
+                        } catch(e) {}
+                    }
+                } else if (href && href !== '#') {
+                    window.location.href = href;
+                }
+            }, 350);
+        }
+    };
+
+    // Attach touch events to the container or document
+    const navContainer = document.querySelector('.mobile-arc-nav') || document.body;
+    navContainer.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    navContainer.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+
     // Handle Clicks for Animation Hijacking
     items.forEach((item, i) => {
         item.addEventListener('click', (e) => {
