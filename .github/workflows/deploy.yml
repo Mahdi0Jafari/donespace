@@ -34,7 +34,9 @@ jobs:
               echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
               echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
               
-              echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > credentials.json
+              cat << "  EOF_JSON" > credentials.json
+              ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+              EOF_JSON
               
               # 4. Create database folder on host to avoid permission issues when docker mounts it
               mkdir -p database
