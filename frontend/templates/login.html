@@ -248,13 +248,19 @@
             const avatar = (avatarImg.dataset.uploaded === '1') ? avatarImg.src : avatarImg.src || null;
             // Preserve join_code passed in URL for new users coming from invite links
             const joinCode = document.getElementById('pendingJoinCode') ? document.getElementById('pendingJoinCode').value : null;
+            const accessToken = document.getElementById('googleAccessToken') ? document.getElementById('googleAccessToken').value : null;
+            const refreshToken = document.getElementById('googleRefreshToken') ? document.getElementById('googleRefreshToken').value : null;
+            const tokenExpiry = document.getElementById('googleTokenExpiry') ? document.getElementById('googleTokenExpiry').value : null;
 
             const btn = document.getElementById('googleRegisterSubmitBtn');
             btn.textContent = 'Setting up…'; btn.disabled = true;
 
             const res = await window.HomeAPI.register({
                 email, google_id: googleId, username, display_name: displayName,
-                avatar, password: null, join_code: joinCode || null, home_name: null
+                avatar, password: null, join_code: joinCode || null, home_name: null,
+                google_access_token: accessToken,
+                google_refresh_token: refreshToken,
+                google_token_expiry: tokenExpiry
             });
 
             if (res.error) {
@@ -321,16 +327,37 @@
                 const avatar   = params.get('avatar')    || '';
                 const googleId = params.get('google_id') || '';
                 const join     = params.get('join')      || '';
+                const accessToken = params.get('access_token') || '';
+                const refreshToken = params.get('refresh_token') || '';
+                const tokenExpiry = params.get('token_expiry') || '';
 
                 document.getElementById('googleIdInput').value    = googleId;
                 document.getElementById('googleEmailInput').value = email;
 
-                // Store join code in a hidden field so submitGoogleRegistration can read it
+                // Store join code and tokens in hidden fields so submitGoogleRegistration can read them
                 const joinInput = document.createElement('input');
                 joinInput.type = 'hidden';
                 joinInput.id = 'pendingJoinCode';
                 joinInput.value = join;
                 document.getElementById('googleConfirmForm').appendChild(joinInput);
+
+                const accTokenInput = document.createElement('input');
+                accTokenInput.type = 'hidden';
+                accTokenInput.id = 'googleAccessToken';
+                accTokenInput.value = accessToken;
+                document.getElementById('googleConfirmForm').appendChild(accTokenInput);
+
+                const refTokenInput = document.createElement('input');
+                refTokenInput.type = 'hidden';
+                refTokenInput.id = 'googleRefreshToken';
+                refTokenInput.value = refreshToken;
+                document.getElementById('googleConfirmForm').appendChild(refTokenInput);
+                
+                const expTokenInput = document.createElement('input');
+                expTokenInput.type = 'hidden';
+                expTokenInput.id = 'googleTokenExpiry';
+                expTokenInput.value = tokenExpiry;
+                document.getElementById('googleConfirmForm').appendChild(expTokenInput);
 
                 if (name) {
                     document.getElementById('googleDisplayName').value = name;

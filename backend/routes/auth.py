@@ -146,7 +146,10 @@ def register():
         password_hash=generate_password_hash(password) if password else generate_password_hash(secrets.token_urlsafe(16)),
         home_id=home.id if home else None, # their current active home
         token=secrets.token_hex(32),
-        google_id=google_id
+        google_id=google_id,
+        google_access_token=data.get('google_access_token'),
+        google_refresh_token=data.get('google_refresh_token'),
+        google_token_expiry=datetime.fromisoformat(data.get('google_token_expiry')) if data.get('google_token_expiry') else None
     )
     db.session.add(user)
     db.session.flush()
