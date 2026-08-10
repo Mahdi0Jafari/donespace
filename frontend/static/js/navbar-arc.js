@@ -50,11 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Swipe and Haptic Feedback
     let touchStartX = 0;
+    let touchStartY = 0;
     let touchEndX = 0;
+    let touchEndY = 0;
 
     const handleSwipe = () => {
         const deltaX = touchEndX - touchStartX;
-        if (Math.abs(deltaX) > 40) { // minimum threshold for swipe
+        const deltaY = touchEndY - touchStartY;
+        
+        // Only trigger swipe if horizontal movement is significant AND 
+        // horizontal movement is greater than vertical movement (to ignore vertical scrolling)
+        if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
             if (deltaX < 0) {
                 // Swiped left, move to next item
                 activeIndex = (activeIndex + 1) % items.length;
@@ -92,10 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const navContainer = document.querySelector('.mobile-arc-nav') || document.body;
     navContainer.addEventListener('touchstart', e => {
         touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
     }, { passive: true });
 
     navContainer.addEventListener('touchend', e => {
         touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
     }, { passive: true });
 
