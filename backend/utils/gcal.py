@@ -15,7 +15,7 @@ SCOPES = [
 
 def get_credentials(user):
     """Rebuilds credentials from the user object and refreshes if needed."""
-    if not user.google_access_token or not user.google_refresh_token:
+    if not user.google_access_token:
         return None
         
     client_id = os.environ.get('GOOGLE_CLIENT_ID')
