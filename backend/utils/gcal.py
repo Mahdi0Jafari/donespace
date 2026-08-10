@@ -127,7 +127,9 @@ def parse_date_to_iso(date_str, time_str=None, all_day=True, tz_name='Asia/Tehra
     tz = ZoneInfo(tz_name)
     dt = datetime.datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
     dt = dt.replace(tzinfo=tz)
-    iso_str = dt.isoformat()
+    # Remove timezone info for Google (we provide timeZone separately) to avoid double offset.
+    dt_naive = dt.replace(tzinfo=None)
+    iso_str = dt_naive.isoformat()
     return {'dateTime': iso_str, 'timeZone': tz_name}
 
 
