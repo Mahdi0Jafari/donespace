@@ -43,7 +43,8 @@ jobs:
               
               COMMIT_MSG="${{ github.event.head_commit.message }}"
               if [ -f "CLEAR_DB_FLAG" ] || [[ "$COMMIT_MSG" == *"[clear-db]"* ]]; then
-                echo "Clear DB signal received! Wiping database folder..."
+                echo "Clear DB signal received! Stopping containers and wiping database folder..."
+                docker compose down || docker stop donespace_web || true
                 rm -rf database/*
               fi
               
