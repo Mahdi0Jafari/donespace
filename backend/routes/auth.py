@@ -12,6 +12,22 @@ import re
 from io import BytesIO
 from PIL import Image
 
+import os
+from google_auth_oauthlib.flow import Flow
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from datetime import datetime
+
+# Path to the JSON secret provided by user
+CLIENT_SECRETS_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "credentials.json")
+# Scopes for Google OAuth
+SCOPES = [
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'openid'
+]
+
 auth_bp = Blueprint('auth', __name__)
 
 def generate_join_code():
@@ -288,3 +304,96 @@ def get_invite_preview(code):
         'members': members,
         'total_members': total_members
     })
+
+@auth_bp.route('/google/login')
+def google_login():
+    # Build OAuth Flow
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') else 'https://donespace.ir/api/auth/google/callback'
+    )
+    
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent'
+    )
+    
+    return jsonify({'url': authorization_url})
+
+@auth_bp.route('/google/callback')
+def google_callback():
+    state = request.args.get('state')
+    
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        state=state,
+        redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') else 'https://donespace.ir/api/auth/google/callback'
+    )
+    
+    # Use the authorization server response to fetch the OAuth 2.0 tokens.
+    authorization_response = request.url
+    # For local dev without HTTPS
+    if "http://" in authorization_response:
+        os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+        
+    flow.fetch_token(authorization_response=authorization_response)
+    credentials = flow.credentials
+    
+    # Get user info from id_token
+    try:
+        user_info = id_token.verify_oauth2_token(credentials.id_token, google_requests.Request(), flow.client_config['client_id'])
+    except ValueError:
+        return jsonify({'error': 'Invalid token'}), 400
+        
+    google_id = user_info['sub']
+    email = user_info['email']
+    name = user_info.get('name', '')
+    picture = user_info.get('picture', '')
+    
+    # Find existing user or create new
+    user = User.query.filter_by(email=email).first()
+    
+    if not user:
+        # Generate a unique username
+        base_username = email.split('@')[0]
+        username = base_username
+        counter = 1
+        while User.query.filter_by(username=username).first():
+            username = f"{base_username}{counter}"
+            counter += 1
+            
+        user = User(
+            username=username,
+            display_name=name,
+            email=email,
+            avatar=picture,
+            password_hash=generate_password_hash(secrets.token_urlsafe(16)), # Dummy password
+            token=secrets.token_hex(32),
+            google_id=google_id
+        )
+        db.session.add(user)
+        db.session.flush()
+    else:
+        # Update google_id if not present
+        if not user.google_id:
+            user.google_id = google_id
+        # Update avatar if they didn't have one
+        if not user.avatar and picture:
+            user.avatar = picture
+            
+        user.token = secrets.token_hex(32)
+        
+    # Store credentials for Calendar API
+    user.google_access_token = credentials.token
+    user.google_refresh_token = credentials.refresh_token if credentials.refresh_token else user.google_refresh_token
+    user.google_token_expiry = credentials.expiry
+    
+    db.session.commit()
+    
+    # Redirect back to frontend
+    from flask import redirect
+    frontend_url = "http://localhost:3004/app" if request.host.startswith('localhost') else "https://donespace.ir/app"
+    return redirect(f"{frontend_url}?token={user.token}")

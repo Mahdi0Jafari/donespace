@@ -37,6 +37,12 @@ class User(db.Model):
     token = db.Column(db.String(100), unique=True)
     points = db.Column(db.Integer, default=0)
     
+    # Google OAuth & Calendar Integration
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
+    google_access_token = db.Column(db.Text, nullable=True)
+    google_refresh_token = db.Column(db.Text, nullable=True)
+    google_token_expiry = db.Column(db.DateTime, nullable=True)
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     
@@ -71,6 +77,7 @@ class Task(db.Model):
     createdAt = db.Column(db.String(50))
     isMeal = db.Column(db.Boolean, default=False)
     recipeId = db.Column(db.Integer, nullable=True)
+    google_event_id = db.Column(db.String(255), nullable=True)
     
     assignees_rel = db.relationship('User', secondary=task_assignee, lazy='subquery', backref=db.backref('tasks', lazy=True))
 
@@ -184,6 +191,7 @@ class Meal(db.Model):
     completed = db.Column(db.Boolean, default=False)
     type = db.Column(db.String(50))
     emoji = db.Column(db.String(10))
+    google_event_id = db.Column(db.String(255), nullable=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

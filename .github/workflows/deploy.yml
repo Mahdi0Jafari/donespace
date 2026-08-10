@@ -29,7 +29,13 @@ jobs:
                 git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
               fi
               
-              # 3. Create database folder on host to avoid permission issues when docker mounts it
+              # 3. Inject Secrets into .env and credentials.json
+              echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" > .env
+              echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+              
+              echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > credentials.json
+              
+              # 4. Create database folder on host to avoid permission issues when docker mounts it
               mkdir -p database
               
               COMMIT_MSG="${{ github.event.head_commit.message }}"

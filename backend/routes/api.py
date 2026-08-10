@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, Response, g
 from queue import Queue
 from backend.extensions import db, clients, notify_clients
 from backend.models import Task, Meal, Recipe, TaskCompletion, ActivityLog, User, Notification
+from backend.utils.gcal import sync_task_to_gcal, sync_meal_to_gcal, delete_event
 import json
 import time
 from datetime import datetime
@@ -130,6 +131,11 @@ def save_tasks():
         diff['title'] = {'old': None, 'new': new_data.get('title')}
         
     db.session.commit()
+    
+    # Sync with Google Calendar if enabled
+    if g.user.google_access_token:
+        sync_task_to_gcal(g.user, task)
+    
     
     # Activity Log
     if action_type == 'added_task' or diff: # Only log edits if there is a real diff
@@ -347,6 +353,10 @@ def save_meals():
                 cook_name = md.get('cook')
                 if cook_name and cook_name not in ('Anyone', 'anyone', ''):
                     pending_cook_notifs.append((cook_name, title, date))
+                    
+                if g.user.google_access_token:
+                    recipe = db.session.get(Recipe, meal.recipeId) if meal.recipeId else None
+                    sync_meal_to_gcal(g.user, meal, recipe)
             else:
                 # Update existing
                 em = existing_meals[m_id]
@@ -382,6 +392,10 @@ def save_meals():
                 new_cook = md.get('cook')
                 if new_cook and new_cook != old_cook and new_cook not in ('Anyone', 'anyone', ''):
                     pending_cook_notifs.append((new_cook, title, date))
+                    
+            if g.user.google_access_token:
+                recipe = db.session.get(Recipe, meal.recipeId) if meal.recipeId else None
+                sync_meal_to_gcal(g.user, meal, recipe)
 
     # 3. Handle deleted meals
     for em_id, em in existing_meals.items():
@@ -396,6 +410,8 @@ def save_meals():
                 timestamp=datetime.utcnow()
             )
             db.session.add(log)
+            if g.user.google_access_token and em.google_event_id:
+                delete_event(g.user, em.google_event_id)
             
     db.session.commit()
     

@@ -27,3 +27,5 @@ Thumbs.db
 
 # Docker (Local overrides)
 docker-compose.override.yml
+credentials.json
+client_secret_*.json
