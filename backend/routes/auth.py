@@ -375,13 +375,16 @@ def google_login():
         include_granted_scopes='true',
         prompt='consent'
     )
+    
+    session['oauth_state'] = state
+    session['code_verifier'] = flow.code_verifier
 
     # Redirect the browser directly to Google
     return redirect(authorization_url)
 
 @auth_bp.route('/google/callback')
 def google_callback():
-    state = request.args.get('state')
+    state = session.get('oauth_state')
     
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
@@ -390,11 +393,19 @@ def google_callback():
         redirect_uri='http://localhost:3004/api/auth/google/callback' if request.host.startswith('localhost') else 'https://donespace.ir/api/auth/google/callback'
     )
     
+    if 'code_verifier' in session:
+        flow.code_verifier = session['code_verifier']
+    
     authorization_response = request.url
     if "http://" in authorization_response:
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
         
-    flow.fetch_token(authorization_response=authorization_response)
+    try:
+        flow.fetch_token(authorization_response=authorization_response)
+    except Exception as e:
+        print(f"Error fetching token: {e}")
+        return jsonify({'error': 'Failed to fetch token from Google.'}), 400
+        
     credentials = flow.credentials
     
     try:
