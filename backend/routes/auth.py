@@ -11,7 +11,7 @@ import os
 import base64
 import re
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageOps
 
 import os
 from google_auth_oauthlib.flow import Flow
@@ -121,7 +121,13 @@ def register():
                 image_bytes = base64.b64decode(encoded)
                 img = Image.open(BytesIO(image_bytes))
                 
-                if img.mode in ("RGBA", "P"):
+                # Apply EXIF rotation if present (fixes sideways mobile photos)
+                img = ImageOps.exif_transpose(img)
+                
+                # Convert to RGBA for WEBP if it has transparency, otherwise RGB
+                if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                    img = img.convert("RGBA")
+                else:
                     img = img.convert("RGB")
                     
                 img.thumbnail((256, 256))
@@ -141,7 +147,6 @@ def register():
     if avatar_url and avatar_url.startswith('http'):
         try:
             import requests
-            import time
             resp = requests.get(avatar_url, timeout=5)
             if resp.status_code == 200:
                 ext = "webp"
