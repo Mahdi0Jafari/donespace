@@ -200,9 +200,9 @@
                                 <input type="text" id="googleUsername"
                                     placeholder="username"
                                     dir="ltr" maxlength="20"
-                                    pattern="[a-zA-Z0-9_]+"
-                                    title="Only letters, numbers, and underscores"
-                                    oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'')"
+                                    pattern="[a-z0-9_]+"
+                                    title="Only lowercase letters, numbers, and underscores"
+                                    oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_]/g,'')"
                                     required>
                             </div>
 
@@ -368,7 +368,7 @@
                 }
 
                 if (email) {
-                    const suggested = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').substring(0, 20);
+                    const suggested = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '').substring(0, 20);
                     document.getElementById('googleUsername').value = suggested;
                 }
 

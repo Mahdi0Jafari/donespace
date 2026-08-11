@@ -41,6 +41,8 @@ def generate_join_code():
 def register():
     data = request.json
     username = data.get('username')
+    if username:
+        username = username.lower()
     email = data.get('email')
     password = data.get('password')
     join_code = data.get('join_code')
@@ -57,7 +59,7 @@ def register():
         
     if not username:
         # Generate username from email
-        base_username = email.split('@')[0]
+        base_username = email.split('@')[0].lower()
         username = base_username
         counter = 1
         while User.query.filter_by(username=username).first():
@@ -76,8 +78,8 @@ def register():
     if len(email) > 100:
         return jsonify({'error': 'Email is too long'}), 400
         
-    if not re.match(r'^[a-zA-Z0-9_]+$', username):
-        return jsonify({'error': 'Username must contain only English letters, numbers, and underscores'}), 400
+    if not re.match(r'^[a-z0-9_]+$', username):
+        return jsonify({'error': 'Username must contain only lowercase English letters, numbers, and underscores'}), 400
         
     if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
         return jsonify({'error': 'Invalid email format'}), 400
