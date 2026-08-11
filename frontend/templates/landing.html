@@ -204,18 +204,35 @@
         
         .hero-left { max-width: 600px; }
         .hero-badge {
-            background: rgba(140, 82, 255, 0.08); border: 1px solid rgba(140, 82, 255, 0.2);
-            padding: 8px 16px; border-radius: 100px; font-size: 0.75rem; font-weight: 700;
-            letter-spacing: 1px; color: var(--brand-purple); margin-bottom: 32px; display: inline-flex; align-items: center; gap: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(140, 82, 255, 0.08);
+            border: 1px solid rgba(140, 82, 255, 0.2);
+            border-radius: 100px;
+            color: var(--brand-purple);
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 24px;
         }
         .hero-title {
-            font-family: var(--font-heading); font-size: clamp(3.5rem, 6vw, 5.5rem);
-            font-weight: 600; line-height: 1.05; margin-bottom: 32px; color: var(--text-main);
+            font-size: 3.5rem;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            letter-spacing: -1px;
         }
-        .hero-title span.italic { font-style: italic; color: var(--brand-purple); }
+        .hero-title i {
+            font-family: var(--font-heading);
+            color: var(--brand-purple);
+            font-style: italic;
+        }
         
         .hero-subtitle {
-            font-size: 1.15rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 48px; font-weight: 400; max-width: 500px;
+            font-size: 1.15rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; font-weight: 400; max-width: 500px;
         }
 
         .hero-actions { display: flex; gap: 20px; align-items: center; }
