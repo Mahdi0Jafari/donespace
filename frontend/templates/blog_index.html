@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoneSpace Blog | Household Management Tips</title>
+    <meta name="description" content="New product features, the latest in technology, solutions, and updates from DoneSpace.">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --brand-purple: #8c52ff;
+            --brand-yellow: #fde047;
+            --bg-base: #fdfcff;
+            --text-main: #1e1b4b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --font-main: 'Outfit', sans-serif;
+            --font-heading: 'Playfair Display', serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font-main); background: var(--bg-base); color: var(--text-main);
+            line-height: 1.6; padding-top: 100px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header */
+        header { position: fixed; top: 0; left: 0; width: 100%; height: 80px; display: flex; align-items: center; padding: 0 40px; background: rgba(253, 252, 255, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100; justify-content: space-between; }
+        .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 12px; color: var(--text-main); text-decoration: none; }
+        .logo svg { color: var(--brand-purple); }
+        .header-links { display: flex; gap: 32px; font-weight: 500; font-size: 0.95rem; }
+        .header-links a { text-decoration: none; color: var(--text-main); transition: color 0.2s; }
+        .header-links a:hover { color: var(--brand-purple); }
+        .header-right { display: flex; gap: 16px; align-items: center; }
+        .btn-outline { padding: 10px 24px; border-radius: 100px; font-weight: 600; text-decoration: none; color: var(--text-main); }
+        .btn-solid { padding: 10px 24px; border-radius: 100px; font-weight: 600; text-decoration: none; background: var(--text-main); color: #fff; }
+
+        /* Blog Hero */
+        .blog-hero { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 48px; flex-wrap: wrap; gap: 24px; }
+        .blog-title h1 { font-size: 3.5rem; font-family: var(--font-heading); margin-bottom: 24px; letter-spacing: -1px; }
+        .subscribe-form { display: flex; gap: 12px; }
+        .subscribe-form input { padding: 12px 16px; border-radius: 100px; border: 1px solid var(--border-color); width: 280px; font-family: var(--font-main); outline: none; }
+        .subscribe-form input:focus { border-color: var(--brand-purple); }
+        .subscribe-form button { padding: 12px 24px; border-radius: 100px; background: var(--text-main); color: #fff; border: none; font-weight: 600; cursor: pointer; }
+        .blog-subtitle { max-width: 320px; font-size: 1.1rem; color: var(--text-muted); text-align: right; }
+
+        /* Categories */
+        .categories { display: flex; gap: 24px; overflow-x: auto; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 48px; }
+        .categories a { text-decoration: none; color: var(--text-muted); font-weight: 500; white-space: nowrap; font-size: 0.95rem; transition: color 0.2s; }
+        .categories a.active { color: var(--text-main); font-weight: 600; position: relative; }
+        .categories a.active::after { content: ''; position: absolute; bottom: -17px; left: 0; width: 100%; height: 2px; background: var(--text-main); }
+        .categories a:hover { color: var(--text-main); }
+
+        /* Blog Grid */
+        .blog-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 48px; margin-bottom: 80px; }
+        .post-card { display: flex; flex-direction: column; text-decoration: none; color: inherit; transition: transform 0.2s; }
+        .post-card:hover { transform: translateY(-4px); }
+        .post-img-wrapper { position: relative; width: 100%; height: 320px; border-radius: 16px; overflow: hidden; margin-bottom: 24px; background: #f8fafc; }
+        .post-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .post-card:hover .post-img-wrapper img { transform: scale(1.03); }
+        .post-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 24px; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); display: flex; justify-content: space-between; align-items: flex-end; color: #fff; }
+        .post-author { font-size: 0.85rem; font-weight: 600; }
+        .post-date { font-size: 0.75rem; opacity: 0.8; }
+        .post-badge { padding: 4px 12px; background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); border-radius: 100px; font-size: 0.75rem; font-weight: 600; }
+        
+        .post-card h3 { font-size: 1.5rem; margin-bottom: 12px; font-weight: 700; }
+        .post-card p { color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; font-size: 1rem; }
+        .read-more { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 4px; }
+
+        @media (max-width: 768px) {
+            .blog-hero { flex-direction: column; align-items: stretch; }
+            .blog-subtitle { text-align: left; }
+            .subscribe-form { width: 100%; }
+            .subscribe-form input { flex: 1; }
+            .blog-grid { grid-template-columns: 1fr; gap: 40px; }
+            .header-links, .header-right .btn-outline { display: none; }
+            header { padding: 0 20px; }
+            .post-img-wrapper { height: 240px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/" class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="fill: var(--brand-purple);">
+                <path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 2.83l7 6V20H5v-8.17l7-6z"/>
+            </svg>
+            DoneSpace
+        </a>
+        <div class="header-links">
+            <a href="/">Home</a>
+            <a href="/#features">Features</a>
+            <a href="/blog">Blog</a>
+        </div>
+        <div class="header-right">
+            <a href="/login" class="btn-outline">Log in</a>
+            <a href="/login?tab=signup" class="btn-solid">Sign up</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="blog-hero">
+            <div class="blog-title">
+                <h1>DoneSpace Blog</h1>
+                <form class="subscribe-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit">Subscribe</button>
+                </form>
+            </div>
+            <div class="blog-subtitle">
+                The ultimate playbook for household management, shared meals, and living without the drama.
+            </div>
+        </div>
+
+        <div class="categories">
+            <a href="#" class="active">View all</a>
+            <a href="#">Household Management</a>
+            <a href="#">Meal Planning</a>
+            <a href="#">Gamification</a>
+            <a href="#">Roommate Guides</a>
+        </div>
+
+        <div class="blog-grid">
+            {% for post in posts %}
+            <a href="/blog/{{ post.slug }}" class="post-card">
+                <div class="post-img-wrapper">
+                    <img src="{{ post.image | default('/static/landing_hero.png') }}" alt="{{ post.title }}">
+                    <div class="post-overlay">
+                        <div>
+                            <div class="post-author">{{ post.author | default('DoneSpace Team') }}</div>
+                            <div class="post-date">{{ post.date }}</div>
+                        </div>
+                        <div class="post-badge">{{ post.category | default('Article') }}</div>
+                    </div>
+                </div>
+                <h3>{{ post.title }}</h3>
+                <p>{{ post.description }}</p>
+                <div class="read-more">Read post &nearr;</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>

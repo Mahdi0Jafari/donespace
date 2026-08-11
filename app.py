@@ -1,4 +1,6 @@
 import os
+import markdown
+import yaml
 import secrets
 from flask import Flask, request, jsonify, g, render_template, send_from_directory, redirect
 from flask_cors import CORS
@@ -43,8 +45,8 @@ def require_auth():
     if request.method == 'OPTIONS':
         return
     # Exempt auth routes, static files, and public pages
-    exempt_routes = ['/api/auth/login', '/api/auth/register', '/api/auth/check-email', '/login', '/']
-    if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/api/auth/google/') or request.path.startswith('/static/'):
+    exempt_routes = ['/api/auth/login', '/api/auth/register', '/api/auth/check-email', '/login', '/', '/robots.txt', '/sitemap.xml', '/llms.txt']
+    if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/api/auth/google/') or request.path.startswith('/static/') or request.path.startswith('/blog'):
         return
         
     # Check for SSE stream auth or URL token auth (e.g. from OAuth redirect)
@@ -82,6 +84,53 @@ def index():
 @app.route('/app')
 def app_page():
     return render_template('index.html')
+
+# --- Blog Routes ---
+def get_all_posts():
+    posts = []
+    blog_dir = os.path.join(app.root_path, 'content', 'blog')
+    if not os.path.exists(blog_dir):
+        return posts
+        
+    for filename in os.listdir(blog_dir):
+        if filename.endswith('.md'):
+            filepath = os.path.join(blog_dir, filename)
+            with open(filepath, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            if content.startswith('---'):
+                parts = content.split('---', 2)
+                if len(parts) >= 3:
+                    frontmatter = yaml.safe_load(parts[1])
+                    body = parts[2]
+                else:
+                    frontmatter = {}
+                    body = content
+            else:
+                frontmatter = {}
+                body = content
+                
+            post_data = frontmatter if frontmatter else {}
+            post_data['slug'] = filename[:-3]
+            post_data['body'] = markdown.markdown(body, extensions=['extra', 'toc'])
+            posts.append(post_data)
+            
+    posts.sort(key=lambda x: x.get('date', ''), reverse=True)
+    return posts
+
+@app.route('/blog')
+def blog_index():
+    posts = get_all_posts()
+    return render_template('blog_index.html', posts=posts)
+
+@app.route('/blog/<slug>')
+def blog_post(slug):
+    posts = get_all_posts()
+    post = next((p for p in posts if p['slug'] == slug), None)
+    if not post:
+        from flask import abort
+        abort(404)
+    return render_template('blog_post.html', post=post)
 
 # --- SEO Routes ---
 from flask import send_from_directory
