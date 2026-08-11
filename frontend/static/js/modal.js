@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.editingTaskId = taskObj ? taskObj.id : null;
         
         currentTaskIcon = icon;
-        isFixedTask = !!name; // If a name is passed, it's a pre-defined task
+        isFixedTask = !!name && !taskObj; // If a name is passed and no taskObj, it's a pre-defined template task
 
         // Dynamically populate room options
         if (roomInput) {
@@ -187,21 +187,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 secondaryBtn.style.color = '';
             }
             
-            nameInput.value = '';
-            roomInput.value = (roomId && roomId !== 'null') ? roomId : 'general';
+            nameInput.value = taskObj ? (taskObj.title || taskObj.name || '') : '';
+            roomInput.value = taskObj ? (taskObj.roomId || taskObj.room || 'general') : ((roomId && roomId !== 'null') ? roomId : 'general');
         }
 
         // Reset fields or prepopulate from taskObj
         descInput.value = taskObj && taskObj.description ? taskObj.description : '';
-        recurrenceInput.value = taskObj && taskObj.recurrence ? (['none', 'daily', 'weekly', 'monthly', 'yearly', 'custom'].includes(taskObj.recurrence) ? taskObj.recurrence : 'custom') : 'none';
+        let recVal = 'none';
+        if (taskObj && taskObj.recurrence) {
+            recVal = taskObj.recurrence;
+            if (taskObj.interval && taskObj.interval > 1) {
+                customFrequency.value = recVal;
+                recVal = 'custom';
+            } else {
+                customFrequency.value = 'daily';
+            }
+            customInterval.value = taskObj.interval || 1;
+        } else {
+            customFrequency.value = 'daily';
+            customInterval.value = '1';
+        }
+        recurrenceInput.value = ['none', 'daily', 'weekly', 'monthly', 'yearly', 'custom'].includes(recVal) ? recVal : 'none';
+        
         weekdayPickerGroup.style.display = 'none';
         customRecurrenceGroup.style.display = 'none';
-        customFrequency.value = 'daily';
-        customInterval.value = '1';
         customWeekdayPickerGroup.style.display = 'none';
-        document.querySelector('input[name="recurrenceEnds"][value="never"]').checked = true;
-        customEndDate.disabled = true;
-        customEndOccurrences.disabled = true;
+        
+        if (taskObj && taskObj.endType) {
+            const endRadio = document.querySelector(`input[name="recurrenceEnds"][value="${taskObj.endType}"]`);
+            if (endRadio) endRadio.checked = true;
+            if (taskObj.endType === 'date') {
+                customEndDate.value = taskObj.endDate || '';
+                customEndDate.disabled = false;
+                customEndOccurrences.disabled = true;
+            } else if (taskObj.endType === 'occurrences') {
+                customEndOccurrences.value = taskObj.endOccurrences || '13';
+                customEndOccurrences.disabled = false;
+                customEndDate.disabled = true;
+            } else {
+                customEndDate.disabled = true;
+                customEndOccurrences.disabled = true;
+            }
+        } else {
+            const neverRadio = document.querySelector('input[name="recurrenceEnds"][value="never"]');
+            if (neverRadio) neverRadio.checked = true;
+            customEndDate.disabled = true;
+            customEndOccurrences.disabled = true;
+            customEndDate.value = '';
+            customEndOccurrences.value = '13';
+        }
         
         document.querySelectorAll('.weekday-circle').forEach(c => c.classList.remove('selected'));
         if (taskObj && taskObj.recurrence === 'weekly' && taskObj.customDays) {
@@ -653,13 +687,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (finalEndType === 'occurrences') finalEndOccurrences = parseInt(customEndOccurrences.value);
             }
 
+            const room_id = roomInput.value;
+            const facilities = JSON.parse(localStorage.getItem('homeFacilities') || '[]');
+            const defaultFacilities = {
+                'default-living': { color: 'purple' },
+                'default-kitchen': { color: 'yellow' },
+                'default-bedroom': { color: 'green' },
+                'default-bath': { color: 'cyan' },
+                'default-toilet': { color: 'orange' }
+            };
+            let facilityColor = 'blue';
+            const foundFac = facilities.find(f => f.id === room_id);
+            if (foundFac && foundFac.color) {
+                facilityColor = foundFac.color;
+            } else if (defaultFacilities[room_id] && defaultFacilities[room_id].color) {
+                facilityColor = defaultFacilities[room_id].color;
+            }
+
             const newTask = {
                 id: window.editingTaskId ? window.editingTaskId : 'temp-task-' + Date.now(),
                 title: nameInput.value.trim(),
                 description: descInput.value.trim(),
                 icon: currentTaskIcon,
-                room: roomInput.value,
-                color: document.getElementById('hiddenTaskColor')?.value || '#3b82f6',
+                room: room_id,
+                color: facilityColor,
                 recurrence: finalRecurrence,
                 interval: finalInterval,
                 customDays: finalCustomDays,

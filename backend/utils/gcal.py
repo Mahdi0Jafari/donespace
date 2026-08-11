@@ -19,12 +19,15 @@ logger = logging.getLogger(__name__)
 
 # Mapping UI colour hex strings to Google Calendar colour IDs
 UI_COLOR_TO_GCAL = {
-    "purple": "9",
-    "yellow": "10",
-    "orange": "11",
-    "cyan": "7",
-    "green": "5",
-    "blue": "3"
+    "purple": "3",   # Grape
+    "pink": "4",     # Flamingo
+    "yellow": "5",   # Banana
+    "orange": "6",   # Tangerine
+    "cyan": "7",     # Peacock
+    "grey": "8",     # Graphite
+    "blue": "9",     # Blueberry
+    "green": "10",   # Basil
+    "red": "11"      # Tomato
 }
 
 def get_credentials(user):
@@ -75,14 +78,10 @@ def get_calendar_service(user):
         logger.error(f"[GCal] Failed to build calendar service for {user.email}: {e}")
         return None
 
-SHARED_CALENDAR_ID = None
-
 def ensure_donespace_calendar(service):
-    """Finds or creates a single shared 'DoneSpace' calendar for the whole app."""
-    global SHARED_CALENDAR_ID
-    if SHARED_CALENDAR_ID:
-        return SHARED_CALENDAR_ID
-    
+    """Finds or creates a single shared 'DoneSpace' calendar for the whole app.
+    Returns a tuple: (calendar_id, time_zone)
+    """
     try:
         # Check existing calendars
         page_token = None
@@ -90,28 +89,29 @@ def ensure_donespace_calendar(service):
             calendar_list = service.calendarList().list(pageToken=page_token).execute()
             for calendar_list_entry in calendar_list['items']:
                 if calendar_list_entry['summary'] == 'DoneSpace':
-                    SHARED_CALENDAR_ID = calendar_list_entry['id']
-                    return SHARED_CALENDAR_ID
+                    return calendar_list_entry['id'], calendar_list_entry.get('timeZone', 'UTC')
             page_token = calendar_list.get('nextPageToken')
             if not page_token:
                 break
         
-        # Not found, create it
+        # Not found, create it using primary calendar's timezone
+        primary = service.calendars().get(calendarId='primary').execute()
+        tz = primary.get('timeZone', 'UTC')
+        
         calendar = {
             'summary': 'DoneSpace',
-            'timeZone': 'Asia/Tehran',
+            'timeZone': tz,
             'description': 'Tasks and Meals from DoneSpace.ir'
         }
         created_calendar = service.calendars().insert(body=calendar).execute()
-        SHARED_CALENDAR_ID = created_calendar['id']
-        return SHARED_CALENDAR_ID
+        return created_calendar['id'], tz
     except Exception as e:
         logger.error(f"[GCal] Failed to ensure calendar: {e}")
-        return 'primary'  # Fallback to primary
+        return 'primary', 'UTC'  # Fallback to primary
 
 from zoneinfo import ZoneInfo
 
-def parse_date_to_iso(date_str, time_str=None, all_day=True, tz_name='Asia/Tehran'):
+def parse_date_to_iso(date_str, time_str=None, all_day=True, tz_name='UTC'):
     """Converts a local date (and optional time) to a Google‑Calendar‑compatible dict.
     Returns either {'date': 'YYYY‑MM‑DD'} for all‑day events or
     {'dateTime': 'YYYY‑MM‑DDTHH:MM:SS+TZ', 'timeZone': tz_name} for timed events.
@@ -119,17 +119,19 @@ def parse_date_to_iso(date_str, time_str=None, all_day=True, tz_name='Asia/Tehra
     if not date_str:
         date_str = datetime.datetime.now().strftime('%Y-%m-%d')
     if all_day:
-        # Include explicit timeZone for all‑day events so Google shows correct local date.
-        return {'date': date_str, 'timeZone': tz_name}
+        return {'date': date_str}
+    
     if not time_str:
         time_str = "09:00"
-    # Build a timezone‑aware datetime and let isoformat include the offset (e.g. +03:30).
-    tz = ZoneInfo(tz_name)
-    dt = datetime.datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
-    dt = dt.replace(tzinfo=tz)
-    # Remove timezone info for Google (we provide timeZone separately) to avoid double offset.
-    dt_naive = dt.replace(tzinfo=None)
-    iso_str = dt_naive.isoformat()
+        
+    try:
+        tz = ZoneInfo(tz_name)
+        dt = datetime.datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+        dt = dt.replace(tzinfo=tz)
+        iso_str = dt.isoformat()
+    except Exception:
+        iso_str = f"{date_str}T{time_str}:00"
+        
     return {'dateTime': iso_str, 'timeZone': tz_name}
 
 
@@ -160,7 +162,7 @@ def _build_rrule(task):
                 days = json.loads(days)
             except Exception:
                 days = []
-        if isinstance(days, list):
+        if isinstance(days, list) and len(days) > 0:
             days_codes = [_weekday_code(d) for d in days]
             base += f";BYDAY={','.join(days_codes)}"
         else:
@@ -183,7 +185,7 @@ def sync_task_to_gcal(user, task):
         logger.warning(f"[GCal] Aborting sync for task '{task.title}': No calendar service available.")
         return False
         
-    calendar_id = ensure_donespace_calendar(service)
+    calendar_id, tz_name = ensure_donespace_calendar(service)
     
     # Clean up icon (don't use Material Icon text like 'local_dining' as emoji)
     icon_prefix = ""
@@ -214,22 +216,25 @@ def sync_task_to_gcal(user, task):
     # Time/Date logic
     if task.allDay:
         # All day event needs start date and end date (end date is exclusive in GCal)
-        start_date = parse_date_to_iso(task.startDate or datetime.datetime.now().strftime('%Y-%m-%d'), all_day=True)
+        start_date = parse_date_to_iso(task.startDate or datetime.datetime.now().strftime('%Y-%m-%d'), all_day=True, tz_name=tz_name)
         # Add 1 day for end date
         end_dt = datetime.datetime.strptime(start_date['date'], "%Y-%m-%d") + datetime.timedelta(days=1)
         end_date = {'date': end_dt.strftime("%Y-%m-%d")}
         event['start'] = start_date
         event['end'] = end_date
     else:
-        start_time = parse_date_to_iso(task.startDate, task.time, all_day=False, tz_name='Asia/Tehran')
+        start_time = parse_date_to_iso(task.startDate, task.time, all_day=False, tz_name=tz_name)
         event['start'] = start_time
-        # Parse ISO datetime (which may include timezone offset) and add default duration of 1 hour
-        start_dt = datetime.datetime.fromisoformat(start_time['dateTime'])
-        end_dt = start_dt + datetime.timedelta(hours=1)
-        event['end'] = {
-            'dateTime': end_dt.isoformat(),
-            'timeZone': start_time['timeZone']
-        }
+        # Add default duration of 1 hour
+        try:
+            start_dt = datetime.datetime.fromisoformat(start_time['dateTime'])
+            end_dt = start_dt + datetime.timedelta(hours=1)
+            event['end'] = {
+                'dateTime': end_dt.isoformat(),
+                'timeZone': start_time['timeZone']
+            }
+        except Exception:
+            event['end'] = start_time
         
     # Recurrence logic (using customDays, interval, and end conditions)
     rrule = _build_rrule(task)
@@ -238,11 +243,10 @@ def sync_task_to_gcal(user, task):
 
     # Color handling – use task.color if set, otherwise default based on assignees_rel
     if getattr(task, "color", None):
-        event['colorId'] = UI_COLOR_TO_GCAL.get(task.color, "7")
+        event['colorId'] = UI_COLOR_TO_GCAL.get(task.color, "3")
     else:
-        # Default to purple if no color set, else fallback to assignees
-        default_color = "purple"
-        event['colorId'] = UI_COLOR_TO_GCAL.get(default_color, "9") if not getattr(task, "assignees_rel", None) else "9"
+        event['colorId'] = "3" # Default Grape (purple)
+
     logger.debug(f"[GCal] Event payload for task '{task.title}': {event}")
 
     try:
@@ -277,7 +281,7 @@ def sync_meal_to_gcal(user, meal, recipe=None):
     if not service:
         return False
         
-    calendar_id = ensure_donespace_calendar(service)
+    calendar_id, tz_name = ensure_donespace_calendar(service)
     
     # Build description with context metadata
     desc = f"Meal: {meal.type.capitalize() if meal.type else 'Dinner'}\n"
@@ -304,12 +308,18 @@ def sync_meal_to_gcal(user, meal, recipe=None):
         'transparency': 'transparent'
     }
     
-    # Meals are usually all-day events on that date
-    start_date = parse_date_to_iso(meal.date, all_day=True)
-    end_dt = datetime.datetime.strptime(start_date['date'], "%Y-%m-%d") + datetime.timedelta(days=1)
-    end_date = {'date': end_dt.strftime("%Y-%m-%d")}
-    event['start'] = start_date
-    event['end'] = end_date
+    # Define specific times for different meal types
+    meal_times = {
+        'breakfast': ('08:00', '09:00'),
+        'lunch': ('13:00', '14:00'),
+        'snack': ('16:00', '16:30'),
+        'dinner': ('19:00', '20:00')
+    }
+    m_type = (meal.type or 'dinner').lower()
+    start_time_str, end_time_str = meal_times.get(m_type, ('19:00', '20:00'))
+    
+    event['start'] = parse_date_to_iso(meal.date, time_str=start_time_str, all_day=False, tz_name=tz_name)
+    event['end'] = parse_date_to_iso(meal.date, time_str=end_time_str, all_day=False, tz_name=tz_name)
 
     try:
         if meal.google_event_id:
@@ -342,7 +352,7 @@ def delete_event(user, event_id):
     if not service:
         return False
         
-    calendar_id = ensure_donespace_calendar(service)
+    calendar_id, _ = ensure_donespace_calendar(service)
     try:
         service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
         return True

@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const getMembers = () => {
         const home = JSON.parse(localStorage.getItem('currentHome') || '{}');
         const members = home.members || [];
-        if (members.length === 0) return [{ name: 'Me', avatar: '' }];
-        return members.map(m => ({ name: m.username, avatar: m.avatar || '' }));
+        if (members.length === 0) return [{ username: 'Me', name: 'Me', avatar: '' }];
+        return members.map(m => ({ username: m.username, name: m.display_name || m.username, avatar: m.avatar || '' }));
     };
     const DAYS_SHORT = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
@@ -48,23 +48,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Default demo recipes (first load only) ─────────────────
     const seedDefaults = () => {
-        if (localStorage.getItem('homeRecipes') !== null) return;
+        let existing = localStorage.getItem('homeRecipes');
+        if (existing !== null && JSON.parse(existing).length > 0) return;
         saveRecipes([
-            { id: genId(), name: 'Ghormeh Sabzi', emoji: '🥘', category: 'dinner', time: 120,
-              ingredients: ['Lamb', 'Fenugreek', 'Dried limes', 'Kidney beans', 'Turmeric'],
-              notes: 'Soak the dried limes overnight. Fry the herbs until dark green.' },
-            { id: genId(), name: 'Pasta Carbonara', emoji: '🍝', category: 'dinner', time: 30,
-              ingredients: ['Spaghetti', 'Guanciale', 'Eggs', 'Pecorino Romano', 'Black pepper'],
-              notes: 'Never use cream! Mix eggs off heat.' },
-            { id: genId(), name: 'Avocado Toast', emoji: '🥑', category: 'breakfast', time: 10,
-              ingredients: ['Sourdough bread', 'Avocado', 'Lemon', 'Chili flakes', 'Salt'],
-              notes: '' },
-            { id: genId(), name: 'Greek Salad', emoji: '🥗', category: 'lunch', time: 15,
-              ingredients: ['Tomatoes', 'Cucumber', 'Olives', 'Feta', 'Olive oil', 'Oregano'],
-              notes: 'Use block feta, not crumbled.' },
-            { id: genId(), name: 'Zereshk Polo', emoji: '🍚', category: 'dinner', time: 90,
-              ingredients: ['Basmati rice', 'Barberries', 'Saffron', 'Chicken', 'Butter'],
-              notes: 'Soak rice 1 hour before cooking.' },
+            { id: genId(), name: 'Classic Avocado Toast with Poached Egg', emoji: '🥑', category: 'breakfast', time: 15,
+              ingredients: ['2 thick slices Artisan Sourdough Bread', '1 large ripe Hass Avocado', '2 large Pasture-raised Eggs', '1 tbsp White Vinegar (for poaching)', '1/2 tsp Sea Salt & freshly ground Black Pepper', '1/4 tsp Red Pepper Flakes', '1/2 Lemon (juiced)', '1 tsp Extra Virgin Olive Oil'],
+              notes: '1. Toast the sourdough slices until golden and crisp.\n2. In a bowl, mash the avocado with lemon juice, salt, and pepper until chunky but spreadable.\n3. Bring a pot of water to a gentle simmer, add vinegar. Create a vortex with a spoon, gently drop in the eggs, and poach for exactly 3 minutes.\n4. Spread the avocado mash evenly over the toast.\n5. Carefully place one poached egg on each slice. Drizzle with olive oil, sprinkle red pepper flakes, and serve immediately.' },
+              
+            { id: genId(), name: 'Fluffy Buttermilk Pancakes', emoji: '🥞', category: 'breakfast', time: 25,
+              ingredients: ['2 cups All-purpose Flour', '1/4 cup Granulated Sugar', '2 tsp Baking Powder', '1 tsp Baking Soda', '1/2 tsp Salt', '2 cups Buttermilk', '2 large Eggs', '1/4 cup Unsalted Butter (melted)', '1 tsp Vanilla Extract', 'Maple Syrup & Fresh Berries (for serving)'],
+              notes: '1. In a large bowl, whisk together flour, sugar, baking powder, baking soda, and salt.\n2. In a separate bowl, whisk the buttermilk, eggs, melted butter, and vanilla extract.\n3. Pour the wet ingredients into the dry ingredients. Stir gently just until combined (small lumps are okay; do not overmix).\n4. Heat a lightly buttered griddle or skillet over medium heat.\n5. Pour 1/4 cup of batter per pancake. Cook until bubbles form on the surface and edges look set (about 2-3 mins). Flip and cook for another 1-2 mins until golden brown.\n6. Serve warm with maple syrup and fresh berries.' },
+              
+            { id: genId(), name: 'Grilled Chicken Caesar Salad', emoji: '🥗', category: 'lunch', time: 30,
+              ingredients: ['2 Boneless Skinless Chicken Breasts', '2 large heads Romaine Lettuce (chopped)', '1/2 cup Caesar Dressing', '1 cup Homemade or Artisan Croutons', '1/2 cup Shaved Parmesan Cheese', '1 tbsp Olive Oil', '1/2 tsp Garlic Powder', 'Salt and Pepper to taste', '1 Lemon (cut into wedges)'],
+              notes: '1. Pound the chicken breasts to an even thickness. Season generously with olive oil, garlic powder, salt, and pepper.\n2. Preheat grill or grill pan to medium-high heat. Grill chicken for 6-7 minutes per side until the internal temperature reaches 165°F (74°C).\n3. Remove chicken from grill, let it rest for 5 minutes, then slice diagonally.\n4. In a large mixing bowl, toss the chopped romaine lettuce with Caesar dressing until evenly coated.\n5. Plate the greens, top with the sliced grilled chicken, croutons, and shaved Parmesan. Serve with a lemon wedge.' },
+              
+            { id: genId(), name: 'Authentic Spaghetti Bolognese', emoji: '🍝', category: 'dinner', time: 60,
+              ingredients: ['1 lb (450g) Lean Ground Beef', '1 medium Onion (finely diced)', '2 cloves Garlic (minced)', '1 large Carrot (finely diced)', '1 celery stalk (finely diced)', '1 jar (24 oz) High-quality Marinara Sauce', '1/4 cup Dry Red Wine (optional)', '1/2 cup Whole Milk', '1 lb (450g) Spaghetti', '2 tbsp Olive Oil', '1 tsp Dried Oregano', 'Salt & Pepper to taste', 'Fresh Parmesan (for garnish)'],
+              notes: '1. Heat olive oil in a large heavy-bottomed pot over medium heat. Sauté the onion, carrot, celery, and garlic until softened (about 5-7 mins).\n2. Add the ground beef, breaking it apart with a spoon. Cook until fully browned. Drain excess fat if necessary.\n3. Pour in the red wine to deglaze the pan, scraping up any browned bits. Let it simmer until the wine reduces (about 2 mins).\n4. Stir in the milk and simmer for 2 mins to tenderize the meat.\n5. Pour in the marinara sauce, oregano, salt, and pepper. Bring to a gentle boil, then reduce heat to low, cover, and simmer for at least 30-40 minutes (stirring occasionally).\n6. While sauce simmers, boil pasta in heavily salted water until al dente. Drain and toss pasta with the sauce. Garnish with fresh grated Parmesan.' },
+              
+            { id: genId(), name: 'Pan-Seared Salmon with Garlic Asparagus', emoji: '🐟', category: 'dinner', time: 25,
+              ingredients: ['2 (6 oz) Salmon Fillets (skin-on)', '1 bunch Fresh Asparagus (ends trimmed)', '3 cloves Garlic (minced)', '2 tbsp Olive Oil', '1 tbsp Unsalted Butter', '1 Lemon (juiced)', '1/2 tsp Paprika', 'Salt and freshly ground Black Pepper'],
+              notes: '1. Pat the salmon fillets completely dry with a paper towel. Season generously with salt, pepper, and paprika.\n2. In a large skillet, heat 1 tbsp olive oil over medium-high heat until shimmering. Place salmon skin-side up and sear for 4 minutes until a golden crust forms.\n3. Flip the salmon. Add the butter, garlic, and asparagus to the skillet around the salmon.\n4. Cook for another 3-4 minutes, tossing the asparagus in the garlic butter, until the salmon is cooked to your liking (internal temp 145°F/62°C) and asparagus is tender-crisp.\n5. Squeeze fresh lemon juice over the salmon and asparagus right before serving.' },
+              
+            { id: genId(), name: 'Persian Zereshk Polo ba Morgh', emoji: '🍚', category: 'dinner', time: 90,
+              ingredients: ['2 cups Premium Basmati Rice', '4 Chicken Thighs or Breasts', '1 large Onion (sliced)', '1 cup Dried Barberries (Zereshk)', '1/2 tsp High-quality Saffron threads', '3 tbsp Butter', '2 tbsp Vegetable Oil', '1 tbsp Tomato Paste', '1 tsp Turmeric', '1 tbsp Sugar', 'Salt and Black Pepper'],
+              notes: '1. Wash rice until water runs clear, then soak in salted water for 1 hour.\n2. Grind saffron threads and steep in 3 tbsp of hot water.\n3. In a pot, sauté onions in oil until golden. Add chicken pieces and turmeric, browning on all sides. Stir in tomato paste, salt, pepper, and 2 cups of water. Cover and simmer on low for 45-60 mins until chicken is tender.\n4. Boil rice in a large pot of salted water for 7-10 mins until the grains are slightly soft on the outside but firm in the center. Drain, then steam the rice in a covered pot on low heat for 45 mins.\n5. Wash barberries and sauté them in butter with 1 tbsp sugar on very low heat for 2 minutes (do not burn!). Mix half the saffron water with the barberries.\n6. Mix the remaining saffron water with a cup of cooked rice. Serve the white rice on a platter, top with the saffron-barberry rice mixture, and place the chicken alongside.' },
+
+            { id: genId(), name: 'Persian Macaroni', emoji: '🍝', category: 'lunch', time: 45,
+              ingredients: ['1 lb Spaghetti or Bucatini', '400g Ground Beef', '1 large Onion (finely chopped)', '1 Potato (sliced for Tahdig)', '3 tbsp Tomato Paste', '1 tsp Turmeric', '1/2 tsp Cinnamon', 'Salt, Black Pepper, and a pinch of Red Pepper', '2 tbsp Oil'],
+              notes: '1. Sauté onions in oil until golden. Add ground beef and brown it well.\n2. Add turmeric, salt, pepper, and cinnamon. Stir in the tomato paste and cook for 3 minutes until the raw smell is gone. Add 1/2 cup of water and let it simmer until the sauce thickens.\n3. Boil the pasta in salted water for 5-7 minutes (should still be slightly firm). Drain it.\n4. In a large non-stick pot, heat some oil. Arrange the potato slices at the bottom for Tahdig.\n5. Layer the pasta and the meat sauce alternately in the pot. \n6. Cover the lid with a cloth (damkoni) and steam on very low heat for 30 minutes.' },
+
+            { id: genId(), name: 'Classic Kotlet (Meat Patties)', emoji: '🥩', category: 'lunch', time: 40,
+              ingredients: ['400g Ground Beef or Lamb', '3 medium Potatoes', '1 large Onion', '2 large Eggs', '1 tsp Turmeric', '1 tsp Garlic Powder', 'Salt and Black Pepper', 'Frying Oil', 'Bread and Pickles (for serving)'],
+              notes: '1. Peel the potatoes and the onion. Grate them finely. IMPORTANT: Squeeze out the excess juice from the grated onion and potatoes to prevent the patties from falling apart.\n2. In a large bowl, mix the ground meat, grated potatoes, grated onion, eggs, turmeric, garlic powder, salt, and pepper.\n3. Knead the mixture well for about 5 minutes until it becomes sticky and cohesive.\n4. Heat a generous amount of oil in a large skillet over medium heat.\n5. Take a small handful of the mixture, shape it into an oval patty (about 1/2 inch thick), and carefully place it in the hot oil.\n6. Fry each side for about 5-6 minutes until golden brown and crispy. Serve warm with bread, fresh herbs, and pickles.' },
+              
+            { id: genId(), name: 'Tropical Berry Acai Bowl', emoji: '🥣', category: 'snack', time: 10,
+              ingredients: ['1 packet (100g) Frozen Unsweetened Acai Purée', '1/2 cup Frozen Mixed Berries (blueberries, raspberries)', '1/2 Frozen Banana', '1/4 cup Almond Milk or Coconut Water', 'Toppings: 1/4 cup Granola', 'Toppings: 1/2 Fresh Banana (sliced)', 'Toppings: 1 tbsp Chia Seeds', 'Toppings: 1 tbsp Coconut Flakes', '1 tsp Honey (optional)'],
+              notes: '1. Run the frozen acai packet under warm water for 5 seconds to loosen, then break it into chunks directly into a high-powered blender.\n2. Add the frozen mixed berries, frozen banana half, and almond milk.\n3. Blend on medium-high, using a tamper if necessary, until the mixture is completely smooth, thick, and resembles soft-serve ice cream.\n4. Scoop the acai mixture into a serving bowl.\n5. Arrange the sliced banana, granola, coconut flakes, and chia seeds on top in neat rows. Drizzle lightly with honey if extra sweetness is desired. Serve immediately before it melts.' }
         ]);
     };
     seedDefaults();
@@ -190,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (recipes.length > 0) {
             const withTime = recipes.filter(r => r.time);
             if (withTime.length > 0) {
-                const avg = Math.round(withTime.reduce((s, r) => s + r.time, 0) / withTime.length);
+                const avg = Math.round(withTime.reduce((s, r) => s + (parseInt(r.time, 10) || 0), 0) / withTime.length);
                 statAvgTime.textContent = `${avg} min`;
             }
         }
@@ -362,14 +383,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ─── Plan Modal ──────────────────────────────────────────────
     const openPlanModal = (recipeId, defaultDateKey = null, defaultMealIndex = null) => {
+        const recipes = getRecipes();
+        const meals = getMeals();
+        const recipe = recipes.find(r => r.id === recipeId);
+        
         planRecipeId = recipeId;
         planSelectedDay = defaultDateKey;
         planMealIndex = defaultMealIndex;
         planSelectedCook = null;
-        planSelectedMealType = 'Dinner';
-        
-        const recipes = getRecipes();
-        const meals = getMeals();
+        planSelectedMealType = recipe && recipe.category ? recipe.category.charAt(0).toUpperCase() + recipe.category.slice(1) : 'Dinner';
         
         // Populate Recipe Custom List
         const renderRecipeOptions = (filter = '') => {
@@ -475,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
         planCookChips.innerHTML = '';
         
         const members = getMembers();
-        planSelectedCook = members[0].name; // Default to first member
+        planSelectedCook = members[0].username; // Default to first member
 
         members.forEach((m, index) => {
             const chip = document.createElement('button');
@@ -491,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             chip.innerHTML = `${avatarHtml} ${m.name}`;
             chip.addEventListener('click', () => {
-                planSelectedCook = m.name;
+                planSelectedCook = m.username;
                 planCookChips.querySelectorAll('.cook-chip').forEach(c => c.classList.remove('selected'));
                 chip.classList.add('selected');
             });

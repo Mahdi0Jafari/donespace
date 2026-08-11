@@ -377,6 +377,7 @@
 
 /* Modal footer */
 .recipe-modal-footer {
+    position: sticky; bottom: -28px; background: #fff; z-index: 10; padding-bottom: 28px;
     display: flex; justify-content: space-between; align-items: center;
     gap: 10px; margin-top: 8px; padding-top: 16px; border-top: 1px solid #f3f4f6;
 }

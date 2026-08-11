@@ -198,13 +198,18 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
     const members = currentHome.members || [];
     const member = members.find(m => m.username === assignName);
     
+    let displayName = assignName;
+    if (member && member.display_name) {
+        displayName = member.display_name;
+    }
+
     if (member && member.avatar) {
-        return `<img src="${member.avatar}" alt="${assignName}" class="assignee-avatar" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid rgba(0,0,0,0.1);">`;
+        return `<img src="${member.avatar}" alt="${displayName}" title="${displayName}" class="assignee-avatar" style="width:24px; height:24px; border-radius:50%; object-fit:cover; border:1px solid rgba(0,0,0,0.1);">`;
     }
     
     // Fallback to circle initial
-    const initial = assignName.charAt(0).toUpperCase();
-    return `<div class="assignee-avatar" style="width:24px; height:24px; border-radius:50%; background:${color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">${initial}</div>`;
+    const initial = displayName.charAt(0).toUpperCase();
+    return `<div class="assignee-avatar" title="${displayName}" style="width:24px; height:24px; border-radius:50%; background:${color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">${initial}</div>`;
 };
 
     const renderPriorityCards = () => {
@@ -227,7 +232,14 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
             'default-toilet': { id: 'default-toilet', name: 'Restroom', type: 'other', zoneId: 'main-floor', color: 'orange', icon: 'wc' }
         };
 
-        const getFacility = (id) => facilities.find(f => f.id === id) || defaultFacilities[id] || { name: 'General', type: 'other', color: 'blue', zoneId: 'main-floor' };
+        const getFacility = (id) => {
+            let f = facilities.find(fac => fac.id === id);
+            if (f) {
+                if (!f.color && defaultFacilities[id]) f.color = defaultFacilities[id].color;
+                return f;
+            }
+            return defaultFacilities[id] || { name: 'General', type: 'other', color: 'blue', zoneId: 'main-floor' };
+        };
         const getZoneName = (zoneId) => {
             const z = zones.find(z => z.id === zoneId);
             return z ? z.name : 'Home';
@@ -290,23 +302,48 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
             return isAssignedToMe;
         });
 
-        // 3. Group by Room
+        // 3. Group by Room and Filter Pending Tasks
         const grouped = {};
         todaysTasks.forEach(task => {
             const roomId = task.room || 'general';
             if (!grouped[roomId]) grouped[roomId] = [];
-            grouped[roomId].push(task);
+            
+            // Filter out completed tasks so the inbox only shows pending ones
+            if (!completions.some(c => c.taskId == task.id && c.date === todayKey)) {
+                grouped[roomId].push(task);
+            }
         });
+
+        // Helper to parse time string "HH:MM" to float hours for sorting
+        const parseTime = (timeStr, allDay) => {
+            if (allDay || !timeStr) return 24; // All day tasks pushed to the end of the day
+            const parts = timeStr.split(':');
+            if (parts.length === 2) {
+                return parseInt(parts[0]) + (parseInt(parts[1]) / 60);
+            }
+            return 24;
+        };
+
+        // 3.5 Sort rooms and tasks by earliest time
+        const roomEarliest = {};
+        const sortedRoomIds = Object.keys(grouped).filter(roomId => grouped[roomId].length > 0);
+        
+        sortedRoomIds.forEach(roomId => {
+            // Sort tasks inside the room by time
+            grouped[roomId].sort((a, b) => parseTime(a.time, a.allDay) - parseTime(b.time, b.allDay));
+            
+            // The room's priority is dictated by its earliest task
+            roomEarliest[roomId] = parseTime(grouped[roomId][0].time, grouped[roomId][0].allDay);
+        });
+
+        sortedRoomIds.sort((a, b) => roomEarliest[a] - roomEarliest[b]);
 
         // 4. Render HTML
         container.innerHTML = '';
         let delay = 0.4;
         
-        Object.keys(grouped).forEach(roomId => {
-            // Filter out completed tasks so the inbox only shows pending ones
-            const pendingRoomTasks = grouped[roomId].filter(task => !completions.some(c => c.taskId == task.id && c.date === todayKey));
-            
-            if (pendingRoomTasks.length === 0) return; // Skip card completely if all tasks are done!
+        sortedRoomIds.forEach(roomId => {
+            const pendingRoomTasks = grouped[roomId];
             
             const facility = getFacility(roomId);
             const zoneName = getZoneName(facility.zoneId);

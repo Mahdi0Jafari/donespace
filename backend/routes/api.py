@@ -109,6 +109,7 @@ def save_tasks():
     task.description = td.get('description')
     task.icon = td.get('icon')
     task.room = td.get('roomId') or td.get('room')
+    task.color = td.get('color') or task.color
     task.recurrence = td.get('recurrence')
     task.interval = td.get('interval', 1)
     task.customDays = json.dumps(td.get('customDays', []))
@@ -370,9 +371,7 @@ def save_meals():
                 if cook_name and cook_name not in ('Anyone', 'anyone', ''):
                     pending_cook_notifs.append((cook_name, title, date))
                     
-                if g.user.google_access_token:
-                    recipe = db.session.get(Recipe, meal.recipeId) if meal.recipeId else None
-                    sync_meal_to_gcal(g.user, meal, recipe)
+                # Google Calendar sync is handled at the end of the loop
             else:
                 # Update existing
                 em = existing_meals[m_id]
@@ -410,8 +409,9 @@ def save_meals():
                     pending_cook_notifs.append((new_cook, title, date))
                     
             if g.user.google_access_token:
-                recipe = db.session.get(Recipe, meal.recipeId) if meal.recipeId else None
-                sync_meal_to_gcal(g.user, meal, recipe)
+                current_meal = meal if (m_id is None or m_id not in existing_meals) else em
+                recipe = db.session.get(Recipe, current_meal.recipeId) if current_meal.recipeId else None
+                sync_meal_to_gcal(g.user, current_meal, recipe)
 
     # 3. Handle deleted meals
     for em_id, em in existing_meals.items():
