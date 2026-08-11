@@ -9,6 +9,7 @@
 @import 'components/forms.css';
 @import 'components/cards.css';
 @import 'components/modal.css';
+@import 'components/tour.css';
 
 /* Widgets */
 @import 'widgets/banner.css';

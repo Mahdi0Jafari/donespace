@@ -1,0 +1,60 @@
+/* Custom Driver.js Theme for DoneSpace */
+.donespace-tour-theme {
+    font-family: 'Outfit', sans-serif !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+    border: none !important;
+}
+
+.donespace-tour-theme .driver-popover-title {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: var(--primary-purple) !important;
+    margin-bottom: 12px !important;
+}
+
+.donespace-tour-theme .driver-popover-description {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+    color: var(--text-main) !important;
+    font-weight: 400 !important;
+    margin-bottom: 20px !important;
+}
+
+.donespace-tour-theme .driver-popover-footer button {
+    font-family: 'Outfit', sans-serif !important;
+    border-radius: 12px !important;
+    padding: 8px 16px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.donespace-tour-theme .driver-popover-next-btn {
+    background-color: var(--primary-purple) !important;
+    color: white !important;
+    text-shadow: none !important;
+}
+
+.donespace-tour-theme .driver-popover-prev-btn,
+.donespace-tour-theme .driver-popover-close-btn {
+    background-color: #f3f4f6 !important;
+    color: var(--text-main) !important;
+    text-shadow: none !important;
+}
+
+.donespace-tour-theme .driver-popover-next-btn:hover {
+    background-color: #7b45e8 !important;
+}
+
+.donespace-tour-theme .driver-popover-prev-btn:hover,
+.donespace-tour-theme .driver-popover-close-btn:hover {
+    background-color: #e5e7eb !important;
+}
+
+.donespace-tour-theme .driver-popover-progress-text {
+    font-size: 13px !important;
+    color: var(--text-muted) !important;
+}
