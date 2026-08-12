@@ -45,7 +45,7 @@ def require_auth():
     if request.method == 'OPTIONS':
         return
     # Exempt auth routes, static files, and public pages
-    exempt_routes = ['/api/auth/login', '/api/auth/register', '/api/auth/check-email', '/login', '/', '/robots.txt', '/sitemap.xml', '/llms.txt']
+    exempt_routes = ['/api/auth/login', '/api/auth/register', '/api/auth/check-email', '/login', '/', '/robots.txt', '/sitemap.xml', '/llms.txt', '/about']
     if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/api/auth/google/') or request.path.startswith('/static/') or request.path.startswith('/blog'):
         return
         
@@ -144,6 +144,10 @@ def static_from_root():
 @app.route('/login')
 def login_page():
     return render_template('login.html')
+
+@app.route('/about')
+def about_page():
+    return render_template('about.html')
 
 @app.route('/meals')
 def meals_page():
