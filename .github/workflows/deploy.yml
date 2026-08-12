@@ -33,6 +33,7 @@ jobs:
               echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" > .env
               echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
               echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+              echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .env
               
               cat << "  EOF_JSON" > credentials.json
               ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
