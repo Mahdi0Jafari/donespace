@@ -236,3 +236,4 @@ class Recipe(db.Model):
             'ingredients': json.loads(self.ingredients) if self.ingredients else [],
             'notes': self.notes
         }
+

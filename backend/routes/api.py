@@ -7,6 +7,8 @@ from backend.models import Task, Meal, Recipe, TaskCompletion, ActivityLog, User
 from backend.utils.gcal import sync_task_to_gcal, sync_meal_to_gcal, delete_event
 import json
 import time
+import os
+import resend
 from datetime import datetime
 
 # Global dictionary to keep SSE client queues per home_id (imported from extensions)
@@ -550,6 +552,22 @@ def save_recipes():
     db.session.commit()
     notify_clients(g.user.home_id, 'recipes_updated', data)
     return jsonify({'success': True})
+
+@api_bp.route('/activity-logs', methods=['GET'])
+def get_activity_logs():
+    home_id = g.user.home_id
+    logs = ActivityLog.query.filter_by(home_id=home_id).order_by(ActivityLog.timestamp.desc()).limit(50).all()
+    
+    return jsonify({
+        'logs': [{
+            'id': l.id,
+            'user_id': l.user_id,
+            'action': l.action,
+            'details': l.details,
+            'timestamp': l.timestamp.isoformat() + 'Z'
+        } for l in logs]
+    })
+
 @api_bp.route('/notifications', methods=['GET'])
 def get_notifications():
     notifs = Notification.query.filter_by(

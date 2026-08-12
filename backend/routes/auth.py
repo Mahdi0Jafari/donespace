@@ -6,7 +6,8 @@ import secrets
 import string
 from backend.extensions import db
 from backend.models import User, Home, UserHome
-
+from backend.utils.email_templates import get_welcome_email_html
+import resend
 import os
 import base64
 import re
@@ -186,6 +187,23 @@ def register():
     
     db.session.commit()
     
+    # Send welcome email via Resend
+    resend_key = os.getenv('RESEND_API_KEY')
+    if resend_key and email:
+        resend.api_key = resend_key
+        try:
+            display_name_for_email = display_name or username
+            html_content = get_welcome_email_html(display_name_for_email)
+            params = {
+                "from": "DoneSpace <hello@donespace.ir>",
+                "to": [email],
+                "subject": f"Welcome to DoneSpace, {display_name_for_email}! 🎉",
+                "html": html_content
+            }
+            resend.Emails.send(params)
+        except Exception as e:
+            print("Failed to send welcome email on registration:", e)
+            
     return jsonify({
         'token': user.token,
         'user': user.to_dict(),
