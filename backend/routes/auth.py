@@ -407,6 +407,9 @@ logger = logging.getLogger(__name__)
 
 @auth_bp.route('/google/login')
 def google_login():
+    if request.host.startswith('127.0.0.1'):
+        return redirect(request.url.replace('127.0.0.1', 'localhost'))
+        
     logger.info("[Google OAuth] Starting login flow...")
     join_code = request.args.get('join', '')
     if join_code:
@@ -457,7 +460,12 @@ def google_callback():
     credentials = flow.credentials
     
     try:
-        user_info = id_token.verify_oauth2_token(credentials.id_token, google_requests.Request(), flow.client_config['client_id'])
+        user_info = id_token.verify_oauth2_token(
+            credentials.id_token, 
+            google_requests.Request(), 
+            flow.client_config['client_id'],
+            clock_skew_in_seconds=60
+        )
     except ValueError as e:
         logger.error(f"[Google OAuth] Invalid token value error: {e}")
         return jsonify({'error': 'Invalid token'}), 400

@@ -10,3 +10,5 @@ python-dotenv
 Markdown
 PyYAML
 resend
+python-dateutil
+apscheduler

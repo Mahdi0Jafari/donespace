@@ -78,9 +78,10 @@ class Task(db.Model):
     createdAt = db.Column(db.String(50))
     isMeal = db.Column(db.Boolean, default=False)
     recipeId = db.Column(db.Integer, nullable=True)
-    google_event_id = db.Column(db.String(255), nullable=True)
+    google_event_id = db.Column(db.String(255), nullable=True) # Kept for legacy/simple tasks
     
     assignees_rel = db.relationship('User', secondary=task_assignee, lazy='subquery', backref=db.backref('tasks', lazy=True))
+    gcal_events = db.relationship('GCalEventMapping', backref='task', cascade='all, delete-orphan', lazy=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -109,6 +110,20 @@ class Task(db.Model):
             'isMeal': self.isMeal,
             'recipeId': self.recipeId
         }
+
+class GCalEventMapping(db.Model):
+    """
+    Maps a specific task (and optionally a specific date/occurrence) to a Google Calendar event 
+    in a specific user's calendar. Essential for rotating tasks and shared tasks.
+    """
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    google_event_id = db.Column(db.String(255), nullable=False)
+    occurrence_date = db.Column(db.String(50), nullable=True) # e.g. YYYY-MM-DD for rotating individual events
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 class TaskCompletion(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

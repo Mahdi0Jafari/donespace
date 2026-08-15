@@ -149,11 +149,9 @@ def save_tasks():
         
     db.session.commit()
     
-    # Sync with Google Calendar if enabled
-    # Sync with Google Calendar if enabled and log result
-    if g.user.google_access_token:
-        sync_success = sync_task_to_gcal(g.user, task)
-        log_task('gcal_sync', task.to_dict(), {'success': sync_success})
+    # Sync with Google Calendar (checks assignees internally)
+    sync_success = sync_task_to_gcal(None, task)
+    log_task('gcal_sync', task.to_dict(), {'success': sync_success})
     
     
     # Activity Log

@@ -725,9 +725,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 createdAt: new Date().toISOString()
             };
             
+            const modalContent = saveBtn.closest('.modal-content');
+            
+            // Create glassmorphism success overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-success-overlay';
+            overlay.innerHTML = `
+                <div class="success-content">
+                    <div class="spinner-ring"></div>
+                    <h3>Saving Task...</h3>
+                </div>
+            `;
+            
+            if (modalContent) {
+                modalContent.style.position = 'relative';
+                modalContent.appendChild(overlay);
+            }
+            
             saveBtn.disabled = true;
-            const originalBtnText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<span class="material-symbols-rounded spin">sync</span> Saving...';
 
             try {
                 if (window.HomeAPI) {
@@ -737,9 +752,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     scheduledTasks.push(newTask);
                     localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
                 }
+                
+                // Switch to success state
+                if (overlay) {
+                    overlay.innerHTML = `
+                        <div class="success-content success-pop">
+                            <div class="success-icon-wrapper">
+                                <span class="material-symbols-rounded">check</span>
+                            </div>
+                            <h3>Task Saved!</h3>
+                        </div>
+                    `;
+                    // Wait 1.2s for user to enjoy the animation
+                    await new Promise(r => setTimeout(r, 1200));
+                }
+                
+            } catch (e) {
+                if (overlay) {
+                    overlay.innerHTML = `
+                        <div class="success-content success-pop">
+                            <div class="error-icon-wrapper">
+                                <span class="material-symbols-rounded">close</span>
+                            </div>
+                            <h3>Error Saving Task</h3>
+                        </div>
+                    `;
+                    await new Promise(r => setTimeout(r, 1500));
+                }
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = originalBtnText;
+                if (overlay && overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                }
             }
             
             closeModal();

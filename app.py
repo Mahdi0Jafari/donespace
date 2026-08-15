@@ -37,6 +37,13 @@ with app.app_context():
     os.makedirs(db_dir, exist_ok=True)
     db.create_all()
 
+# --- Background Schedulers ---
+try:
+    from backend.utils.gcal_scheduler import start_gcal_scheduler
+    start_gcal_scheduler(app)
+except Exception as e:
+    print(f"Failed to start gcal scheduler: {e}")
+
 # --- Middleware ---
 
 @app.before_request
