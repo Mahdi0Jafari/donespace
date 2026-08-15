@@ -4,7 +4,7 @@ description: "Splitting groceries and planning dinners doesn't have to be a math
 author: "DoneSpace Team"
 date: "2026-08-15"
 category: "Household Management"
-image: "/static/blog_meals.jpg"
+image: "/static/blog_meals.webp"
 ---
 
 Sharing a kitchen with roommates can either be a fun, social experience or a passive-aggressive nightmare involving stolen milk and overflowing trash cans.

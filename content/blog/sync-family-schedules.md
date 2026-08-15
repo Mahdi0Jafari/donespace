@@ -4,7 +4,7 @@ description: "The modern family schedule is a logistical nightmare. Discover the
 author: "DoneSpace Team"
 date: "2026-08-15"
 category: "Household Management"
-image: "/static/blog_calendar.jpg"
+image: "/static/blog_calendar.webp"
 ---
 
 Between soccer practices, late work meetings, dentist appointments, and grocery runs, managing a household schedule in 2026 can feel like running an air traffic control tower.

@@ -4,7 +4,7 @@ description: "Why do we hate doing the dishes but love grinding for XP in video 
 author: "DoneSpace Team"
 date: "2026-08-15"
 category: "Household Management"
-image: "/static/blog_gamify.jpg"
+image: "/static/blog_gamify.webp"
 ---
 
 Why is it that we will happily spend three hours repeating a tedious task in a video game just to level up, but the thought of spending 15 minutes folding laundry fills us with existential dread? 
