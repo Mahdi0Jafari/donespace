@@ -9,8 +9,11 @@ This file provides structured technical context for AI coding agents operating i
 - `app.py`: The entry point and middleware configuration for the Flask application.
 
 ## 🛠 Executable Commands
-- **Install Dependencies:** `pip install -r backend/requirements.txt`
-- **Run Application Local:** `python app.py` (Runs locally on port 3004)
+- **Install Dependencies:** `pip3 install -r backend/requirements.txt`
+- **Run Application Local:** `python3 app.py` (Runs locally on port 3004)
+
+## 💻 OS Specific Rules
+- **Python Execution:** Always use `python3` and `pip3` instead of `python` or `pip` since we are on macOS.
 - **Deploy:** Triggered automatically via GitHub Actions upon pushing to the `main` branch.
 
 ## 🚧 Boundaries & Constraints
