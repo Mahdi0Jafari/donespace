@@ -1,10 +1,17 @@
 ---
-title: "Meal Prep for Busy Roommates: A Survival Guide"
+title: "[2026] Meal Prep for Busy Roommates: A Survival Guide"
 description: "Splitting groceries and planning dinners doesn't have to be a math problem. Learn equitable strategies for roommate meal prep and sharing costs."
 author: "DoneSpace Team"
 date: "2026-08-15"
 category: "Household Management"
 image: "/static/blog_meals.webp"
+faq:
+  - question: "Should roommates share groceries?"
+    answer: "It depends on your sharing level. Some households prefer 'Every Person for Themselves' for strict budgets, while others do 'Staples Only' or 'Full Communal' to save money by bulk-buying."
+  - question: "How do you split grocery bills fairly with roommates?"
+    answer: "Use expense-splitting apps like Splitwise to log shared items immediately, and maintain a real-time digital grocery list so whoever goes to the store knows exactly what to buy without fronting the cost unfairly."
+  - question: "What is the best way to handle cooking with roommates?"
+    answer: "If you share meals, rotate the categories: if one roommate cooks, the other cleans. Always set clear boundaries, like 'If you didn't buy it, don't eat it' for private items."
 ---
 
 Sharing a kitchen with roommates can either be a fun, social experience or a passive-aggressive nightmare involving stolen milk and overflowing trash cans.
@@ -46,3 +53,8 @@ With **DoneSpace**, your household gets a unified **Meals & Recipes** dashboard.
 - Tag *who* is cooking tonight, so there is never any confusion.
 
 By combining clear communication with a digital hub like DoneSpace, you can turn roommate meal prep from a source of conflict into a cost-saving, stress-free routine.
+
+---
+### Related Reads (Internal Links)
+- Need help organizing the weekly menu? Check out our [Ultimate Guide to Shared Meal Planning](/blog/shared-meal-planning).
+- Want to stop fighting about chores? Read [How to Split Chores Fairly](/blog/how-to-split-chores-fairly).

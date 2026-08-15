@@ -1,10 +1,17 @@
 ---
-title: "The Psychology of Gamifying Household Chores"
+title: "The Psychology of Gamifying Household Chores [3 Scientific Rules]"
 description: "Why do we hate doing the dishes but love grinding for XP in video games? Explore the behavioral science behind chore gamification in 2026 and how to apply it."
 author: "DoneSpace Team"
 date: "2026-08-15"
 category: "Household Management"
 image: "/static/blog_gamify.webp"
+faq:
+  - question: "Why doesn't the Points, Badges, and Leaderboards (PBL) system work for chores?"
+    answer: "The PBL system often triggers the Overjustification Effect. When you offer an extrinsic reward for a task, it decreases intrinsic motivation. People stop caring about a clean house and only care about the reward."
+  - question: "What is Self-Determination Theory (SDT) in gamification?"
+    answer: "SDT states that motivation requires three basic needs: Autonomy (having choices), Competence (seeing clear progress), and Relatedness (teamwork over competition)."
+  - question: "How can I gamify chores using XP instead of assigned tasks?"
+    answer: "Assign an XP value to every chore and give everyone a weekly XP goal. This provides autonomy, allowing people to choose which tasks they want to do to reach their goal."
 ---
 
 Why is it that we will happily spend three hours repeating a tedious task in a video game just to level up, but the thought of spending 15 minutes folding laundry fills us with existential dread? 
@@ -52,3 +59,8 @@ Managing a point system on a whiteboard is exhausting. That's why we built **Don
 In DoneSpace, every task you create has an assigned XP value. When someone checks off a chore on the dashboard, the system automatically updates their progress bar and the household's collective goal. 
 
 It handles the dopamine hits, the progress tracking, and the accountability—so you can stop nagging and start enjoying a clean, harmonious home.
+
+---
+### Related Reads (Internal Links)
+- Still arguing over who does what? Learn [How to Split Household Chores Fairly](/blog/how-to-split-chores-fairly).
+- Got a busy schedule? Find out how to [Sync Family Schedules](/blog/sync-family-schedules).
