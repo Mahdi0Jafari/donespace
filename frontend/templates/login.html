@@ -102,18 +102,7 @@
 </head>
 <body class="login-page">
 
-    <!-- Invite Banner -->
-    <div id="inviteBanner" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); width:90%; max-width:420px; z-index:1000; background:linear-gradient(135deg,#f0f4ff,#e5edff); border:1px dashed #a5b4fc; border-radius:16px; padding:12px 16px; box-shadow:0 10px 25px rgba(79,82,255,0.15); align-items:center; gap:12px;">
-        <div style="width:36px;height:36px;flex-shrink:0;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;">
-            <span class="material-symbols-rounded" style="font-size:20px;color:#6366f1;">waving_hand</span>
-        </div>
-        <div style="flex:1;">
-            <p style="margin:0;font-size:13px;color:#4338ca;line-height:1.4;" id="inviteBannerText"></p>
-        </div>
-        <button onclick="dismissInvite()" style="background:none;border:none;cursor:pointer;color:#6366f1;display:flex;padding:4px;">
-            <span class="material-symbols-rounded" style="font-size:20px;">close</span>
-        </button>
-    </div>
+    <!-- Invite Banner moved inside auth card -->
 
     <script src="/static/js/api.js?v=5" defer></script>
 
@@ -140,12 +129,22 @@
                     <!-- PANEL 0 · Entry                   -->
                     <!-- ══════════════════════════════════ -->
                     <div class="auth-view active-view" id="viewEntry">
+                        <div id="inviteBanner" style="display:none; background: rgba(240, 244, 255, 0.6); backdrop-filter: blur(12px) saturate(160%); -webkit-backdrop-filter: blur(12px) saturate(160%); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(79, 82, 255, 0.05); position: relative; animation: fadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;">
+                            <button onclick="dismissInvite()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: #9ca3af; transition: color 0.3s;">
+                                <span class="material-symbols-rounded" style="font-size: 18px;">close</span>
+                            </button>
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); color: var(--primary-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);">
+                                <span class="material-symbols-rounded" style="font-size: 24px;">waving_hand</span>
+                            </div>
+                            <p style="margin:0; font-size: 15px; color: #1e1b4b; line-height: 1.5; font-weight: 500;" id="inviteBannerText"></p>
+                        </div>
+                        
                         <div class="card-header" style="text-align:center; padding-bottom: 8px;">
-                            <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: rgba(79, 82, 255, 0.1); border-radius: 16px; margin-bottom: 16px; color: #4F52FF;">
+                            <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: rgba(79, 82, 255, 0.1); border-radius: 16px; margin-bottom: 16px; color: #4F52FF;" id="defaultWelcomeIcon">
                                 <span class="material-symbols-rounded" style="font-size: 32px;">cottage</span>
                             </div>
-                            <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px;">Welcome to DoneSpace</h1>
-                            <p style="font-size: 15px; color: #6b7280; line-height: 1.5; margin: 0 auto; max-width: 85%;">Organize your home, sync your calendar, and earn points together.</p>
+                            <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px;" id="defaultWelcomeTitle">Welcome to DoneSpace</h1>
+                            <p style="font-size: 15px; color: #6b7280; line-height: 1.5; margin: 0 auto; max-width: 85%;" id="defaultWelcomeText">Organize your home, sync your calendar, and earn points together.</p>
                         </div>
 
                         <div style="margin-top: 28px;">
@@ -306,10 +305,9 @@
 
         // ─── Invite banner ───────────────────────────────────────────
         function dismissInvite() {
-            document.getElementById('inviteBanner').style.display = 'none';
             const url = new URL(window.location);
             url.searchParams.delete('join');
-            window.history.replaceState({}, document.title, url);
+            window.location.href = url.toString();
         }
 
         // ─── On load: handle URL params ──────────────────────────────
@@ -394,8 +392,11 @@
                         if (data.total_members > data.members.length)
                             names += ' and ' + (data.total_members - data.members.length) + ' others';
                         document.getElementById('inviteBannerText').innerHTML =
-                            'You\'re invited to join <strong>' + data.name + '</strong> with ' + names + '. Sign in to continue.';
-                        document.getElementById('inviteBanner').style.display = 'flex';
+                            'You\'ve been invited to join <strong>' + data.name + '</strong> with ' + names + '. Sign in to accept.';
+                        document.getElementById('inviteBanner').style.display = 'block';
+                        document.getElementById('defaultWelcomeTitle').textContent = 'Join ' + data.name;
+                        document.getElementById('defaultWelcomeText').textContent = 'Create an account or sign in to continue.';
+                        document.getElementById('defaultWelcomeIcon').style.display = 'none';
                     }
                 } catch(e) { console.error('Invite preview failed', e); }
             }

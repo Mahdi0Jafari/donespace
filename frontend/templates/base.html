@@ -18,7 +18,8 @@
     <meta property="twitter:url" content="{{ request.url }}">
     <meta property="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
 
-
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 
     <!-- Global CSS -->
     <link rel="stylesheet" href="/static/css/main.css?v=4">
@@ -154,8 +155,15 @@
                     </div>
 
                     <div id="tab-home-members" class="settings-pane" style="display: none;">
-                        <h3 style="font-size: 24px; margin-bottom: 24px;">Workspace Members</h3>
-                        <p style="color: #6b7280; margin-bottom: 24px;">Manage who has access to this home.</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                            <div>
+                                <h3 style="font-size: 24px; margin-bottom: 4px;">Workspace Members</h3>
+                                <p style="color: #6b7280; margin: 0;">Manage who has access to this home.</p>
+                            </div>
+                            <button class="primary-btn" onclick="if(window.HomeAPI && window.HomeAPI.showInviteModal) window.HomeAPI.showInviteModal();" style="display: flex; align-items: center; gap: 6px; padding: 10px 16px; font-size: 14px;">
+                                <span class="material-symbols-rounded" style="font-size: 18px;">person_add</span> Invite
+                            </button>
+                        </div>
                         <div id="settingsMembersList" style="display: flex; flex-direction: column; gap: 12px;">
                             <!-- JS Populated -->
                         </div>

@@ -844,48 +844,12 @@ window.showCreateHomeModal = function() {
             btn.textContent = "Create Home";
         } else {
             // Success! Show CTA instead of reloading immediately
-            const content = document.getElementById('createHomeModalContent');
-            content.innerHTML = `
-                <div style="text-align: center;">
-                    <div style="width: 60px; height: 60px; border-radius: 50%; background: #E9EFFD; color: var(--primary-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
-                        <span class="material-symbols-rounded" style="font-size: 32px;">celebration</span>
-                    </div>
-                    <h3 style="margin-bottom: 8px; font-size: 22px;">Home Created!</h3>
-                    <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">Your home <strong>${res.home_name}</strong> is ready. Invite your roommates using this join code:</p>
-                    
-                    <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-                        <h2 style="font-size: 32px; letter-spacing: 8px; color: var(--primary-purple); margin: 0;">${res.join_code}</h2>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <button class="primary-btn" id="shareInviteBtn" style="width: 100%; padding: 14px 20px; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                            <span class="material-symbols-rounded">share</span> Share Invite Link
-                        </button>
-                        <button class="secondary-btn" onclick="window.location.reload();" style="width: 100%; padding: 14px 20px; font-size: 16px;">Got it, let's go!</button>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('shareInviteBtn').onclick = async function() {
-                const inviteUrl = window.location.origin + '/login?join=' + res.join_code;
-                if (navigator.share) {
-                    try {
-                        await navigator.share({
-                            title: 'Join my home on DoneSpace',
-                            text: 'Click this link to join my home and collaborate on tasks and meals!',
-                            url: inviteUrl
-                        });
-                    } catch (err) {
-                        console.error('Share failed:', err);
-                    }
-                } else {
-                    // Fallback to clipboard
-                    navigator.clipboard.writeText(inviteUrl);
-                    const originalHTML = this.innerHTML;
-                    this.innerHTML = '<span class="material-symbols-rounded">check</span> Copied!';
-                    setTimeout(() => { this.innerHTML = originalHTML; }, 2000);
-                }
-            };
+            document.getElementById('dynamicCreateHomeModal').remove();
+            if (window.HomeAPI && window.HomeAPI.showInviteModal) {
+                window.HomeAPI.showInviteModal(res.join_code, res.home_name);
+            } else {
+                window.location.reload();
+            }
         }
     };
 };
@@ -1014,17 +978,21 @@ window.showConfirmInviteModal = async function(joinCode) {
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     <button class="primary-btn" id="acceptInviteBtn" style="width: 100%; padding: 14px 20px; font-size: 16px;">Accept Invite</button>
                     <button class="secondary-btn" onclick="document.getElementById('dynamicConfirmInviteModal').remove();" style="width: 100%; padding: 14px 20px; font-size: 16px;">Cancel</button>
+                    <p id="acceptInviteError" style="color: #ef4444; font-size: 13px; margin: 0; display: none;"></p>
                 </div>
             `;
             
             document.getElementById('acceptInviteBtn').onclick = async function() {
                 const btn = this;
+                const errorText = document.getElementById('acceptInviteError');
                 btn.disabled = true;
                 btn.textContent = 'Joining...';
+                errorText.style.display = 'none';
                 
                 const joinRes = await window.HomeAPI.joinHome(joinCode);
                 if (joinRes.error) {
-                    alert("Invite link error: " + joinRes.error);
+                    errorText.textContent = joinRes.error;
+                    errorText.style.display = 'block';
                     btn.disabled = false;
                     btn.textContent = 'Accept Invite';
                 } else {
@@ -1043,4 +1011,88 @@ window.showConfirmInviteModal = async function(joinCode) {
         document.getElementById('dynamicConfirmInviteModal').remove();
         console.error('Failed to load invite preview', e);
     }
+};
+
+window.HomeAPI = window.HomeAPI || {};
+window.HomeAPI.showInviteModal = function(joinCode, homeName) {
+    if (!joinCode && window.me && window.me.home) {
+        joinCode = window.me.home.join_code;
+        homeName = window.me.home.name;
+    }
+    if (!joinCode) return;
+
+    const existing = document.getElementById('dynamicInviteModal');
+    if (existing) existing.remove();
+
+    const inviteUrl = window.location.origin + '/login?join=' + joinCode;
+
+    const modalHTML = `
+        <div class="modal-overlay active" id="dynamicInviteModal" style="backdrop-filter: blur(8px); background: rgba(0,0,0,0.4);">
+            <div class="modal-content" style="max-width: 420px; padding: 32px 24px; text-align: center; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                <button onclick="document.getElementById('dynamicInviteModal').remove();" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #9ca3af; transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+                <div style="width: 60px; height: 60px; border-radius: 50%; background: #E9EFFD; color: var(--primary-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                    <span class="material-symbols-rounded" style="font-size: 32px;">qr_code_scanner</span>
+                </div>
+                <h3 style="margin-bottom: 8px; font-size: 22px;">Invite to ${homeName}</h3>
+                <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">Scan the QR code or share the link to invite roommates.</p>
+                
+                <div id="qrcode-container" style="display: flex; justify-content: center; margin-bottom: 24px; padding: 16px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;">
+                    <div id="qrcode"></div>
+                </div>
+
+                <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 16px; margin-bottom: 24px;">
+                    <h2 style="font-size: 28px; letter-spacing: 6px; color: var(--primary-purple); margin: 0;">${joinCode}</h2>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="primary-btn" id="shareInviteActionBtn" style="width: 100%; padding: 14px 20px; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
+                        <span class="material-symbols-rounded">share</span> Share Invite Link
+                    </button>
+                    <button class="secondary-btn" onclick="document.getElementById('dynamicInviteModal').remove(); window.location.reload();" style="width: 100%; padding: 14px 20px; font-size: 16px;">Done</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    if (window.QRCode) {
+        new QRCode(document.getElementById("qrcode"), {
+            text: inviteUrl,
+            width: 160,
+            height: 160,
+            colorDark : "#111827",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    }
+
+    const shareBtn = document.getElementById('shareInviteActionBtn');
+    shareBtn.addEventListener('mousedown', () => shareBtn.style.transform = 'scale(0.98)');
+    shareBtn.addEventListener('mouseup', () => shareBtn.style.transform = 'scale(1)');
+    shareBtn.addEventListener('mouseleave', () => shareBtn.style.transform = 'scale(1)');
+
+    shareBtn.onclick = async function() {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Join my home on DoneSpace',
+                    text: 'Click this link to join my home and collaborate on tasks and meals!',
+                    url: inviteUrl
+                });
+            } catch (err) {
+                console.error('Share failed:', err);
+            }
+        } else {
+            navigator.clipboard.writeText(inviteUrl);
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<span class="material-symbols-rounded">check</span> Copied!';
+            this.style.background = '#10b981';
+            setTimeout(() => { 
+                this.innerHTML = originalHTML; 
+                this.style.background = '';
+            }, 2000);
+        }
+    };
 };
