@@ -371,10 +371,50 @@ def sync_task_to_gcal(user, task):
     db.session.commit()
     return True
 
-def sync_meal_to_gcal(user, meal, recipe=None):
-    service = get_calendar_service(user)
-    if not service: return False
-        
+def _resolve_cook_user(meal, home_members=None):
+    """Finds the User object corresponding to meal.cook in the household."""
+    if not meal.cook or meal.cook in ('Anyone', 'anyone', ''):
+        return None
+    if home_members is None:
+        home_members = User.query.filter_by(home_id=meal.home_id).all()
+    for member in home_members:
+        if member.username == meal.cook or (member.display_name and member.display_name == meal.cook):
+            return member
+    return None
+
+def sync_meal_to_gcal(meal, home_members=None, recipe=None):
+    """
+    Syncs a meal to Google Calendar of the assigned cook (not the creator/editor).
+    Handles reassignments, additions, and cook changes seamlessly.
+    """
+    cook_user = _resolve_cook_user(meal, home_members)
+    
+    # 1. If no cook is assigned (or cook is 'Anyone'):
+    if not cook_user:
+        # If there was a previous GCal event for this meal, delete it from the old user's calendar
+        if meal.google_event_id and meal.gcal_user_id:
+            old_user = db.session.get(User, meal.gcal_user_id)
+            if old_user:
+                delete_event(old_user, meal.google_event_id)
+            meal.google_event_id = None
+            meal.gcal_user_id = None
+            db.session.commit()
+        return True
+
+    # 2. Cook user was found. Check if the cook has Google Calendar connected.
+    service = get_calendar_service(cook_user)
+    if not service:
+        # Cook does not have Google Calendar connected.
+        # Clean up any old event on someone else's calendar if reassigned.
+        if meal.google_event_id and meal.gcal_user_id and meal.gcal_user_id != cook_user.id:
+            old_user = db.session.get(User, meal.gcal_user_id)
+            if old_user:
+                delete_event(old_user, meal.google_event_id)
+            meal.google_event_id = None
+            meal.gcal_user_id = None
+            db.session.commit()
+        return False
+
     calendar_id, tz_name = ensure_donespace_calendar(service)
     
     desc = f"Meal: {meal.type.capitalize() if meal.type else 'Dinner'}\n"
@@ -387,7 +427,7 @@ def sync_meal_to_gcal(user, meal, recipe=None):
         if recipe.notes: desc += f"\nNotes:\n{recipe.notes}\n"
         
     event = {
-        'summary': f"{meal.emoji or '🍽️'} {meal.title}",
+        'summary': _enhance_title_for_flair(f"{meal.emoji or '🍽️'} {meal.title}"),
         'description': desc,
         'extendedProperties': {'private': {'meal_id': str(meal.id), 'type': 'meal'}},
         'colorId': "11",
@@ -402,18 +442,48 @@ def sync_meal_to_gcal(user, meal, recipe=None):
     event['end'] = parse_date_to_iso(meal.date, time_str=end_time_str, all_day=False, tz_name=tz_name)
 
     try:
-        if meal.google_event_id:
+        # If cook changed (was previously synced to a different user), delete from old user
+        if meal.google_event_id and meal.gcal_user_id and meal.gcal_user_id != cook_user.id:
+            old_user = db.session.get(User, meal.gcal_user_id)
+            if old_user:
+                delete_event(old_user, meal.google_event_id)
+            meal.google_event_id = None
+            meal.gcal_user_id = None
+
+        if meal.google_event_id and meal.gcal_user_id == cook_user.id:
             service.events().update(calendarId=calendar_id, eventId=meal.google_event_id, body=event).execute()
         else:
             created_event = service.events().insert(calendarId=calendar_id, body=event).execute()
             meal.google_event_id = created_event['id']
-            db.session.commit()
+            meal.gcal_user_id = cook_user.id
+            
+        db.session.commit()
         return True
     except Exception as e:
+        logger.error(f"[GCal] Failed to sync meal to {cook_user.username}: {e}")
         if "404" in str(e):
             meal.google_event_id = None
+            meal.gcal_user_id = None
             db.session.commit()
         return False
+
+def delete_meal_from_gcal(meal, home_members=None):
+    """Deletes a meal's Google Calendar event from the assigned cook's calendar."""
+    if not meal.google_event_id:
+        return True
+        
+    target_user = None
+    if getattr(meal, 'gcal_user_id', None):
+        target_user = db.session.get(User, meal.gcal_user_id)
+    if not target_user:
+        target_user = _resolve_cook_user(meal, home_members)
+        
+    if target_user:
+        res = delete_event(target_user, meal.google_event_id)
+        meal.google_event_id = None
+        meal.gcal_user_id = None
+        return res
+    return False
 
 def delete_event(user, event_id):
     if not event_id: return True

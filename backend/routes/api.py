@@ -4,7 +4,7 @@ from backend.extensions import db, notify_clients, clients
 from queue import Queue, Empty
 from backend.utils.logger import log_task
 from backend.models import Task, Meal, Recipe, TaskCompletion, ActivityLog, User, Notification
-from backend.utils.gcal import sync_task_to_gcal, sync_meal_to_gcal, delete_event
+from backend.utils.gcal import sync_task_to_gcal, sync_meal_to_gcal, delete_meal_from_gcal, delete_event
 import json
 import time
 import os
@@ -318,6 +318,7 @@ def get_meals():
 @api_bp.route('/meals', methods=['POST'])
 def save_meals():
     data = request.json
+    home_members = User.query.filter_by(home_id=g.user.home_id).all()
     
     # 1. Fetch existing meals
     existing_meals = {m.id: m for m in Meal.query.filter_by(home_id=g.user.home_id).all()}
@@ -370,8 +371,6 @@ def save_meals():
                 cook_name = md.get('cook')
                 if cook_name and cook_name not in ('Anyone', 'anyone', ''):
                     pending_cook_notifs.append((cook_name, title, date))
-                    
-                # Google Calendar sync is handled at the end of the loop
             else:
                 # Update existing
                 em = existing_meals[m_id]
@@ -408,10 +407,9 @@ def save_meals():
                 if new_cook and new_cook != old_cook and new_cook not in ('Anyone', 'anyone', ''):
                     pending_cook_notifs.append((new_cook, title, date))
                     
-            if g.user.google_access_token:
-                current_meal = meal if (m_id is None or m_id not in existing_meals) else em
-                recipe = db.session.get(Recipe, current_meal.recipeId) if current_meal.recipeId else None
-                sync_meal_to_gcal(g.user, current_meal, recipe)
+            current_meal = meal if (m_id is None or m_id not in existing_meals) else em
+            recipe = db.session.get(Recipe, current_meal.recipeId) if current_meal.recipeId else None
+            sync_meal_to_gcal(current_meal, home_members=home_members, recipe=recipe)
 
     # 3. Handle deleted meals
     for em_id, em in existing_meals.items():
@@ -426,14 +424,12 @@ def save_meals():
                 timestamp=datetime.utcnow()
             )
             db.session.add(log)
-            if g.user.google_access_token and em.google_event_id:
-                delete_event(g.user, em.google_event_id)
+            delete_meal_from_gcal(em, home_members=home_members)
             
     db.session.commit()
     
     # Send cook notifications
     if pending_cook_notifs:
-        home_members = User.query.filter_by(home_id=g.user.home_id).all()
         for cook_name, meal_title, meal_date in pending_cook_notifs:
             for member in home_members:
                 if (member.username == cook_name or member.display_name == cook_name) and member.id != g.user.id:

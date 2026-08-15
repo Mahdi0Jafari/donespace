@@ -36,6 +36,15 @@ with app.app_context():
     db_dir = os.path.join(BASE_DIR, 'database')
     os.makedirs(db_dir, exist_ok=True)
     db.create_all()
+    try:
+        with db.engine.connect() as conn:
+            res = conn.execute(db.text("PRAGMA table_info(meal)")).fetchall()
+            col_names = [r[1] for r in res]
+            if col_names and 'gcal_user_id' not in col_names:
+                conn.execute(db.text("ALTER TABLE meal ADD COLUMN gcal_user_id INTEGER REFERENCES user(id)"))
+                conn.commit()
+    except Exception as e:
+        pass
 
 # --- Background Schedulers ---
 try:

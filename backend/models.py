@@ -209,6 +209,7 @@ class Meal(db.Model):
     type = db.Column(db.String(50))
     emoji = db.Column(db.String(10))
     google_event_id = db.Column(db.String(255), nullable=True)
+    gcal_user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
