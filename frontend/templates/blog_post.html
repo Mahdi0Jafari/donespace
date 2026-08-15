@@ -12,6 +12,51 @@
     <meta property="og:description" content="{{ post.description }}">
     <meta property="og:image" content="{{ post.image }}">
     
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "{{ post.title }}",
+      "description": "{{ post.description }}",
+      "image": "{{ request.url_root[:-1] }}{{ post.image }}",
+      "url": "{{ request.url }}",
+      "datePublished": "{{ post.date }}T00:00:00+00:00",
+      "dateModified": "{{ post.date }}T00:00:00+00:00",
+      "author": {
+        "@type": "Person",
+        "name": "{{ post.author | default('DoneSpace Team') }}"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "DoneSpace",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ request.url_root }}static/favicon.svg"
+        }
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ request.url_root }}"
+      },{
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "{{ request.url_root }}blog"
+      },{
+        "@type": "ListItem",
+        "position": 3,
+        "name": "{{ post.title }}"
+      }]
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">

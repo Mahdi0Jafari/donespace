@@ -140,13 +140,18 @@ def blog_post(slug):
     return render_template('blog_post.html', post=post)
 
 # --- SEO Routes ---
-from flask import send_from_directory
+from flask import send_from_directory, Response
 
 @app.route('/robots.txt')
-@app.route('/sitemap.xml')
 @app.route('/llms.txt')
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
+
+@app.route('/sitemap.xml')
+def sitemap():
+    posts = get_all_posts()
+    xml_content = render_template('sitemap.xml', posts=posts)
+    return Response(xml_content, mimetype='application/xml')
 
 @app.route('/login')
 def login_page():
