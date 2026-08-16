@@ -134,7 +134,11 @@
                     <li><a href="#faq">FAQ</a></li>
                 </ul>
                 <div class="nav-actions">
-                    <a href="/login?tab=signup" class="btn-solid-yellow">Log in</a>
+                    {% if is_logged_in %}
+                    <a href="/app" class="btn-solid-yellow nav-auth-btn">Dashboard &rarr;</a>
+                    {% else %}
+                    <a href="/login?tab=signup" class="btn-solid-yellow nav-auth-btn">Log in</a>
+                    {% endif %}
                 </div>
             </nav>
         </header>
@@ -154,7 +158,11 @@
                         Advanced architecture crafted to sync your household intentions and eliminate friction. The ultimate shared dashboard for modern living.
                     </p>
                     <div class="hero-actions">
-                        <a href="/login?tab=signup" class="btn-solid-yellow">Get Started &rarr;</a>
+                        {% if is_logged_in %}
+                        <a href="/app" class="btn-solid-yellow hero-auth-btn">Open Dashboard &rarr;</a>
+                        {% else %}
+                        <a href="/login?tab=signup" class="btn-solid-yellow hero-auth-btn">Get Started &rarr;</a>
+                        {% endif %}
                         <a href="#features" class="btn-glass">Our Features</a>
                     </div>
                 </div>

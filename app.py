@@ -95,7 +95,13 @@ app.register_blueprint(api_bp, url_prefix='/api')
 # --- Frontend Fallback Route ---
 @app.route('/')
 def index():
-    return render_template('landing.html')
+    token = request.cookies.get('authToken') or request.args.get('token')
+    is_logged_in = False
+    if token:
+        user = User.query.filter_by(token=token).first()
+        if user:
+            is_logged_in = True
+    return render_template('landing.html', is_logged_in=is_logged_in)
 
 @app.route('/app')
 def app_page():
@@ -164,6 +170,13 @@ def sitemap():
 
 @app.route('/login')
 def login_page():
+    token = request.cookies.get('authToken') or request.args.get('token')
+    if token:
+        user = User.query.filter_by(token=token).first()
+        if user:
+            join_code = request.args.get('join')
+            dest = f'/app{("?join=" + join_code) if join_code else ""}'
+            return redirect(dest)
     return render_template('login.html')
 
 @app.route('/about')

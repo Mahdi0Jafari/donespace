@@ -313,6 +313,23 @@
         // ─── On load: handle URL params ──────────────────────────────
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
+            const token = localStorage.getItem('authToken');
+
+            // If already logged in and not in the middle of a Google new-user signup, forward to /app
+            if (token && params.get('google_signup') !== '1') {
+                try {
+                    const checkRes = await fetch('/api/auth/me', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (checkRes.ok) {
+                        const joinCode = params.get('join');
+                        window.location.replace('/app' + (joinCode ? '?join=' + encodeURIComponent(joinCode) : ''));
+                        return;
+                    }
+                } catch(e) {
+                    // Token invalid or network error, continue displaying login
+                }
+            }
 
             // Dynamically add join param to Google button if present
             const joinCode = params.get('join');

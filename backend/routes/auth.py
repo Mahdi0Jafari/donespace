@@ -258,7 +258,8 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'error': 'Invalid credentials'}), 401
         
-    user.token = secrets.token_hex(32) # Generate new token on login
+    if not user.token:
+        user.token = secrets.token_hex(32)
     db.session.commit()
     
     home = db.session.get(Home, user.home_id) if user.home_id else None
@@ -506,7 +507,8 @@ def google_callback():
     user.google_access_token  = credentials.token
     user.google_refresh_token = credentials.refresh_token if credentials.refresh_token else user.google_refresh_token
     user.google_token_expiry  = credentials.expiry
-    user.token = secrets.token_hex(32)
+    if not user.token:
+        user.token = secrets.token_hex(32)
     db.session.commit()
     
     # Redirect to app, preserving join_code if present
