@@ -134,15 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Exact card colors from CSS
             const hexColorMap = {
-                'general': '#4f93f6', 
-                'default-kitchen': '#f5b738', 
-                'default-bath': '#22c1dc', 
-                'default-living': '#9071f5', 
-                'default-bedroom': '#34c77b',
-                'default-toilet': '#fa7d4d',
-                'default-routines': '#34c77b' 
+                'general': '#60a5fa', 
+                'default-kitchen': '#f59e0b', 
+                'default-bath': '#38bdf8', 
+                'default-living': '#a78bfa', 
+                'default-bedroom': '#4ade80',
+                'default-toilet': '#fb923c',
+                'default-routines': '#4ade80' 
             };
-            const themeColor = hexColorMap[roomId] || '#9071f5';
+            const themeColor = hexColorMap[roomId] || '#a78bfa';
             const isYellow = roomId === 'default-kitchen';
             const textColor = isYellow ? '#333333' : '#ffffff';
             const mutedTextColor = isYellow ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)';
@@ -544,22 +544,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 1. Set Themed Header
         const hexColorMap = {
-            'general': '#4f93f6', 
-            'default-kitchen': '#f5b738', 
-            'default-bath': '#22c1dc', 
-            'default-living': '#9071f5', 
-            'default-bedroom': '#34c77b',
-            'default-toilet': '#fa7d4d',
-            'default-routines': '#34c77b' 
+            'general': '#60a5fa', 
+            'default-kitchen': '#f59e0b', 
+            'default-bath': '#38bdf8', 
+            'default-living': '#a78bfa', 
+            'default-bedroom': '#4ade80',
+            'default-toilet': '#fb923c',
+            'default-routines': '#4ade80' 
         };
         
-        let themeColor = '#4f93f6';
+        let themeColor = '#60a5fa';
         let textColor = '#ffffff';
         let isYellow = false;
         
         if (task.isMeal) {
-            themeColor = '#f5b738'; // Pastel Yellow for meals
-            textColor = '#2d2406';
+            themeColor = '#f59e0b'; // Vibrant warm yellow for meals
+            textColor = '#451a03';
             isYellow = true;
         } else {
             const roomId = task.roomId || 'general';

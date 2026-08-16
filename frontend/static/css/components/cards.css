@@ -163,14 +163,50 @@
     font-weight: 500;
 }
 
-.device-card.purple, .facility-card.purple { background-color: #9071f5; }
-.device-card.yellow, .facility-card.yellow { background-color: #f5b738; color: #2d2406; }
-.device-card.yellow .icon, .facility-card.yellow .icon { color: #2d2406; }
-.device-card.orange, .facility-card.orange { background-color: #fa7d4d; }
-.device-card.cyan, .facility-card.cyan { background-color: #22c1dc; }
-.device-card.green, .facility-card.green { background-color: #34c77b; }
-.device-card.blue, .facility-card.blue { background-color: #4f93f6; }
-.device-card.pink, .facility-card.pink { background-color: #f472b6; }
+.device-card.purple, .facility-card.purple { 
+    background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%); 
+    box-shadow: 0 10px 25px rgba(167, 139, 250, 0.35);
+}
+.device-card.yellow, .facility-card.yellow { 
+    background: linear-gradient(135deg, #fde047 0%, #f59e0b 100%); 
+    color: #451a03; 
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.30);
+}
+.device-card.yellow .icon, .facility-card.yellow .icon { 
+    color: #451a03; 
+    background: rgba(255, 255, 255, 0.45);
+}
+.device-card.yellow .progress-badge, .facility-card.yellow .progress-badge { 
+    color: #451a03; 
+    background: rgba(255, 255, 255, 0.45);
+}
+.device-card.yellow .card-summary::after, .facility-card.yellow .card-summary::after {
+    color: #451a03;
+    background: rgba(255, 255, 255, 0.45);
+}
+.device-card.yellow .edit-space-btn, .facility-card.yellow .edit-space-btn {
+    color: #451a03;
+}
+.device-card.orange, .facility-card.orange { 
+    background: linear-gradient(135deg, #fb923c 0%, #f43f5e 100%); 
+    box-shadow: 0 10px 25px rgba(251, 146, 60, 0.35);
+}
+.device-card.cyan, .facility-card.cyan { 
+    background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); 
+    box-shadow: 0 10px 25px rgba(56, 189, 248, 0.35);
+}
+.device-card.green, .facility-card.green { 
+    background: linear-gradient(135deg, #4ade80 0%, #10b981 100%); 
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.32);
+}
+.device-card.blue, .facility-card.blue { 
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); 
+    box-shadow: 0 10px 25px rgba(96, 165, 250, 0.35);
+}
+.device-card.pink, .facility-card.pink { 
+    background: linear-gradient(135deg, #f472b6 0%, #e11d48 100%); 
+    box-shadow: 0 10px 25px rgba(244, 114, 182, 0.35);
+}
 
 @media (max-width: 900px) {
     .facilities-grid { grid-template-columns: 1fr; }
