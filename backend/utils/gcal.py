@@ -143,48 +143,90 @@ def _build_rrule(task):
         rrule[0] += f";COUNT={task.endOccurrences}"
     return rrule
 
+ICON_TO_EMOJI = {
+    'local_dining': '🍽️',
+    'restaurant': '🍳',
+    'countertops': '🧼',
+    'delete': '🗑️',
+    'cleaning_services': '✨',
+    'dry_cleaning': '🧺',
+    'mop': '🧽',
+    'kitchen': '🧊',
+    'bed': '🛏️',
+    'checkroom': '👕',
+    'vacuum': '🧹',
+    'laundry': '🧺',
+    'shower': '🚿',
+    'bathtub': '🛁',
+    'wc': '🚽',
+    'water_drop': '🪴',
+    'chair': '🛋️',
+    'window': '🪟',
+    'tools': '🔧',
+    'home': '🏠',
+    'check_circle': '✅'
+}
+
+def get_emoji_for_task(icon, title):
+    if icon and icon in ICON_TO_EMOJI:
+        return ICON_TO_EMOJI[icon]
+    lower = (title or '').lower()
+    if any(w in lower for w in ['vacuum', 'جارو', 'sweep']):
+        return '🧹'
+    if any(w in lower for w in ['dish', 'dishes', 'ظرف']):
+        return '🍽️'
+    if any(w in lower for w in ['mop', 'طی']):
+        return '🧽'
+    if any(w in lower for w in ['dust', 'گردگیری']):
+        return '✨'
+    if any(w in lower for w in ['flower', 'water', 'plant', 'گل', 'گیاه']):
+        return '🪴'
+    if any(w in lower for w in ['bed', 'تخت', 'رختخواب']):
+        return '🛏️'
+    if any(w in lower for w in ['laundry', 'clothes', 'لباس', 'اتو']):
+        return '🧺'
+    if any(w in lower for w in ['trash', 'garbage', 'زباله', 'آشغال']):
+        return '🗑️'
+    if any(w in lower for w in ['cook', 'dinner', 'lunch', 'breakfast', 'غذا', 'آشپزی']):
+        return '🍳'
+    return '📋'
+
 def _enhance_title_for_flair(title):
     """
-    Intelligently appends Google Calendar keywords as hidden tags to trigger illustrations
-    without relying on the exact wording of the user. Supports both English and Persian keywords.
-    Focused entirely on Home Management and Chores.
+    Intelligently appends exact Google Calendar flair trigger phrases (without regex-breaking brackets)
+    to activate native mobile illustrations seamlessly.
     """
     lower_title = title.lower()
     
-    # Check if title already naturally triggers a known popular flair to avoid redundancy
-    if any(word in lower_title for word in ['lunch', 'dinner', 'breakfast', 'bbq']):
+    # If the title already contains one of the native triggers, return as is
+    if any(phrase in lower_title for phrase in ['clean house', 'clean the house', 'clean the apartment', 'cook dinner', 'cook lunch', 'breakfast', 'lunch', 'dinner', 'brunch', 'bbq', 'laundry', 'groceries', 'grocery', 'diy']):
         return title
 
-    # Comprehensive mapping for Home Management platform
-    flair_mappings = {
-        # Kitchen & Meals
-        '[Cooking]': ['cook', 'bake', 'meal prep', 'recipe', 'پختن', 'آشپزی', 'غذا'],
-        '[Lunch]': ['ناهار'],
-        '[Dinner]': ['شام'],
-        '[Breakfast]': ['صبحانه', 'املت'],
-        '[Groceries]': ['grocery', 'groceries', 'supermarket', 'خرید', 'سوپرمارکت', 'تره بار', 'میوه'],
+    # Mappings to exact Google Calendar trigger phrases (without brackets)
+    if any(word in lower_title for word in ['wash', 'clean', 'wipe', 'dust', 'vacuum', 'mop', 'trash', 'tidy', 'sweep', 'organize', 'disinfect', 'bed', 'fridge', 'defrost', 'شستن', 'شستشو', 'تمیز', 'جارو', 'طی کشیدن', 'نظافت', 'زباله', 'آشغال', 'گردگیری', 'مرتب', 'سینک', 'ظرفشویی', 'تخت', 'رختخواب', 'یخچال', 'فریزر', 'برفک']):
+        return f"{title} • clean house"
         
-        # General Cleaning & Chores
-        '[Cleaning]': ['wash', 'clean', 'wipe', 'dust', 'vacuum', 'mop', 'trash', 'tidy', 'sweep', 'organize', 'disinfect', 'bed', 'fridge', 'defrost', 'شستن', 'شستشو', 'تمیز', 'جارو', 'طی کشیدن', 'نظافت', 'زباله', 'آشغال', 'گردگیری', 'مرتب', 'سینک', 'ظرفشویی', 'تخت', 'رختخواب', 'یخچال', 'فریزر', 'برفک'],
+    if any(word in lower_title for word in ['laundry', 'clothes', 'sheets', 'towel', 'ironing', 'dry cleaning', 'لباسشویی', 'لباس', 'ملحفه', 'حوله', 'اتو']):
+        return f"{title} • laundry"
         
-        # Laundry (Triggers Dry Cleaning illustration)
-        '[Dry Cleaning]': ['laundry', 'clothes', 'sheets', 'towel', 'ironing', 'dry cleaning', 'لباسشویی', 'لباس', 'ملحفه', 'حوله', 'اتو'],
+    if any(word in lower_title for word in ['cook', 'bake', 'meal prep', 'recipe', 'پختن', 'آشپزی', 'غذا']):
+        return f"{title} • cooking"
         
-        # Home Maintenance & Repairs
-        '[DIY]': ['fix', 'repair', 'maintenance', 'tools', 'تعمیر', 'درست کردن', 'سرویس', 'ابزار', 'فنی'],
-        '[Electrician]': ['electrician', 'lamp', 'wiring', 'برقکار', 'لامپ', 'برق', 'سیم کشی'],
+    if any(word in lower_title for word in ['grocery', 'groceries', 'supermarket', 'خرید', 'سوپرمارکت', 'تره بار', 'میوه']):
+        return f"{title} • groceries"
         
-        # Bills & Admin (often triggers Finances/Bank illustrations)
-        '[Finances]': ['bill', 'rent', 'mortgage', 'قبض', 'اجاره', 'قسط', 'وام', 'شارژ'],
+    if any(word in lower_title for word in ['fix', 'repair', 'maintenance', 'tools', 'تعمیر', 'درست کردن', 'سرویس', 'ابزار', 'فنی']):
+        return f"{title} • diy"
         
-        # Pets
-        '[Vet]': ['pet', 'dog', 'cat', 'vet', 'veterinarian', 'حیوان', 'سگ', 'گربه', 'دامپزشک']
-    }
-    
-    for flair_keyword, trigger_words in flair_mappings.items():
-        if any(word in lower_title for word in trigger_words):
-            return f"{title} {flair_keyword}"
-            
+    if any(word in lower_title for word in ['ناهار']):
+        return f"{title} • lunch"
+        
+    if any(word in lower_title for word in ['شام']):
+        return f"{title} • dinner"
+        
+    if any(word in lower_title for word in ['صبحانه', 'املت']):
+        return f"{title} • breakfast"
+
     return title
 
 def sync_task_to_gcal(user, task):
@@ -195,10 +237,11 @@ def sync_task_to_gcal(user, task):
     if not assignees:
         return True
 
-    icon_prefix = f"{task.icon} " if (task.icon and len(task.icon) <= 4 and "_" not in task.icon) else ""
+    emoji = get_emoji_for_task(task.icon, task.title)
+    full_title = f"{emoji} {task.title}" if emoji not in task.title else task.title
     
     base_event = {
-        'summary': _enhance_title_for_flair(f"{icon_prefix}{task.title}"),
+        'summary': _enhance_title_for_flair(full_title),
         'description': task.description or "DoneSpace Task",
         'extendedProperties': {
             'private': {
