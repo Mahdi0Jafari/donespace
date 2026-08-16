@@ -3,37 +3,43 @@
 .mobile-arc-navbar { display: none; }
 
 .sidebar {
-    width: 68px; /* Thinner */
-    background: #0b0f19; /* Very dark minimal black */
-    margin: 24px 0 24px 24px; /* Floating detached look */
+    width: 72px;
+    background: rgba(15, 23, 42, 0.92); /* Deep Apple obsidian slate */
+    backdrop-filter: blur(30px) saturate(190%);
+    -webkit-backdrop-filter: blur(30px) saturate(190%);
+    margin: 24px 0 24px 24px;
     height: calc(100% - 48px);
-    border-radius: 36px; /* iPhone-like soft corners */
+    border-radius: 40px; /* Ergonomic continuous pill */
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 32px 0;
+    padding: 30px 0;
     color: white;
     z-index: 20;
-    border-right: none;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Apple subtle specularity */
+    box-shadow: 
+        0 24px 50px rgba(0, 0, 0, 0.16),
+        0 6px 16px rgba(0, 0, 0, 0.08),
+        inset 0 1px 1px rgba(255, 255, 255, 0.18); /* Specular top highlight */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-menu {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
     width: 100%;
 }
 
 .nav-item {
-    color: rgba(255, 255, 255, 0.4); /* Subdued light gray for inactive */
+    color: rgba(255, 255, 255, 0.45); /* Subdued light gray for inactive */
     text-decoration: none;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
+    width: 50px;
+    height: 50px;
+    border-radius: 20px; /* Apple squircle inner radius */
     position: relative;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     margin: 0 auto;
@@ -41,15 +47,14 @@
 
 .nav-item:hover { 
     color: white;
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow: none;
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px) scale(1.05);
 }
 
 .nav-item.active {
     color: white;
-    background: transparent;
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2);
     transform: translateY(0);
 }
 
@@ -57,11 +62,12 @@
 .nav-item.active::before {
     content: '';
     position: absolute;
-    left: -16px; /* Exactly hits the left edge of the 80px sidebar */
+    left: -11px;
     width: 4px;
-    height: 24px;
+    height: 22px;
     background: white;
     border-radius: 0 4px 4px 0;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
 }
 
 .nav-item .material-symbols-rounded {
