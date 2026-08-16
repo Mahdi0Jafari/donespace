@@ -97,13 +97,14 @@
 }
 
 /* Color variants — same as facility-card */
-.recipe-card.purple { background-color: #8c52ff; }
-.recipe-card.yellow { background-color: #ffc107; color: #333; }
-.recipe-card.orange { background-color: #ff914d; }
-.recipe-card.cyan   { background-color: #00bcd4; }
-.recipe-card.green  { background-color: #20bf6b; }
-.recipe-card.blue   { background-color: #3b82f6; }
-.recipe-card.red    { background-color: #ef4444; }
+.recipe-card.purple { background-color: #9071f5; }
+.recipe-card.yellow { background-color: #f5b738; color: #2d2406; }
+.recipe-card.orange { background-color: #fa7d4d; }
+.recipe-card.cyan   { background-color: #22c1dc; }
+.recipe-card.green  { background-color: #34c77b; }
+.recipe-card.blue   { background-color: #4f93f6; }
+.recipe-card.pink   { background-color: #f472b6; }
+.recipe-card.red    { background-color: #f87171; }
 
 /* Yellow override for text visibility */
 .recipe-card.yellow .recipe-card-category,

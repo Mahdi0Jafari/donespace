@@ -177,12 +177,13 @@
     font-size: 18px;
 }
 
-.color-swatch.purple { background-color: #8c52ff; }
-.color-swatch.yellow { background-color: #facc15; }
-.color-swatch.orange { background-color: #f97316; }
-.color-swatch.cyan { background-color: #06b6d4; }
-.color-swatch.green { background-color: #22c55e; }
-.color-swatch.blue { background-color: #3b82f6; }
+.color-swatch.purple { background-color: #9071f5; }
+.color-swatch.yellow { background-color: #f5b738; }
+.color-swatch.orange { background-color: #fa7d4d; }
+.color-swatch.cyan { background-color: #22c1dc; }
+.color-swatch.green { background-color: #34c77b; }
+.color-swatch.blue { background-color: #4f93f6; }
+.color-swatch.pink { background-color: #f472b6; }
 
 /* Tasks */
 .task-input-row {

@@ -163,14 +163,14 @@
     font-weight: 500;
 }
 
-.device-card.purple, .facility-card.purple { background-color: #8c52ff; }
-.device-card.yellow, .facility-card.yellow { background-color: #ffc107; color: #333; }
-.device-card.yellow .icon, .facility-card.yellow .icon { color: #333; }
-.device-card.orange, .facility-card.orange { background-color: #ff914d; }
-.device-card.cyan, .facility-card.cyan { background-color: #00bcd4; }
-.device-card.green, .facility-card.green { background-color: #20bf6b; }
-.device-card.blue, .facility-card.blue { background-color: #3b82f6; }
-.device-card.orange, .facility-card.orange { background-color: #fd7e14; }
+.device-card.purple, .facility-card.purple { background-color: #9071f5; }
+.device-card.yellow, .facility-card.yellow { background-color: #f5b738; color: #2d2406; }
+.device-card.yellow .icon, .facility-card.yellow .icon { color: #2d2406; }
+.device-card.orange, .facility-card.orange { background-color: #fa7d4d; }
+.device-card.cyan, .facility-card.cyan { background-color: #22c1dc; }
+.device-card.green, .facility-card.green { background-color: #34c77b; }
+.device-card.blue, .facility-card.blue { background-color: #4f93f6; }
+.device-card.pink, .facility-card.pink { background-color: #f472b6; }
 
 @media (max-width: 900px) {
     .facilities-grid { grid-template-columns: 1fr; }
