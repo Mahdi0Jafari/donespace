@@ -766,7 +766,7 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
 
                     let avatarImg = '';
                     const scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
-                    const actualTask = scheduledTasks.find(st => st.title === taskName && (st.room === fac.id || st.roomId === fac.id));
+                    const actualTask = scheduledTasks.find(st => (st.title === taskName || st.name === taskName) && (st.room === fac.id || st.roomId === fac.id || st.room === fac.name));
                     
                     let targetAssignees = [];
                     if (actualTask && actualTask.assignees && actualTask.assignees.length > 0) {
@@ -909,6 +909,9 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
                 }
                 if (!actualTask) {
                     actualTask = scheduledTasks.find(st => (st.title === taskName || st.name === taskName) && (st.room === facilityId || st.roomId === facilityId));
+                }
+                if (!actualTask) {
+                    actualTask = scheduledTasks.find(st => (st.title === taskName || st.name === taskName));
                 }
                 
                 if (typeof window.openQuickAddModal === 'function') {
