@@ -35,7 +35,7 @@ auth_bp = Blueprint('auth', __name__)
 def generate_join_code():
     while True:
         code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-        if not db.session.get(Home, code):
+        if not Home.query.filter_by(join_code=code).first():
             return code
 
 @auth_bp.route('/register', methods=['POST'])

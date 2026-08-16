@@ -6,11 +6,20 @@
     <title>{{ post.title }} | DoneSpace Blog</title>
     <meta name="description" content="{{ post.description }}">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="canonical" href="{{ request.url }}">
     
     <!-- Open Graph for SEO -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ request.url }}">
     <meta property="og:title" content="{{ post.title }}">
     <meta property="og:description" content="{{ post.description }}">
-    <meta property="og:image" content="{{ post.image }}">
+    <meta property="og:image" content="{{ request.url_root[:-1] }}{{ post.image }}">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ post.title }}">
+    <meta name="twitter:description" content="{{ post.description }}">
+    <meta name="twitter:image" content="{{ request.url_root[:-1] }}{{ post.image }}">
     
     <script type="application/ld+json">
     {
@@ -162,39 +171,41 @@
         </div>
     </header>
 
-    <div class="article-container">
+    <main class="article-container">
         <a href="/blog" class="back-link">&larr; Back to blog</a>
         
-        <div class="article-header">
-            <div class="article-category">{{ post.category | default('Article') }}</div>
-            <h1 class="article-title">{{ post.title }}</h1>
-            <div class="article-meta">
-                <span>{{ post.author | default('DoneSpace Team') }}</span>
-                <span>&bull;</span>
-                <span>{{ post.date }}</span>
+        <article>
+            <header class="article-header">
+                <div class="article-category">{{ post.category | default('Article') }}</div>
+                <h1 class="article-title">{{ post.title }}</h1>
+                <div class="article-meta">
+                    <span>{{ post.author | default('DoneSpace Team') }}</span>
+                    <span>&bull;</span>
+                    <span>{{ post.date }}</span>
+                </div>
+            </header>
+
+            {% if post.image %}
+            <img src="{{ post.image }}" alt="{{ post.title }}" class="article-image" fetchpriority="high">
+            {% endif %}
+
+            <div class="article-content">
+                {{ post.body | safe }}
             </div>
-        </div>
 
-        {% if post.image %}
-        <img src="{{ post.image }}" alt="{{ post.title }}" class="article-image">
-        {% endif %}
-
-        <div class="article-content">
-            {{ post.body | safe }}
-        </div>
-
-        {% if post.faq %}
-        <div class="faq-section">
-            <h3>Frequently Asked Questions</h3>
-            {% for item in post.faq %}
-            <details class="faq-item">
-                <summary>{{ item.question }}</summary>
-                <p>{{ item.answer }}</p>
-            </details>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
+            {% if post.faq %}
+            <section class="faq-section" aria-label="Frequently Asked Questions">
+                <h3>Frequently Asked Questions</h3>
+                {% for item in post.faq %}
+                <details class="faq-item">
+                    <summary>{{ item.question }}</summary>
+                    <p>{{ item.answer }}</p>
+                </details>
+                {% endfor %}
+            </section>
+            {% endif %}
+        </article>
+    </main>
 
 </body>
 </html>

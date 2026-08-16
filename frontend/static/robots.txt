@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Allow: /login
 Disallow: /api/
+Disallow: /app
 Disallow: /database/
 Disallow: /static/js/
 

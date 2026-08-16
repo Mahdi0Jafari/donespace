@@ -371,6 +371,38 @@ def sync_task_to_gcal(user, task):
     db.session.commit()
     return True
 
+def delete_task_from_gcal(task):
+    """Deletes all Google Calendar events associated with this task across all assignees."""
+    mappings = GCalEventMapping.query.filter_by(task_id=task.id).all()
+    for mapping in mappings:
+        user = db.session.get(User, mapping.user_id)
+        if user:
+            try:
+                service = get_calendar_service(user)
+                if service:
+                    calendar_id, _ = ensure_donespace_calendar(service)
+                    service.events().delete(calendarId=calendar_id, eventId=mapping.google_event_id).execute()
+            except Exception as e:
+                pass # Ignore if already deleted in GCal
+        db.session.delete(mapping)
+    
+    if task.google_event_id:
+        # Legacy cleanup
+        home_members = User.query.filter_by(home_id=task.home_id).all()
+        for member in home_members:
+            if member.google_access_token:
+                try:
+                    service = get_calendar_service(member)
+                    if service:
+                        calendar_id, _ = ensure_donespace_calendar(service)
+                        service.events().delete(calendarId=calendar_id, eventId=task.google_event_id).execute()
+                        break
+                except Exception:
+                    pass
+        task.google_event_id = None
+    db.session.commit()
+    return True
+
 def _resolve_cook_user(meal, home_members=None):
     """Finds the User object corresponding to meal.cook in the household."""
     if not meal.cook or meal.cook in ('Anyone', 'anyone', ''):

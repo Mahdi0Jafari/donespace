@@ -94,6 +94,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const primaryBtn = stickyFooter ? stickyFooter.querySelector('.primary-btn') : null;
         const secondaryBtn = stickyFooter ? stickyFooter.querySelector('.secondary-btn') : null;
 
+        const deleteTaskModalBtn = document.getElementById('deleteTaskModalBtn');
+        if (deleteTaskModalBtn) {
+            if (taskObj && taskObj.id) {
+                deleteTaskModalBtn.style.display = 'inline-flex';
+                deleteTaskModalBtn.onclick = async () => {
+                    if (confirm(`Are you sure you want to delete "${taskObj.title || taskObj.name}"?`)) {
+                        if (window.HomeAPI && window.HomeAPI.deleteTask) {
+                            await window.HomeAPI.deleteTask(taskObj.id);
+                        } else {
+                            let scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+                            scheduledTasks = scheduledTasks.filter(t => t.id !== taskObj.id);
+                            localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+                        }
+                        closeModal();
+                        if (window.refreshAllData) window.refreshAllData();
+                        else window.location.reload();
+                    }
+                };
+            } else {
+                deleteTaskModalBtn.style.display = 'none';
+            }
+        }
+
+        if (modalTitle) {
+            modalTitle.textContent = taskObj ? 'Edit Task' : (isFixedTask ? 'Schedule Task' : 'Quick Add Task');
+        }
+        if (primaryBtn) {
+            primaryBtn.textContent = taskObj ? 'Update Task' : 'Save Task';
+        }
+
         if (isFixedTask) {
             fixedTaskHeader.style.display = 'block';
             taskNameGroup.style.display = 'none';

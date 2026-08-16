@@ -787,8 +787,9 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
                         avatarImg += '</div>';
                     }
 
+                    const taskIdAttr = actualTask ? `data-task-id="${actualTask.id}"` : '';
                     tasksHTML += `
-                        <li class="task-item-clickable" data-task-name="${taskName}" data-task-icon="${taskIcon}" data-facility-id="${fac.id}">
+                        <li class="task-item-clickable" data-task-name="${taskName}" data-task-icon="${taskIcon}" data-facility-id="${fac.id}" ${taskIdAttr}>
                             <span class="task-text" style="display:flex; align-items:center; gap:6px;">
                                 <span class="material-symbols-rounded" style="font-size: 16px; color: #9ca3af;">${taskIcon}</span>
                                 ${taskName}
@@ -892,17 +893,36 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
             });
         });
 
-        // Attach click handlers to tasks to open the quick add modal
+        // Attach click handlers to tasks to open the quick add/edit modal
         document.querySelectorAll('.task-item-clickable').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.stopPropagation(); // prevent accordion
                 const taskName = e.currentTarget.getAttribute('data-task-name');
                 const taskIcon = e.currentTarget.getAttribute('data-task-icon');
                 const facilityId = e.currentTarget.getAttribute('data-facility-id');
+                const taskId = e.currentTarget.getAttribute('data-task-id');
                 
-                // Assuming openQuickAddModal exists globally or we dispatch an event
+                const scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+                let actualTask = null;
+                if (taskId) {
+                    actualTask = scheduledTasks.find(st => String(st.id) === String(taskId));
+                }
+                if (!actualTask) {
+                    actualTask = scheduledTasks.find(st => (st.title === taskName || st.name === taskName) && (st.room === facilityId || st.roomId === facilityId));
+                }
+                
                 if (typeof window.openQuickAddModal === 'function') {
-                    window.openQuickAddModal(taskName, facilityId, taskIcon);
+                    if (actualTask) {
+                        window.openQuickAddModal(
+                            actualTask.title || actualTask.name || taskName,
+                            actualTask.roomId || actualTask.room || facilityId,
+                            actualTask.icon || taskIcon,
+                            actualTask.startDate || actualTask.date,
+                            actualTask
+                        );
+                    } else {
+                        window.openQuickAddModal(taskName, facilityId, taskIcon);
+                    }
                 }
             });
         });

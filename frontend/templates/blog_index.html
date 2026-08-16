@@ -6,6 +6,39 @@
     <title>DoneSpace Blog | Household Management Tips</title>
     <meta name="description" content="New product features, the latest in technology, solutions, and updates from DoneSpace.">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="canonical" href="{{ request.url_root }}blog">
+    
+    <!-- Open Graph for SEO -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url_root }}blog">
+    <meta property="og:title" content="DoneSpace Blog | Modern Home Management Tips">
+    <meta property="og:description" content="Discover actionable guides on splitting chores, meal planning, and organizing your shared home seamlessly.">
+    <meta property="og:image" content="{{ request.url_root }}static/landing_hero.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="DoneSpace Blog | Home Management">
+    <meta name="twitter:description" content="Discover actionable guides on splitting chores, meal planning, and organizing your shared home.">
+    <meta name="twitter:image" content="{{ request.url_root }}static/landing_hero.png">
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "DoneSpace Blog",
+      "url": "{{ request.url_root }}blog",
+      "description": "Discover actionable guides on splitting chores, meal planning, and organizing your shared home seamlessly.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "DoneSpace",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ request.url_root }}static/favicon.svg"
+        }
+      }
+    }
+    </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

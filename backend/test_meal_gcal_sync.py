@@ -172,5 +172,42 @@ class TestMealGCalSync(unittest.TestCase):
         # Service was retrieved for Bob (the cook), NOT Alice
         mock_get_service.assert_called_with(self.user_b)
 
+    @patch('backend.utils.gcal.get_calendar_service')
+    @patch('backend.utils.gcal.ensure_donespace_calendar')
+    def test_delete_task_api_and_gcal(self, mock_ensure_cal, mock_get_service):
+        mock_service = MagicMock()
+        mock_events = MagicMock()
+        mock_service.events.return_value = mock_events
+        mock_get_service.return_value = mock_service
+        mock_ensure_cal.return_value = ('cal_id_donespace', 'UTC')
+
+        from backend.models import Task, GCalEventMapping
+        task = Task(home_id=self.home.id, title="Clean Kitchen")
+        task.assignees_rel.append(self.user_a)
+        db.session.add(task)
+        db.session.flush()
+
+        mapping = GCalEventMapping(
+            task_id=task.id,
+            user_id=self.user_a.id,
+            google_event_id="gcal_clean_kitchen_event_1"
+        )
+        db.session.add(mapping)
+        db.session.commit()
+
+        # Delete task via API
+        response = self.client.delete(
+            f'/api/tasks/{task.id}',
+            headers={'Authorization': f'Bearer {self.user_a.token}'}
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Check DB task is gone
+        self.assertIsNone(db.session.get(Task, task.id))
+        self.assertEqual(GCalEventMapping.query.filter_by(task_id=task.id).count(), 0)
+
+        # Check delete event was called in GCal
+        mock_events.delete.assert_called_with(calendarId='cal_id_donespace', eventId='gcal_clean_kitchen_event_1')
+
 if __name__ == '__main__':
     unittest.main()

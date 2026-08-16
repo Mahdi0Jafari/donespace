@@ -4,7 +4,7 @@ from backend.extensions import db, notify_clients, clients
 from queue import Queue, Empty
 from backend.utils.logger import log_task
 from backend.models import Task, Meal, Recipe, TaskCompletion, ActivityLog, User, Notification
-from backend.utils.gcal import sync_task_to_gcal, sync_meal_to_gcal, delete_meal_from_gcal, delete_event
+from backend.utils.gcal import sync_task_to_gcal, delete_task_from_gcal, sync_meal_to_gcal, delete_meal_from_gcal, delete_event
 import json
 import time
 import os
@@ -198,6 +198,44 @@ def save_tasks():
     
     return jsonify({'success': True, 'task': task.to_dict(), 'tempId': raw_task_id if is_temp_id else None})
 
+@api_bp.route('/tasks/<task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    try:
+        t_id = int(task_id)
+    except ValueError:
+        return jsonify({'error': 'Invalid task ID'}), 400
+        
+    task = Task.query.filter_by(id=t_id, home_id=g.user.home_id).first()
+    if not task:
+        return jsonify({'error': 'Task not found'}), 404
+        
+    task_title = task.title
+    
+    # 1. Clean up from Google Calendar for all assignees
+    delete_task_from_gcal(task)
+    
+    # 2. Delete completions
+    TaskCompletion.query.filter_by(task_id=task.id).delete()
+    
+    # 3. Log activity
+    log = ActivityLog(
+        home_id=g.user.home_id,
+        user_id=g.user.id,
+        action='deleted_task',
+        details=task_title,
+        payload=json.dumps({'changes': {'title': {'old': task_title, 'new': None}}}),
+        timestamp=datetime.utcnow()
+    )
+    db.session.add(log)
+    
+    # 4. Delete task
+    db.session.delete(task)
+    db.session.commit()
+    
+    # 5. Broadcast SSE update
+    notify_clients(g.user.home_id, 'tasks_updated', {})
+    return jsonify({'success': True, 'taskId': t_id})
+
 @api_bp.route('/tasks/<task_id>/complete', methods=['POST'])
 def complete_task(task_id):
     data = request.json or {}
@@ -205,9 +243,16 @@ def complete_task(task_id):
     
     # Handle meals polymorphic completion
     if str(task_id).startswith('meal-'):
-        real_id = int(str(task_id).replace('meal-', ''))
-        meal = db.session.get(Meal, real_id)
-        if meal and not meal.completed:
+        try:
+            real_id = int(str(task_id).replace('meal-', ''))
+        except ValueError:
+            return jsonify({'error': 'Invalid meal ID'}), 400
+            
+        meal = Meal.query.filter_by(id=real_id, home_id=g.user.home_id).first()
+        if not meal:
+            return jsonify({'error': 'Meal not found'}), 404
+            
+        if not meal.completed:
             meal.completed = True
             g.user.points = (g.user.points or 0) + 10
             db.session.commit()
@@ -220,6 +265,10 @@ def complete_task(task_id):
         task_id = int(task_id)
     except ValueError:
         return jsonify({'error': 'Invalid task ID'}), 400
+        
+    task = Task.query.filter_by(id=task_id, home_id=g.user.home_id).first()
+    if not task:
+        return jsonify({'error': 'Task not found'}), 404
         
     # Check if already completed
     existing = TaskCompletion.query.filter_by(task_id=task_id, date=date_str).first()
@@ -239,8 +288,7 @@ def complete_task(task_id):
     g.user.points = (g.user.points or 0) + 10
     
     # Activity Log
-    task = db.session.get(Task, task_id)
-    task_title = task.title if task else "a task"
+    task_title = task.title
     log = ActivityLog(
         home_id=g.user.home_id,
         user_id=g.user.id,
@@ -264,9 +312,16 @@ def incomplete_task(task_id):
     
     # Handle meals polymorphic completion
     if str(task_id).startswith('meal-'):
-        real_id = int(str(task_id).replace('meal-', ''))
-        meal = db.session.get(Meal, real_id)
-        if meal and meal.completed:
+        try:
+            real_id = int(str(task_id).replace('meal-', ''))
+        except ValueError:
+            return jsonify({'error': 'Invalid meal ID'}), 400
+            
+        meal = Meal.query.filter_by(id=real_id, home_id=g.user.home_id).first()
+        if not meal:
+            return jsonify({'error': 'Meal not found'}), 404
+            
+        if meal.completed:
             meal.completed = False
             g.user.points = max(0, (g.user.points or 0) - 10)
             db.session.commit()
@@ -279,18 +334,21 @@ def incomplete_task(task_id):
     except ValueError:
         return jsonify({'error': 'Invalid task ID'}), 400
         
+    task = Task.query.filter_by(id=task_id, home_id=g.user.home_id).first()
+    if not task:
+        return jsonify({'error': 'Task not found'}), 404
+        
     completion = TaskCompletion.query.filter_by(task_id=task_id, date=date_str).first()
     if completion:
         db.session.delete(completion)
         g.user.points = max(0, (g.user.points or 0) - 10)
         
         # Activity Log
-        task = db.session.get(Task, task_id)
         log = ActivityLog(
             home_id=g.user.home_id,
             user_id=g.user.id,
             action='uncompleted_task',
-            details=task.title if task else "a task",
+            details=task.title,
             timestamp=datetime.utcnow()
         )
         db.session.add(log)
