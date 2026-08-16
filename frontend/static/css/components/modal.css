@@ -258,6 +258,45 @@
     transform: scale(0.95);
 }
 
+.btn-danger-modal {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid #fee2e2;
+    background-color: #fff1f2;
+    color: #e11d48;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(225, 29, 72, 0.05);
+}
+
+.btn-danger-modal:hover {
+    background-color: #ffe4e6;
+    border-color: #fecdd3;
+    color: #be123c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15);
+}
+
+.btn-danger-modal:active {
+    transform: scale(0.95);
+}
+
+.btn-danger-modal .material-symbols-rounded {
+    font-size: 18px;
+    color: #e11d48;
+    transition: transform 0.2s ease;
+}
+
+.btn-danger-modal:hover .material-symbols-rounded {
+    transform: scale(1.1);
+}
+
 /* Responsive Settings Modal */
 @media (max-width: 768px) {
     .settings-modal-content {
