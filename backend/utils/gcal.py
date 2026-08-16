@@ -160,10 +160,26 @@ ICON_TO_EMOJI = {
     'bathtub': '🛁',
     'wc': '🚽',
     'water_drop': '🪴',
+    'yard': '🌿',
+    'potted_plant': '🪴',
     'chair': '🛋️',
     'window': '🪟',
     'tools': '🔧',
+    'build': '🛠️',
     'home': '🏠',
+    'shopping_cart': '🛒',
+    'shopping_bag': '🛍️',
+    'fitness_center': '🏋️',
+    'directions_run': '🏃',
+    'pets': '🐾',
+    'medication': '💊',
+    'local_hospital': '🩺',
+    'menu_book': '📚',
+    'movie': '🍿',
+    'celebration': '🎉',
+    'cake': '🎂',
+    'coffee': '☕',
+    'local_cafe': '☕',
     'check_circle': '✅'
 }
 
@@ -171,24 +187,59 @@ def get_emoji_for_task(icon, title):
     if icon and icon in ICON_TO_EMOJI:
         return ICON_TO_EMOJI[icon]
     lower = (title or '').lower()
+    
+    # Cleaning & Chores
     if any(w in lower for w in ['vacuum', 'جارو', 'sweep']):
         return '🧹'
-    if any(w in lower for w in ['dish', 'dishes', 'ظرف']):
+    if any(w in lower for w in ['dish', 'dishes', 'ظرف', 'سینک']):
         return '🍽️'
-    if any(w in lower for w in ['mop', 'طی']):
+    if any(w in lower for w in ['mop', 'طی', 'تی کشیدن']):
         return '🧽'
-    if any(w in lower for w in ['dust', 'گردگیری']):
+    if any(w in lower for w in ['dust', 'گردگیری', 'دستمال']):
         return '✨'
-    if any(w in lower for w in ['flower', 'water', 'plant', 'گل', 'گیاه']):
+    if any(w in lower for w in ['flower', 'water', 'plant', 'garden', 'گل', 'گیاه', 'گلدان', 'باغچه', 'آبیاری']):
         return '🪴'
-    if any(w in lower for w in ['bed', 'تخت', 'رختخواب']):
+    if any(w in lower for w in ['bed', 'تخت', 'رختخواب', 'ملحفه']):
         return '🛏️'
-    if any(w in lower for w in ['laundry', 'clothes', 'لباس', 'اتو']):
+    if any(w in lower for w in ['laundry', 'clothes', 'لباس', 'اتو', 'شستشو']):
         return '🧺'
-    if any(w in lower for w in ['trash', 'garbage', 'زباله', 'آشغال']):
+    if any(w in lower for w in ['trash', 'garbage', 'waste', 'زباله', 'آشغال']):
         return '🗑️'
-    if any(w in lower for w in ['cook', 'dinner', 'lunch', 'breakfast', 'غذا', 'آشپزی']):
+    if any(w in lower for w in ['bath', 'shower', 'wc', 'toilet', 'حمام', 'دستشویی', 'توالت']):
+        return '🛁'
+    if any(w in lower for w in ['window', 'glass', 'mirror', 'پنجره', 'شیشه', 'آینه']):
+        return '🪟'
+    
+    # Food & Drink
+    if any(w in lower for w in ['breakfast', 'صبحانه', 'املت', 'پنکیک']):
+        return '🥞'
+    if any(w in lower for w in ['lunch', 'dinner', 'cook', 'recipe', 'meal', 'غذا', 'آشپزی', 'پختن', 'شام', 'ناهار']):
         return '🍳'
+    if any(w in lower for w in ['coffee', 'tea', 'قهوه', 'چای']):
+        return '☕'
+    if any(w in lower for w in ['grocery', 'shopping', 'supermarket', 'خرید', 'سوپرمارکت', 'میوه']):
+        return '🛒'
+    
+    # Health, Fitness, Pets & Lifestyle
+    if any(w in lower for w in ['gym', 'workout', 'fitness', 'ورزش', 'باشگاه', 'بدنسازی']):
+        return '🏋️'
+    if any(w in lower for w in ['run', 'walk', 'دویدن', 'پیاده روی']):
+        return '🏃'
+    if any(w in lower for w in ['yoga', 'stretch', 'یوگا']):
+        return '🧘'
+    if any(w in lower for w in ['pet', 'dog', 'cat', 'سگ', 'گربه', 'حیوان']):
+        return '🐾'
+    if any(w in lower for w in ['doctor', 'dentist', 'med', 'pill', 'دارو', 'دکتر', 'دندان', 'قرص']):
+        return '💊'
+    if any(w in lower for w in ['book', 'read', 'کتاب', 'مطالعه']):
+        return '📚'
+    if any(w in lower for w in ['movie', 'cinema', 'film', 'فیلم', 'سینما']):
+        return '🍿'
+    if any(w in lower for w in ['birthday', 'party', 'تولد', 'جشن', 'مهمانی']):
+        return '🎉'
+    if any(w in lower for w in ['fix', 'repair', 'tools', 'تعمیر', 'ابزار', 'سرویس']):
+        return '🔧'
+
     return '📋'
 
 def _enhance_title_for_flair(title):
@@ -198,34 +249,80 @@ def _enhance_title_for_flair(title):
     """
     lower_title = title.lower()
     
-    # If the title already contains one of the native triggers, return as is
-    if any(phrase in lower_title for phrase in ['clean house', 'clean the house', 'clean the apartment', 'cook dinner', 'cook lunch', 'breakfast', 'lunch', 'dinner', 'brunch', 'bbq', 'laundry', 'groceries', 'grocery', 'diy']):
+    # If the title already naturally contains one of the official triggers, preserve as-is
+    exact_triggers = [
+        'clean house', 'clean the house', 'clean the apartment', 'vacuum clean', 'tidy up',
+        'cook dinner', 'cook lunch', 'cook meal', 'cooking',
+        'breakfast', 'lunch', 'dinner', 'brunch', 'bbq', 'barbecue', 'coffee', 'tea',
+        'laundry', 'groceries', 'supermarket', 'diy', 'electrician',
+        'dentist', 'doctor', 'haircut', 'massage',
+        'running', 'cycling', 'swimming', 'yoga', 'gym', 'crossfit',
+        'cinema', 'movie', 'book club', 'camping', 'birthday', 'board games'
+    ]
+    if any(phrase in lower_title for phrase in exact_triggers):
         return title
 
-    # Mappings to exact Google Calendar trigger phrases (without brackets)
-    if any(word in lower_title for word in ['wash', 'clean', 'wipe', 'dust', 'vacuum', 'mop', 'trash', 'tidy', 'sweep', 'organize', 'disinfect', 'bed', 'fridge', 'defrost', 'شستن', 'شستشو', 'تمیز', 'جارو', 'طی کشیدن', 'نظافت', 'زباله', 'آشغال', 'گردگیری', 'مرتب', 'سینک', 'ظرفشویی', 'تخت', 'رختخواب', 'یخچال', 'فریزر', 'برفک']):
+    # Cleaning & Housework
+    if any(word in lower_title for word in ['wash', 'clean', 'wipe', 'dust', 'vacuum', 'mop', 'trash', 'tidy', 'sweep', 'organize', 'disinfect', 'bed', 'fridge', 'defrost', 'sink', 'mirror', 'window', 'flower', 'water', 'plant', 'شستن', 'شستشو', 'تمیز', 'جارو', 'طی کشیدن', 'نظافت', 'زباله', 'آشغال', 'گردگیری', 'مرتب', 'سینک', 'ظرفشویی', 'تخت', 'رختخواب', 'یخچال', 'فریزر', 'برفک', 'آینه', 'پنجره', 'گلدان', 'گیاه', 'گل']):
         return f"{title} • clean house"
         
     if any(word in lower_title for word in ['laundry', 'clothes', 'sheets', 'towel', 'ironing', 'dry cleaning', 'لباسشویی', 'لباس', 'ملحفه', 'حوله', 'اتو']):
         return f"{title} • laundry"
         
+    # Food & Drinks
     if any(word in lower_title for word in ['cook', 'bake', 'meal prep', 'recipe', 'پختن', 'آشپزی', 'غذا']):
         return f"{title} • cooking"
         
     if any(word in lower_title for word in ['grocery', 'groceries', 'supermarket', 'خرید', 'سوپرمارکت', 'تره بار', 'میوه']):
         return f"{title} • groceries"
         
-    if any(word in lower_title for word in ['fix', 'repair', 'maintenance', 'tools', 'تعمیر', 'درست کردن', 'سرویس', 'ابزار', 'فنی']):
-        return f"{title} • diy"
+    if any(word in lower_title for word in ['coffee', 'tea', 'cafe', 'قهوه', 'چای', 'کافه']):
+        return f"{title} • coffee"
+        
+    if any(word in lower_title for word in ['صبحانه', 'املت', 'پنکیک']):
+        return f"{title} • breakfast"
         
     if any(word in lower_title for word in ['ناهار']):
         return f"{title} • lunch"
         
     if any(word in lower_title for word in ['شام']):
         return f"{title} • dinner"
-        
-    if any(word in lower_title for word in ['صبحانه', 'املت']):
-        return f"{title} • breakfast"
+
+    # Maintenance & Technical
+    if any(word in lower_title for word in ['electrician', 'lamp', 'wiring', 'برقکار', 'لامپ', 'برق', 'سیم کشی']):
+        return f"{title} • electrician"
+
+    if any(word in lower_title for word in ['fix', 'repair', 'maintenance', 'tools', 'تعمیر', 'درست کردن', 'سرویس', 'ابزار', 'فنی']):
+        return f"{title} • diy"
+
+    # Health & Fitness
+    if any(word in lower_title for word in ['dentist', 'dental', 'دندان', 'دندانپزشک', 'مسواک']):
+        return f"{title} • dentist"
+
+    if any(word in lower_title for word in ['doctor', 'med', 'pill', 'دکتر', 'پزشک', 'دارو', 'قرص', 'چکاپ']):
+        return f"{title} • doctor"
+
+    if any(word in lower_title for word in ['gym', 'workout', 'fitness', 'crossfit', 'ورزش', 'باشگاه', 'بدنسازی']):
+        return f"{title} • gym"
+
+    if any(word in lower_title for word in ['run', 'jog', 'walk', 'دویدن', 'پیاده روی']):
+        return f"{title} • running"
+
+    if any(word in lower_title for word in ['yoga', 'یوگا']):
+        return f"{title} • yoga"
+
+    if any(word in lower_title for word in ['bike', 'cycling', 'دوچرخه']):
+        return f"{title} • cycling"
+
+    # Entertainment & Social
+    if any(word in lower_title for word in ['movie', 'cinema', 'film', 'فیلم', 'سینما']):
+        return f"{title} • cinema"
+
+    if any(word in lower_title for word in ['book', 'read', 'کتاب', 'مطالعه']):
+        return f"{title} • book club"
+
+    if any(word in lower_title for word in ['birthday', 'party', 'تولد', 'جشن', 'مهمانی']):
+        return f"{title} • birthday"
 
     return title
 
