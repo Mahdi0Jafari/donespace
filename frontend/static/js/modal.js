@@ -1061,30 +1061,36 @@ window.HomeAPI.showInviteModal = function(joinCode, homeName) {
     const inviteUrl = window.location.origin + '/login?join=' + joinCode;
 
     const modalHTML = `
-        <div class="modal-overlay active" id="dynamicInviteModal" style="backdrop-filter: blur(8px); background: rgba(0,0,0,0.4);">
-            <div class="modal-content" style="max-width: 420px; padding: 32px 24px; text-align: center; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
-                <button onclick="document.getElementById('dynamicInviteModal').remove();" style="position: absolute; top: 16px; right: 16px; background: none; border: none; cursor: pointer; color: #9ca3af; transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
-                    <span class="material-symbols-rounded">close</span>
+        <div class="modal-overlay active" id="dynamicInviteModal" style="backdrop-filter: blur(12px); background: rgba(15, 23, 42, 0.5); z-index: 1100;">
+            <div class="modal-content" style="max-width: 400px; padding: 32px 24px; text-align: center; border-radius: 28px; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); background: #ffffff;">
+                <button onclick="document.getElementById('dynamicInviteModal').remove();" style="position: absolute; top: 18px; right: 18px; width: 32px; height: 32px; border-radius: 50%; background: #f1f5f9; border: none; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                    <span class="material-symbols-rounded" style="font-size: 20px;">close</span>
                 </button>
-                <div style="width: 60px; height: 60px; border-radius: 50%; background: #E9EFFD; color: var(--primary-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
-                    <span class="material-symbols-rounded" style="font-size: 32px;">qr_code_scanner</span>
-                </div>
-                <h3 style="margin-bottom: 8px; font-size: 22px;">Invite to ${homeName}</h3>
-                <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">Scan the QR code or share the link to invite roommates.</p>
                 
-                <div id="qrcode-container" style="display: flex; justify-content: center; margin-bottom: 24px; padding: 16px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;">
-                    <div id="qrcode"></div>
+                <div style="width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, rgba(140,82,255,0.12), rgba(99,102,241,0.08)); border: 1px solid rgba(140,82,255,0.2); color: #8c52ff; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; box-shadow: 0 8px 16px rgba(140,82,255,0.12);">
+                    <span class="material-symbols-rounded" style="font-size: 28px;">person_add</span>
                 </div>
 
-                <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 16px; margin-bottom: 24px;">
-                    <h2 style="font-size: 28px; letter-spacing: 6px; color: var(--primary-purple); margin: 0;">${joinCode}</h2>
+                <h3 style="margin-bottom: 6px; font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">Invite to ${homeName}</h3>
+                <p style="color: #64748b; font-size: 13.5px; margin-bottom: 20px; line-height: 1.5;">Scan the QR code or share your link to collaborate with roommates.</p>
+                
+                <div style="display: flex; justify-content: center; margin-bottom: 18px;">
+                    <div id="qrcode-container" style="padding: 14px; background: #ffffff; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: inline-block;">
+                        <div id="qrcode"></div>
+                    </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button class="primary-btn" id="shareInviteActionBtn" style="width: 100%; padding: 14px 20px; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
-                        <span class="material-symbols-rounded">share</span> Share Invite Link
+                <div id="copyJoinCodeBox" title="Click to copy code" style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 12px 16px; margin-bottom: 20px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); user-select: none;">
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 4px;">Invite Code</div>
+                    <h2 style="font-size: 26px; letter-spacing: 8px; color: #8c52ff; margin: 0; font-weight: 800;">${joinCode}</h2>
+                    <div id="copyCodeHint" style="font-size: 11px; font-weight: 600; color: #64748b; margin-top: 4px;">Click code to copy 📋</div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="primary-btn" id="shareInviteActionBtn" style="width: 100%; padding: 13px 20px; font-size: 15px; font-weight: 700; border-radius: 14px; background: linear-gradient(135deg, #8c52ff 0%, #6366f1 100%); color: white; border: none; box-shadow: 0 8px 20px rgba(140, 82, 255, 0.35); display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">share</span> Share Invite Link
                     </button>
-                    <button class="secondary-btn" onclick="document.getElementById('dynamicInviteModal').remove(); window.location.reload();" style="width: 100%; padding: 14px 20px; font-size: 16px;">Done</button>
+                    <button class="secondary-btn" onclick="document.getElementById('dynamicInviteModal').remove();" style="width: 100%; padding: 11px 20px; font-size: 14px; font-weight: 600; border-radius: 14px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">Done</button>
                 </div>
             </div>
         </div>
@@ -1094,25 +1100,48 @@ window.HomeAPI.showInviteModal = function(joinCode, homeName) {
     if (window.QRCode) {
         new QRCode(document.getElementById("qrcode"), {
             text: inviteUrl,
-            width: 160,
-            height: 160,
-            colorDark : "#111827",
+            width: 150,
+            height: 150,
+            colorDark : "#0f172a",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
         });
     }
 
+    // 1. Click-to-copy on the code box
+    const codeBox = document.getElementById('copyJoinCodeBox');
+    const codeHint = document.getElementById('copyCodeHint');
+    if (codeBox && codeHint) {
+        codeBox.addEventListener('mouseenter', () => {
+            codeBox.style.borderColor = '#8c52ff';
+            codeBox.style.background = 'rgba(140, 82, 255, 0.04)';
+        });
+        codeBox.addEventListener('mouseleave', () => {
+            codeBox.style.borderColor = '#cbd5e1';
+            codeBox.style.background = '#f8fafc';
+        });
+        codeBox.onclick = function() {
+            navigator.clipboard.writeText(joinCode);
+            codeBox.style.transform = 'scale(0.97)';
+            setTimeout(() => codeBox.style.transform = 'scale(1)', 150);
+            codeHint.innerHTML = '<span style="color: #10b981; font-weight: 700;">✓ Code copied to clipboard!</span>';
+            setTimeout(() => {
+                codeHint.innerHTML = 'Click code to copy 📋';
+            }, 2500);
+        };
+    }
+
+    // 2. Share / Copy button
     const shareBtn = document.getElementById('shareInviteActionBtn');
     shareBtn.addEventListener('mousedown', () => shareBtn.style.transform = 'scale(0.98)');
     shareBtn.addEventListener('mouseup', () => shareBtn.style.transform = 'scale(1)');
-    shareBtn.addEventListener('mouseleave', () => shareBtn.style.transform = 'scale(1)');
 
     shareBtn.onclick = async function() {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: 'Join my home on DoneSpace',
-                    text: 'Click this link to join my home and collaborate on tasks and meals!',
+                    title: 'Join ' + homeName + ' on DoneSpace',
+                    text: 'Join our home on DoneSpace to coordinate chores and meals!',
                     url: inviteUrl
                 });
             } catch (err) {
@@ -1121,12 +1150,14 @@ window.HomeAPI.showInviteModal = function(joinCode, homeName) {
         } else {
             navigator.clipboard.writeText(inviteUrl);
             const originalHTML = this.innerHTML;
-            this.innerHTML = '<span class="material-symbols-rounded">check</span> Copied!';
-            this.style.background = '#10b981';
+            this.innerHTML = '<span class="material-symbols-rounded" style="font-size: 18px;">check</span> Copied Link!';
+            this.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            this.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.35)';
             setTimeout(() => { 
                 this.innerHTML = originalHTML; 
-                this.style.background = '';
-            }, 2000);
+                this.style.background = 'linear-gradient(135deg, #8c52ff 0%, #6366f1 100%)';
+                this.style.boxShadow = '0 8px 20px rgba(140, 82, 255, 0.35)';
+            }, 2500);
         }
     };
 };
