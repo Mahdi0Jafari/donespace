@@ -192,6 +192,18 @@
         .faq-item summary:hover { color: var(--brand-purple); }
         .faq-item p { margin-top: 16px; font-size: 1.05rem; color: #475569; line-height: 1.7; }
 
+        /* Reading Progress Bar */
+        .reading-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, #8c52ff, #38bdf8);
+            z-index: 1001;
+            transition: width 0.1s ease-out;
+        }
+
         @media (max-width: 768px) {
             .site-nav { padding: 0 20px; }
             .article-container { padding: 24px 16px 80px; }
@@ -201,6 +213,9 @@
     </style>
 </head>
 <body>
+
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress-bar" id="progressBar"></div>
 
     <header class="site-nav">
         <a href="/" class="logo">
@@ -226,7 +241,9 @@
                 <div class="article-meta">
                     <span>{{ post.author | default('DoneSpace Team') }}</span>
                     <span>&bull;</span>
-                    <span>{{ post.date }}</span>
+                    <span id="formattedDate">{{ post.date }}</span>
+                    <span>&bull;</span>
+                    <span id="readTime">4 min read</span>
                 </div>
             </header>
 
@@ -234,7 +251,7 @@
             <img src="{{ post.image }}" alt="{{ post.title }}" class="article-image" fetchpriority="high">
             {% endif %}
 
-            <div class="article-content">
+            <div class="article-content" id="articleBody">
                 {{ post.body | safe }}
             </div>
 
@@ -251,6 +268,42 @@
             {% endif %}
         </article>
     </main>
+
+    <script>
+        // 1. Reading Progress Bar
+        window.addEventListener('scroll', () => {
+            const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar) progressBar.style.width = scrolled + '%';
+        });
+
+        // 2. Dynamic Reading Time Calculation
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.getElementById('articleBody');
+            const readTimeEl = document.getElementById('readTime');
+            if (body && readTimeEl) {
+                const words = body.innerText.trim().split(/\s+/).length;
+                const minutes = Math.max(1, Math.ceil(words / 200));
+                readTimeEl.textContent = `⏱ ${minutes} min read`;
+            }
+
+            // 3. Elegant Date Formatting
+            const dateEl = document.getElementById('formattedDate');
+            if (dateEl && dateEl.textContent) {
+                const rawDate = dateEl.textContent.trim();
+                const parsed = new Date(rawDate);
+                if (!isNaN(parsed.getTime())) {
+                    dateEl.textContent = parsed.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                }
+            }
+        });
+    </script>
 
 </body>
 </html>

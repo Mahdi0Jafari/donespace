@@ -183,7 +183,7 @@
                     <div class="post-overlay">
                         <div>
                             <div class="post-author">{{ post.author | default('DoneSpace Team') }}</div>
-                            <div class="post-date">{{ post.date }}</div>
+                            <div class="post-date js-formatted-date">{{ post.date }}</div>
                         </div>
                         <div class="post-badge">{{ post.category | default('Article') }}</div>
                     </div>
@@ -195,6 +195,21 @@
             {% endfor %}
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.js-formatted-date').forEach(el => {
+                const parsed = new Date(el.textContent.trim());
+                if (!isNaN(parsed.getTime())) {
+                    el.textContent = parsed.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
