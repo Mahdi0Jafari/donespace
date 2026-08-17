@@ -140,9 +140,12 @@
             </div>
 
             <div class="panel-section animate-fade-up" style="animation-delay: 1.3s;">
-                <div class="section-header">
+                <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <h2>Members</h2>
-                    <button class="icon-btn small"><span class="material-symbols-rounded">chevron_right</span></button>
+                    <button class="invite-header-pill-btn" onclick="if(window.HomeAPI && window.HomeAPI.showInviteModal) window.HomeAPI.showInviteModal();" title="Invite Roommates">
+                        <span class="material-symbols-rounded" style="font-size: 16px;">person_add</span>
+                        <span>Invite</span>
+                    </button>
                 </div>
                 <div class="members-list" id="realMembersList">
                     <!-- Populated dynamically from API -->
@@ -666,9 +669,9 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="/static/js/engagement.js"></script>
     <script src="/static/js/recurrence-util.js"></script>
-    <script src="/static/js/calendar.js?v=12"></script>
-    <script src="/static/js/dashboard.js?v=12"></script>
+    <script src="/static/js/calendar.js?v=14"></script>
+    <script src="/static/js/dashboard.js?v=14"></script>
     <script src="/static/js/tour.js?v=1"></script>
-    <script src="/static/js/modal.js?v=12"></script>
-    <script src="/static/js/meal-planner.js?v=12"></script>
+    <script src="/static/js/modal.js?v=14"></script>
+    <script src="/static/js/meal-planner.js?v=14"></script>
 {% endblock %}
