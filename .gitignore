@@ -32,3 +32,5 @@ client_secret_*.json
 logs/
 .agents/skills
 docs/growth_and_launch_playbook.md
+temp_assets/
+temp/

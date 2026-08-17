@@ -5,7 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}DoneSpace{% endblock %}</title>
     <meta name="description" content="{% block description %}DoneSpace is the modern way to manage your home. Coordinate chores, plan meals, and earn points with your family or roommates.{% endblock %}">
+    
+    <!-- PWA & Mobile Web App Manifest (2026 Standards) -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#8c52ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DoneSpace">
+    
+    <!-- App Icons -->
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+    
     <link rel="canonical" href="{% block canonical %}https://donespace.ir/{{ request.path[1:] }}{% endblock %}">
     
     <!-- Open Graph / Social Media Meta Tags -->
@@ -370,6 +384,9 @@
     <!-- Main UI Layout Scripts (Notifications, Profile, Settings) -->
     <script src="/static/js/app_layout.js?v=1"></script>
     <script src="/static/js/navbar-arc.js"></script>
+    
+    <!-- PWA Lifecycle & Install Manager -->
+    <script src="/static/js/pwa.js" defer></script>
     
     <!-- Extra Scripts for specific pages -->
     {% block scripts %}{% endblock %}

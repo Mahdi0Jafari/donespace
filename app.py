@@ -61,7 +61,7 @@ def require_auth():
     if request.method == 'OPTIONS':
         return
     # Exempt auth routes, static files, and public pages
-    exempt_routes = ['/api/auth/login', '/api/auth/register', '/api/auth/check-email', '/login', '/', '/robots.txt', '/sitemap.xml', '/llms.txt', '/about']
+    exempt_routes = ['/api/auth/login', '/api/auth/register', '/api/auth/check-email', '/login', '/', '/robots.txt', '/sitemap.xml', '/llms.txt', '/about', '/manifest.webmanifest', '/manifest.json', '/sw.js', '/offline']
     if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/api/auth/google/') or request.path.startswith('/static/') or request.path.startswith('/blog'):
         return
         
@@ -161,6 +161,27 @@ from flask import send_from_directory, Response
 @app.route('/llms.txt')
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
+
+# --- PWA Routes ---
+@app.route('/sw.js')
+def service_worker():
+    response = send_from_directory(app.static_folder, 'sw.js')
+    response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
+    response.headers['Service-Worker-Allowed'] = '/'
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return response
+
+@app.route('/manifest.webmanifest')
+@app.route('/manifest.json')
+def web_manifest():
+    response = send_from_directory(app.static_folder, 'manifest.webmanifest')
+    response.headers['Content-Type'] = 'application/manifest+json; charset=utf-8'
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
+
+@app.route('/offline')
+def offline_page():
+    return render_template('offline.html')
 
 @app.route('/sitemap.xml')
 def sitemap():
