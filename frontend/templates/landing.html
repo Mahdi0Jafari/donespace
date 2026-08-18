@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DoneSpace — Modern Home Management</title>
+    <title>DoneSpace — Smart Chore Tracker & Household Meal Planner</title>
     <meta name="description" content="DoneSpace is the ultimate shared dashboard for roommates and families. Assign chores fairly, plan weekly meals, and track household points in one place.">
-    <meta name="keywords" content="home management, chore tracker, google calendar sync, roommate app, meal planner, household dashboard, family organizer">
+    <meta name="keywords" content="chore tracker, roommate chore app, shared meal planner, household dashboard, family organizer, google calendar sync, gamified chores">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="author" content="DoneSpace Inc.">
     <meta name="theme-color" content="#8c52ff">
@@ -29,15 +29,15 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://donespace.ir/">
-    <meta property="og:title" content="DoneSpace — Manage Your Home Without The Drama">
+    <meta property="og:title" content="DoneSpace — Smart Chore Tracker & Household Meal Planner">
     <meta property="og:description" content="The ultimate shared dashboard. Seamlessly sync chores and meals with Google Calendar.">
-    <meta property="og:image" content="https://donespace.ir/static/landing_hero.png">
+    <meta property="og:image" content="https://donespace.ir/static/landing_hero.webp">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="DoneSpace — Home Management">
+    <meta name="twitter:title" content="DoneSpace — Smart Chore Tracker & Household Meal Planner">
     <meta name="twitter:description" content="Assign chores fairly, plan weekly meals, and track household points in one place.">
-    <meta name="twitter:image" content="https://donespace.ir/static/landing_hero.png">
+    <meta name="twitter:image" content="https://donespace.ir/static/landing_hero.webp">
     
     <!-- Structured Data (JSON-LD) for AI Engines -->
     <script type="application/ld+json">
@@ -50,7 +50,7 @@
           "name": "DoneSpace",
           "url": "https://donespace.ir",
           "applicationCategory": "ProductivityApplication",
-          "operatingSystem": "Web",
+          "operatingSystem": "All",
           "description": "A gamified home management web application designed to help roommates and families split chores evenly, plan meals, and manage a household.",
           "featureList": [
             "Shared Task Dashboard",
@@ -70,7 +70,11 @@
           "@id": "https://donespace.ir/#organization",
           "name": "DoneSpace Inc.",
           "url": "https://donespace.ir",
-          "logo": "https://donespace.ir/static/logo.png"
+          "logo": "https://donespace.ir/static/logo.png",
+          "sameAs": [
+            "https://linkedin.com/in/mahdi0jafari",
+            "https://t.me/mahdi0jafari"
+          ]
         },
         {
           "@type": "FAQPage",
@@ -114,13 +118,14 @@
     }
     </script>
     
-    <!-- Fonts -->
+    <!-- Fonts (Optimized without bloated multi-axis specs) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" />
 
-    <link rel="stylesheet" href="/static/css/landing.css?v=1">
+    <link rel="stylesheet" href="/static/css/landing.css?v=2">
+</head>
 </head>
 <body>
     <div class="site-wrapper">
@@ -161,11 +166,11 @@
                         <span class="material-symbols-rounded" style="font-size:16px;">verified</span> Trusted by modern households
                     </div>
                     <h1 class="hero-title">
-                        Simply Organized,<br>
-                        <span class="italic">Truly Exceptional</span>
+                        Smart Chore Tracker &amp;<br>
+                        <span class="italic">Shared Household Manager</span>
                     </h1>
                     <p class="hero-subtitle">
-                        Advanced architecture crafted to sync your household intentions and eliminate friction. The ultimate shared dashboard for modern living.
+                        Advanced shared dashboard crafted to eliminate chore disputes, plan weekly meals, and sync seamlessly with Google Calendar. Built for roommates and modern families.
                     </p>
                     <div class="hero-actions">
                         {% if is_logged_in %}
@@ -325,6 +330,47 @@
                 </div>
             </section>
 
+            <!-- Guides & Resources Section for Internal Links & Topical Authority -->
+            <section id="guides" class="guides-section" style="margin-bottom: 80px;">
+                <div class="faq-header" style="text-align: center; margin-bottom: 36px;">
+                    <div class="mu-title" style="display: inline-flex; margin-bottom: 12px; color: var(--brand-purple);">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">auto_stories</span> Practical Guides
+                    </div>
+                    <h2>Master Your Shared Space</h2>
+                    <p style="color: var(--text-muted); max-width: 600px; margin: 8px auto 0;">Actionable strategies and tested routines to keep roommate and family living smooth and drama-free.</p>
+                </div>
+
+                <div class="guides-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+                    {% if recent_posts %}
+                        {% for post in recent_posts %}
+                        <a href="/blog/{{ post.slug }}" style="text-decoration: none; color: inherit; display: block;">
+                            <div class="feat-card" style="padding: 20px; height: 100%; border-radius: 20px; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; justify-content: space-between;">
+                                <img src="{{ post.image | default('/static/blog_chores.webp') }}" alt="{{ post.title }}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px;" loading="lazy">
+                                <div>
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--brand-purple); text-transform: uppercase; letter-spacing: 0.5px;">{{ post.category | default('Household Guide') }}</span>
+                                    <h3 style="font-size: 1.1rem; margin: 6px 0 8px; color: var(--text-main);">{{ post.title }}</h3>
+                                    <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;">{{ post.description | default('') }}</p>
+                                </div>
+                                <span style="margin-top: 14px; font-weight: 600; font-size: 0.88rem; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 4px;">Read Guide &rarr;</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <a href="/blog/how-to-split-chores-fairly" style="text-decoration: none; color: inherit; display: block;">
+                            <div class="feat-card" style="padding: 20px; height: 100%; border-radius: 20px; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; justify-content: space-between;">
+                                <img src="/static/blog_chores.webp" alt="How to split chores fairly with roommates" style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px;" loading="lazy">
+                                <div>
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--brand-purple); text-transform: uppercase; letter-spacing: 0.5px;">Chore System</span>
+                                    <h3 style="font-size: 1.1rem; margin: 6px 0 8px; color: var(--text-main);">How to Split Chores Fairly With Roommates</h3>
+                                    <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;">End passive-aggressive chore notes with actionable rotating schedules and clear accountability.</p>
+                                </div>
+                                <span style="margin-top: 14px; font-weight: 600; font-size: 0.88rem; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 4px;">Read Guide &rarr;</span>
+                            </div>
+                        </a>
+                    {% endif %}
+                </div>
+            </section>
+
             <!-- FAQ -->
             <section id="faq" class="faq-section">
                 <div class="faq-header">
@@ -366,16 +412,63 @@
             </section>
         </main>
 
-        <footer>
-            <div style="margin-bottom: 12px; display: flex; gap: 24px; justify-content: center; font-size: 0.95rem; font-weight: 500;">
-                <a href="/blog" style="color: var(--text-muted); text-decoration: none;">Blog</a>
-                <a href="#features" style="color: var(--text-muted); text-decoration: none;">Features</a>
-                <a href="#faq" style="color: var(--text-muted); text-decoration: none;">FAQ</a>
+        <footer style="margin-top: 80px; padding: 60px 0 40px; border-top: 1px solid rgba(140, 82, 255, 0.12);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 48px;">
+                <div>
+                    <div class="nav-logo" style="margin-bottom: 16px; display: inline-flex;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 2.83l7 6V20H5v-8.17l7-6z"/></svg>
+                        DoneSpace
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; max-width: 280px;">
+                        The modern gamified chore tracker and shared household dashboard. Sync chores, meals, and calendars without friction.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;">Product</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+                        <li><a href="/login" style="color: var(--text-muted); text-decoration: none;">Dashboard Login</a></li>
+                        <li><a href="/login?tab=signup" style="color: var(--text-muted); text-decoration: none;">Create Free Household</a></li>
+                        <li><a href="#features" style="color: var(--text-muted); text-decoration: none;">Core Features</a></li>
+                        <li><a href="#faq" style="color: var(--text-muted); text-decoration: none;">Frequently Asked Questions</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;">Household Guides</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+                        {% if footer_posts %}
+                            {% for post in footer_posts %}
+                            <li><a href="/blog/{{ post.slug }}" style="color: var(--text-muted); text-decoration: none;">{{ post.title }}</a></li>
+                            {% endfor %}
+                        {% else %}
+                            <li><a href="/blog/how-to-split-chores-fairly" style="color: var(--text-muted); text-decoration: none;">Split Chores Fairly</a></li>
+                            <li><a href="/blog/gamifying-household-chores" style="color: var(--text-muted); text-decoration: none;">Gamify Housework</a></li>
+                            <li><a href="/blog/roommate-meal-prep-guide" style="color: var(--text-muted); text-decoration: none;">Roommate Meal Prep</a></li>
+                            <li><a href="/blog/sync-family-schedules" style="color: var(--text-muted); text-decoration: none;">Google Calendar Sync</a></li>
+                        {% endif %}
+                        <li><a href="/blog" style="font-weight: 600; color: var(--brand-purple); text-decoration: none;">All Blog Articles &rarr;</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;">Company & Connect</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+                        <li><a href="/about" style="color: var(--text-muted); text-decoration: none;">About the Founder</a></li>
+                        <li><a href="/llms.txt" style="color: var(--text-muted); text-decoration: none;">AI Documentation (llms.txt)</a></li>
+                        <li><a href="https://linkedin.com/in/mahdi0jafari" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none;">LinkedIn Profile</a></li>
+                        <li><a href="https://t.me/mahdi0jafari" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none;">Telegram Community</a></li>
+                    </ul>
+                </div>
             </div>
-            <p>&copy; 2026 DoneSpace Inc. All rights reserved.</p>
+
+            <div style="padding-top: 24px; border-top: 1px solid rgba(0,0,0,0.06); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; font-size: 0.85rem; color: var(--text-muted);">
+                <p>&copy; 2026 DoneSpace Inc. All rights reserved.</p>
+                <p>Built with ❤️ for harmonious households everywhere.</p>
+            </div>
         </footer>
     </div>
-    <script src="/static/js/landing.js?v=1"></script>
+    <script src="/static/js/landing.js?v=2"></script>
     <script src="/static/js/pwa.js" defer></script>
 </body>
 </html>

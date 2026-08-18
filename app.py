@@ -56,8 +56,14 @@ except Exception as e:
 # --- Middleware ---
 
 @app.before_request
-def require_auth():
-    # Allow CORS preflight
+def handle_canonical_and_auth():
+    # 1. Canonical host redirect (www to non-www 301 redirect)
+    host = request.headers.get('Host', '')
+    if host.startswith('www.'):
+        new_url = request.url.replace('://www.', '://', 1)
+        return redirect(new_url, code=301)
+
+    # 2. Allow CORS preflight
     if request.method == 'OPTIONS':
         return
     # Exempt auth routes, static files, and public pages
@@ -88,6 +94,17 @@ def require_auth():
         
     g.user = user
 
+@app.after_request
+def add_security_and_cache_headers(response):
+    # Set Cache-Control for static assets
+    if request.path.startswith('/static/'):
+        if not response.headers.get('Cache-Control'):
+            response.headers['Cache-Control'] = 'public, max-age=604800, stale-while-revalidate=86400'
+    # Security headers
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    return response
+
 # --- Register Blueprints ---
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(api_bp, url_prefix='/api')
@@ -101,7 +118,8 @@ def index():
         user = User.query.filter_by(token=token).first()
         if user:
             is_logged_in = True
-    return render_template('landing.html', is_logged_in=is_logged_in)
+    posts = get_all_posts()
+    return render_template('landing.html', is_logged_in=is_logged_in, recent_posts=posts[:3], footer_posts=posts[:5])
 
 @app.route('/app')
 def app_page():
@@ -152,7 +170,8 @@ def blog_post(slug):
     if not post:
         from flask import abort
         abort(404)
-    return render_template('blog_post.html', post=post)
+    related_posts = [p for p in posts if p['slug'] != slug][:2]
+    return render_template('blog_post.html', post=post, related_posts=related_posts)
 
 # --- SEO Routes ---
 from flask import send_from_directory, Response
