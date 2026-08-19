@@ -24,17 +24,33 @@ CORS(app)
 
 # Use absolute path for DB to avoid multiple databases in different working directories
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'database', 'donespace.db')
+db_dir = os.path.join(BASE_DIR, 'database')
+os.makedirs(db_dir, exist_ok=True)
+db_filename = 'homethings.db' if os.path.exists(os.path.join(db_dir, 'homethings.db')) else 'donespace.db'
+default_db_uri = 'sqlite:///' + os.path.join(db_dir, db_filename)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or default_db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Secret key for Flask sessions (used during OAuth flow)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if "sqlite" in app.config.get('SQLALCHEMY_DATABASE_URI', ''):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 db.init_app(app)
 
 # Initialize DB
 with app.app_context():
-    db_dir = os.path.join(BASE_DIR, 'database')
-    os.makedirs(db_dir, exist_ok=True)
     db.create_all()
     try:
         with db.engine.connect() as conn:
