@@ -50,8 +50,13 @@
             <!-- Agenda View Calendar -->
             <section class="agenda-widget animate-fade-up" style="animation-delay: 0.5s;">
                 <div class="agenda-header">
-                    <h2>Upcoming Schedule</h2>
-                    <button class="icon-btn small"><span class="material-symbols-rounded">add</span></button>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h2>Calendar & Schedule</h2>
+                        <button id="agendaJumpTodayBtn" type="button" class="btn-today" style="display:none; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 12px; background: rgba(140, 82, 255, 0.1); color: var(--primary-purple, #8c52ff); border: 1px solid rgba(140, 82, 255, 0.2); cursor: pointer; transition: all 0.2s; align-items: center; gap: 4px;">
+                            <span class="material-symbols-rounded" style="font-size: 14px;">today</span> Today
+                        </button>
+                    </div>
+                    <button class="icon-btn small" onclick="if(window.openQuickAddModal) window.openQuickAddModal()" title="Add Task"><span class="material-symbols-rounded">add</span></button>
                 </div>
                 
                 <div class="agenda-scroll-area" id="agendaScrollArea">

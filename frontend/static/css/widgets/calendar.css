@@ -184,8 +184,65 @@
     opacity: 0.5;
     filter: grayscale(40%);
     box-shadow: none;
-    transform: none; /* Disable hover movement for others' tasks to emphasize yours */
+    transform: none;
     cursor: default;
+}
+
+/* Completed Task Pill State */
+.task-pill.is-completed {
+    opacity: 0.8;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    box-shadow: none;
+}
+.task-pill.is-completed:hover {
+    opacity: 1;
+    background: #f1f5f9;
+}
+
+/* Checkbox button inside calendar task */
+.calendar-task-check {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+}
+.calendar-task-check:hover {
+    transform: scale(1.2);
+}
+
+/* Day Groups (Past vs Today) */
+.agenda-day-group.is-past-group .day-name,
+.agenda-day-group.is-past-group .day-number,
+.agenda-day-group.is-past-group .month-name {
+    opacity: 0.65;
+}
+.agenda-day-group.is-today-group {
+    background: rgba(140, 82, 255, 0.03);
+    border-radius: 16px;
+    padding: 6px 8px;
+    margin: -6px -8px;
+    border: 1px dashed rgba(140, 82, 255, 0.2);
+}
+
+/* Jump to Today Button */
+.btn-today {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(140, 82, 255, 0.1);
+    color: var(--primary-purple, #8c52ff);
+    border: 1px solid rgba(140, 82, 255, 0.25);
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    animation: fadeIn 0.3s ease;
+}
+.btn-today:hover {
+    background: var(--primary-purple, #8c52ff);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(140, 82, 255, 0.25);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 600px) {
@@ -197,3 +254,4 @@
         padding: 10px 12px;
     }
 }
+
