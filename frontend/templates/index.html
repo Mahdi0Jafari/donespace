@@ -247,9 +247,22 @@
                         <div class="popover-info" style="width: 100%;">
                             <span style="font-weight: 600; font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 6px;">Ingredients</span>
                             <div id="popoverRecipeIngredients" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                                <!-- Ingredient chips injected via JS -->
-                            </div>
+                <div class="popover-completion-card" id="popoverCompletionCard" style="display: none; padding: 14px 16px; border-radius: 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); align-items: center; justify-content: space-between; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div id="popoverCompleterAvatar" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #10b981; color: white; font-weight: bold; font-size: 13px;">✓</div>
+                        <div style="display: flex; flex-direction: column;">
+                            <span id="popoverCompletionText" style="font-size: 13px; font-weight: 600; color: #065f46;">Completed</span>
+                            <span id="popoverCompletionTime" style="font-size: 11px; color: #047857;">Just now</span>
                         </div>
+                    </div>
+                    <button type="button" class="secondary-btn small" id="popoverToggleCompleteBtn" style="padding: 6px 12px; font-size: 12px; border-radius: 8px;">Mark Incomplete</button>
+                </div>
+                <div class="popover-history-section" id="popoverHistorySection" style="display: none; flex-direction: column; gap: 8px; border-top: 1px solid var(--border-color, #e2e8f0); padding-top: 14px;">
+                    <span style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-rounded" style="font-size: 16px;">history</span> Recent Activity
+                    </span>
+                    <div id="popoverHistoryList" style="display: flex; flex-direction: column; gap: 6px;">
+                        <!-- Injected via JS -->
                     </div>
                 </div>
             </div>
@@ -279,7 +292,42 @@
             
             <div class="form-group" id="taskNameGroup">
                 <label for="taskName">What needs to be done?</label>
-                <input type="text" id="taskName" class="form-control" placeholder="e.g., Fix the leaky faucet">
+                <div style="display: flex; gap: 10px; align-items: center; position: relative;">
+                    <button type="button" class="quick-icon-trigger-btn" id="quickTaskIconBtn" title="Choose Icon" style="flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--primary-purple, #8c52ff); transition: all 0.2s ease;">
+                        <span class="material-symbols-rounded" id="quickTaskIconDisplay" style="font-size: 22px;">check_circle</span>
+                    </button>
+                    <input type="text" id="taskName" class="form-control" placeholder="e.g., Dust living room, wipe tables..." style="flex: 1;">
+                </div>
+                
+                <!-- Quick Icon Picker Dropdown -->
+                <div class="quick-icon-picker-dropdown" id="quickIconPickerDropdown" style="display: none; margin-top: 10px; padding: 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); max-height: 200px; overflow-y: auto;">
+                    <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Choose Chore Icon</div>
+                    <div class="quick-icon-grid" id="quickIconGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 6px;">
+                        <button type="button" class="quick-icon-opt selected" data-icon="check_circle" title="General"><span class="material-symbols-rounded">check_circle</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="brush" title="Dusting / گردگیری"><span class="material-symbols-rounded">brush</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="sanitizer" title="Wipe / دستمال و اسپری"><span class="material-symbols-rounded">sanitizer</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="countertops" title="Counters / پیشخوان و سطوح"><span class="material-symbols-rounded">countertops</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="table_restaurant" title="Table / میز"><span class="material-symbols-rounded">table_restaurant</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="broom" title="Broom / جارو دستی"><span class="material-symbols-rounded">broom</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="vacuum" title="Vacuum / جاروبرقی"><span class="material-symbols-rounded">vacuum</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="mop" title="Mop / تی کشیدن"><span class="material-symbols-rounded">mop</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="cleaning_bucket" title="Bucket / سطل آب و نظافت"><span class="material-symbols-rounded">cleaning_bucket</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="wash" title="Wash / شستشو"><span class="material-symbols-rounded">wash</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="sparkles" title="Sparkle / برق انداختن"><span class="material-symbols-rounded">sparkles</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="cleaning_services" title="Cleaning / نظافت"><span class="material-symbols-rounded">cleaning_services</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="window" title="Window / پنجره"><span class="material-symbols-rounded">window</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="delete" title="Trash / زباله"><span class="material-symbols-rounded">delete</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="local_laundry_service" title="Laundry / لباسشویی"><span class="material-symbols-rounded">local_laundry_service</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="iron" title="Ironing / اتو"><span class="material-symbols-rounded">iron</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="dry_cleaning" title="Clothes / لباس"><span class="material-symbols-rounded">dry_cleaning</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="bed" title="Make Bed / مرتب کردن تخت"><span class="material-symbols-rounded">bed</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="inventory_2" title="Organize / چیدمان"><span class="material-symbols-rounded">inventory_2</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="restaurant" title="Dishes / ظروف"><span class="material-symbols-rounded">restaurant</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="potted_plant" title="Plants / آب دادن به گل"><span class="material-symbols-rounded">potted_plant</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="pets" title="Pets / حیوانات"><span class="material-symbols-rounded">pets</span></button>
+                        <button type="button" class="quick-icon-opt" data-icon="build" title="Repair / تعمیر"><span class="material-symbols-rounded">build</span></button>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -507,10 +555,18 @@
                                 </button>
                                 <!-- Mini Icon Dropdown -->
                                 <div class="task-icon-dropdown" id="taskIconDropdown">
+                                    <span class="material-symbols-rounded" data-icon="brush" title="Dusting / گردگیری">brush</span>
+                                    <span class="material-symbols-rounded" data-icon="sanitizer" title="Wipe / دستمال و اسپری">sanitizer</span>
+                                    <span class="material-symbols-rounded" data-icon="countertops" title="Counters / پیشخوان و سطوح">countertops</span>
+                                    <span class="material-symbols-rounded" data-icon="table_restaurant" title="Table / میز">table_restaurant</span>
+                                    <span class="material-symbols-rounded" data-icon="broom" title="Broom / جارو دستی">broom</span>
+                                    <span class="material-symbols-rounded" data-icon="vacuum" title="Vacuum / جاروبرقی">vacuum</span>
+                                    <span class="material-symbols-rounded" data-icon="mop" title="Mopping / تی کشیدن">mop</span>
+                                    <span class="material-symbols-rounded" data-icon="cleaning_bucket" title="Bucket / سطل آب و نظافت">cleaning_bucket</span>
+                                    <span class="material-symbols-rounded" data-icon="wash" title="Wash / شستشو">wash</span>
+                                    <span class="material-symbols-rounded" data-icon="sparkles" title="Sparkles / برق انداختن">sparkles</span>
                                     <span class="material-symbols-rounded" data-icon="cleaning_services" title="Cleaning / Sweeping">cleaning_services</span>
-                                    <span class="material-symbols-rounded" data-icon="mop" title="Mopping">mop</span>
                                     <span class="material-symbols-rounded" data-icon="window" title="Window / Glass">window</span>
-                                    <span class="material-symbols-rounded" data-icon="sanitizer" title="Sanitizing / Spray">sanitizer</span>
                                     <span class="material-symbols-rounded" data-icon="delete" title="Trash / Disposal">delete</span>
                                     <span class="material-symbols-rounded" data-icon="local_laundry_service" title="Laundry / Washing">local_laundry_service</span>
                                     <span class="material-symbols-rounded" data-icon="iron" title="Ironing">iron</span>
@@ -532,7 +588,6 @@
                                     <span class="material-symbols-rounded" data-icon="soap" title="Soap / Washing">soap</span>
                                     <span class="material-symbols-rounded" data-icon="dry_cleaning" title="Dry Cleaning / Clothes">dry_cleaning</span>
                                     <span class="material-symbols-rounded" data-icon="check_circle" title="General Task">check_circle</span>
-                                    <span class="material-symbols-rounded" data-icon="vacuum" title="Vacuum / Floor">vacuum</span>
                                     <span class="material-symbols-rounded" data-icon="build" title="Repair / Maintenance">build</span>
                                     <span class="material-symbols-rounded" data-icon="local_florist" title="Plants / Flowers">local_florist</span>
                                     <span class="material-symbols-rounded" data-icon="payments" title="Bills / Payments">payments</span>

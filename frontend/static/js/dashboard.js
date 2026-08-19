@@ -212,6 +212,22 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
     return `<div class="assignee-avatar" title="${displayName}" style="width:24px; height:24px; border-radius:50%; background:${color}; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">${initial}</div>`;
 };
 
+// Reschedule overdue task to today
+window.rescheduleTaskToToday = async function(taskId) {
+    const scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+    const task = scheduledTasks.find(t => t.id == taskId);
+    if (task) {
+        const today = new Date();
+        task.startDate = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        if (window.HomeAPI && window.HomeAPI.saveTask) {
+            await window.HomeAPI.saveTask(task);
+        } else {
+            localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+        }
+        if (window.refreshAllData) window.refreshAllData();
+    }
+};
+
     const renderPriorityCards = () => {
         const container = document.getElementById('priorityCardsContainer');
         if (!container) return;
@@ -253,6 +269,33 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
         const currentUserUsername = window.me ? window.me.user.username : '';
         const currentUserDisplayName = window.me ? window.me.user.display_name : '';
         
+        // 2.1 Overdue Tasks Detection (Scheduled before today and not completed)
+        const overdueTasks = allTasks.filter(task => {
+            const taskStart = task.startDate ? new Date(task.startDate) : (task.createdAt ? new Date(task.createdAt) : null);
+            if (!taskStart) return false;
+            taskStart.setHours(0,0,0,0);
+            
+            if (taskStart >= today) return false; // Scheduled for today or future
+            
+            // If completed anywhere, it's done
+            const isCompleted = completions.some(c => c.taskId == task.id);
+            if (isCompleted) return false;
+            
+            let isAssignedToMe = true;
+            const taskAssignees = task.assignees || [];
+            if (taskAssignees.length > 0) {
+                isAssignedToMe = taskAssignees.includes('Anyone') || 
+                                 taskAssignees.includes('Me') || 
+                                 taskAssignees.includes(currentUserUsername) ||
+                                 taskAssignees.includes(currentUserDisplayName);
+            }
+            if (!isAssignedToMe) return false;
+            
+            task._isOverdue = true;
+            task._overdueDate = task.startDate || (task.createdAt ? task.createdAt.split('T')[0] : 'Past');
+            return true;
+        });
+
         const todaysTasks = allTasks.filter(task => {
             const taskStart = task.startDate ? new Date(task.startDate) : new Date(task.createdAt);
             taskStart.setHours(0,0,0,0);
@@ -340,7 +383,76 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
 
         // 4. Render HTML
         container.innerHTML = '';
-        let delay = 0.4;
+        let delay = 0.3;
+
+        // 4.1 Render Overdue Card at the very top if any
+        if (overdueTasks.length > 0) {
+            let overdueTasksHTML = '';
+            overdueTasks.forEach(task => {
+                let assigneeAvatar = '';
+                const displayAssignees = task.assignees || [];
+                if (displayAssignees.length > 0 && displayAssignees[0] !== 'Me' && displayAssignees[0] !== 'Anyone') {
+                    assigneeAvatar = '<div style="display:flex; margin-left: 4px;">';
+                    displayAssignees.forEach((assignName, idx) => {
+                        const zIndex = 10 - idx;
+                        const margin = idx > 0 ? '-6px' : '0';
+                        if (window.getAssigneeAvatarHTML) {
+                            assigneeAvatar += `<div style="z-index: ${zIndex}; margin-left: ${margin};">${window.getAssigneeAvatarHTML(assignName, '#f59e0b')}</div>`;
+                        }
+                    });
+                    assigneeAvatar += '</div>';
+                }
+                
+                overdueTasksHTML += `
+                    <li data-task-id="${task.id}" style="cursor: pointer;" onclick="if(window.openEventDetailsPopover) window.openEventDetailsPopover(JSON.parse(this.dataset.task), 'task')" data-task='${JSON.stringify(task).replace(/'/g, "&apos;")}'>
+                        <label class="custom-checkbox" onclick="event.stopPropagation()">
+                            <input type="checkbox" onchange="window.completeTaskUI(this, '${task.id}')">
+                            <span class="checkmark" style="border-color: #f59e0b;"></span>
+                            <span class="task-text" style="display:flex; align-items:center; gap:6px;">
+                                <span class="material-symbols-rounded" style="font-size: 16px; color: #d97706;">${task.icon || 'brush'}</span>
+                                ${task.title}
+                            </span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 11px; font-weight: 600; color: #b45309; background: rgba(245, 158, 11, 0.18); padding: 2px 8px; border-radius: 8px;">Due: ${task._overdueDate}</span>
+                            <button type="button" class="icon-btn small" title="Move to Today" style="padding: 2px; color: #d97706; background: transparent; border: none;" onclick="event.stopPropagation(); window.rescheduleTaskToToday('${task.id}')">
+                                <span class="material-symbols-rounded" style="font-size: 18px;">event_repeat</span>
+                            </button>
+                            ${assigneeAvatar}
+                        </div>
+                    </li>
+                `;
+            });
+
+            const overdueCard = document.createElement('section');
+            overdueCard.className = 'facility-card overdue-card animate-fade-up';
+            overdueCard.style.animationDelay = `${delay}s`;
+            overdueCard.style.flexShrink = '0';
+            overdueCard.style.border = '1.5px solid #f59e0b';
+            overdueCard.style.background = 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)';
+            delay += 0.1;
+            
+            overdueCard.innerHTML = `
+                <div class="card-summary" onclick="this.closest('.facility-card').classList.toggle('active')">
+                    <div class="card-top-row">
+                        <span class="material-symbols-rounded icon" style="color: #d97706; background: rgba(217, 119, 6, 0.15);">warning</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="progress-badge" style="background: #fef08a; color: #854d0e; border: 1px solid #fde047; font-weight: 700;">${overdueTasks.length} Overdue</span>
+                            <button class="icon-btn small" style="background: transparent; border: none; padding: 4px; color: #854d0e;"><span class="material-symbols-rounded" style="font-size: 20px;">more_horiz</span></button>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom: 0; color: #78350f; font-size: 17px; font-weight: 700;">Overdue Tasks <span style="font-size: 13px; font-weight: 500; opacity: 0.8; margin-left: 6px;">• From Previous Days</span></h3>
+                    </div>
+                </div>
+                <div class="card-details">
+                    <ul class="task-list">
+                        ${overdueTasksHTML}
+                    </ul>
+                </div>
+            `;
+            container.appendChild(overdueCard);
+        }
         
         sortedRoomIds.forEach(roomId => {
             const pendingRoomTasks = grouped[roomId];
@@ -493,6 +605,47 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
                 `;
                 container.innerHTML += mealCardHTML;
             }
+        }
+
+        // 5.5 Render Completed Today Section (if any tasks were completed today)
+        const completedTodayRecords = completions.filter(c => c.date === todayKey);
+        if (completedTodayRecords.length > 0) {
+            let completedItemsHTML = '';
+            completedTodayRecords.forEach(c => {
+                let matchingTask = allTasks.find(t => t.id == c.taskId);
+                const title = matchingTask ? matchingTask.title : (c.taskTitle || 'Completed Task');
+                const icon = matchingTask ? (matchingTask.icon || 'check_circle') : 'check_circle';
+                const userName = c.userName || 'Member';
+                const userAvatar = c.userAvatar ? `<img src="${c.userAvatar}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">` : `<div style="width:20px;height:20px;border-radius:50%;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;">${userName.charAt(0).toUpperCase()}</div>`;
+
+                completedItemsHTML += `
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:#fff; border-radius:10px; border:1px solid #f1f5f9; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">check_circle</span>
+                            <span style="font-size:13px; text-decoration:line-through; opacity:0.65; color:var(--text-main);">${title}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:#059669; font-weight:500;">
+                            ${userAvatar}
+                            <span>${userName}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const completedSectionHTML = `
+                <div class="completed-today-section animate-fade-up" style="margin-top: 14px; width: 100%; padding: 14px 18px; background: rgba(16, 185, 129, 0.04); border-radius: 18px; border: 1px dashed rgba(16, 185, 129, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="const el = document.getElementById('completedTasksCollapse'); el.style.display = el.style.display === 'none' ? 'flex' : 'none';">
+                        <span style="font-size: 13px; font-weight: 600; color: #047857; display: flex; align-items: center; gap: 8px;">
+                            <span class="material-symbols-rounded" style="font-size: 18px;">task_alt</span> Completed Today (${completedTodayRecords.length})
+                        </span>
+                        <span class="material-symbols-rounded" style="color: #047857; font-size: 18px;">expand_more</span>
+                    </div>
+                    <div id="completedTasksCollapse" style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
+                        ${completedItemsHTML}
+                    </div>
+                </div>
+            `;
+            container.innerHTML += completedSectionHTML;
         }
 
         // If completely empty initially, show the All Caught Up state
@@ -744,8 +897,22 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
         let spacesNeedingAttention = 0;
 
         filteredFacilities.forEach((fac, index) => {
+            const scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
+            const completions = JSON.parse(localStorage.getItem('taskCompletions') || '[]');
+            const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+            
             const facTotalTasks = fac.tasks ? fac.tasks.length : 0;
-            const facCompletedTasks = 0; // Defaulting to 0 since completion status isn't tracked yet in mock data
+            let facCompletedTasks = 0;
+            
+            if (fac.tasks && fac.tasks.length > 0) {
+                fac.tasks.forEach(task => {
+                    const taskName = typeof task === 'string' ? task : task.name;
+                    const actualTask = scheduledTasks.find(st => (st.title === taskName || st.name === taskName) && (st.room === fac.id || st.roomId === fac.id || st.room === fac.name));
+                    if (actualTask && completions.some(c => c.taskId == actualTask.id && c.date === todayKey)) {
+                        facCompletedTasks++;
+                    }
+                });
+            }
             
             totalTasksCount += facTotalTasks;
             pendingTasksCount += (facTotalTasks - facCompletedTasks);
@@ -765,7 +932,6 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
                     const taskIcon = typeof task === 'string' ? 'check_circle' : task.icon;
 
                     let avatarImg = '';
-                    const scheduledTasks = JSON.parse(localStorage.getItem('scheduledTasks') || '[]');
                     const actualTask = scheduledTasks.find(st => (st.title === taskName || st.name === taskName) && (st.room === fac.id || st.roomId === fac.id || st.room === fac.name));
                     
                     let targetAssignees = [];
@@ -787,15 +953,29 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
                         avatarImg += '</div>';
                     }
 
+                    const isTaskCompleted = actualTask && completions.some(c => c.taskId == actualTask.id && c.date === todayKey);
+                    let timeStr = 'Routine';
+                    if (actualTask) {
+                        if (actualTask.allDay) {
+                            timeStr = 'All Day';
+                        } else if (actualTask.time) {
+                            timeStr = actualTask.time;
+                        } else {
+                            timeStr = 'Anytime';
+                        }
+                    }
+
+                    const completedBadge = isTaskCompleted ? '<span style="font-size: 11px; color: #10b981; font-weight: 600; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 6px;">✓ Done</span>' : `<span style="font-size: 11px; color: #9ca3af; font-weight: 500;">${timeStr}</span>`;
+
                     const taskIdAttr = actualTask ? `data-task-id="${actualTask.id}"` : '';
                     tasksHTML += `
-                        <li class="task-item-clickable" data-task-name="${taskName}" data-task-icon="${taskIcon}" data-facility-id="${fac.id}" ${taskIdAttr}>
-                            <span class="task-text" style="display:flex; align-items:center; gap:6px;">
-                                <span class="material-symbols-rounded" style="font-size: 16px; color: #9ca3af;">${taskIcon}</span>
+                        <li class="task-item-clickable" data-task-name="${taskName}" data-task-icon="${taskIcon}" data-facility-id="${fac.id}" ${taskIdAttr} style="${isTaskCompleted ? 'opacity: 0.65;' : ''}">
+                            <span class="task-text" style="display:flex; align-items:center; gap:6px; ${isTaskCompleted ? 'text-decoration: line-through;' : ''}">
+                                <span class="material-symbols-rounded" style="font-size: 16px; color: ${isTaskCompleted ? '#10b981' : '#9ca3af'};">${taskIcon}</span>
                                 ${taskName}
                             </span>
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size: 11px; color: #9ca3af; font-weight: 500;">All Day</span>
+                                ${completedBadge}
                                 ${avatarImg}
                             </div>
                         </li>
@@ -817,7 +997,7 @@ window.getAssigneeAvatarHTML = function(assignName, color = 'var(--primary-purpl
                     <div class="card-top-row">
                         <span class="material-symbols-rounded icon">${fac.icon}</span>
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <span class="progress-badge">0/${fac.tasks ? fac.tasks.length : 0} Done</span>
+                            <span class="progress-badge">${facCompletedTasks}/${facTotalTasks} Done</span>
                             <button class="icon-btn small edit-space-btn" data-id="${fac.id}" style="background: transparent; border: none; padding: 4px;"><span class="material-symbols-rounded" style="font-size: 20px;">more_horiz</span></button>
                         </div>
                     </div>

@@ -133,15 +133,20 @@ class TaskCompletion(db.Model):
     date = db.Column(db.String(50), nullable=False) # e.g. YYYY-MM-DD
     completedAt = db.Column(db.String(50)) # ISO string
 
+    user = db.relationship('User', foreign_keys=[user_id], lazy='joined')
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def to_dict(self):
+        user_obj = self.user or (db.session.get(User, self.user_id) if self.user_id else None)
         return {
             'id': self.id,
             'taskId': self.task_id,
             'homeId': self.home_id,
             'userId': self.user_id,
+            'userName': user_obj.display_name if user_obj else (user_obj.username if user_obj else 'Someone'),
+            'userAvatar': user_obj.avatar if user_obj else None,
             'date': self.date,
             'completedAt': self.completedAt
         }

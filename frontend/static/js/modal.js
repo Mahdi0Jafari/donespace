@@ -62,6 +62,40 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTaskIcon = 'check_circle';
     let isFixedTask = false;
 
+    // Quick Add Icon Picker Setup
+    const quickTaskIconBtn = document.getElementById('quickTaskIconBtn');
+    const quickIconPickerDropdown = document.getElementById('quickIconPickerDropdown');
+    const quickTaskIconDisplay = document.getElementById('quickTaskIconDisplay');
+
+    if (quickTaskIconBtn && quickIconPickerDropdown) {
+        quickTaskIconBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = quickIconPickerDropdown.style.display === 'block';
+            quickIconPickerDropdown.style.display = isVisible ? 'none' : 'block';
+        });
+
+        // Close icon picker when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!quickIconPickerDropdown.contains(e.target) && e.target !== quickTaskIconBtn) {
+                quickIconPickerDropdown.style.display = 'none';
+            }
+        });
+
+        // Icon option selection
+        document.querySelectorAll('.quick-icon-opt').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const iconName = btn.getAttribute('data-icon') || 'check_circle';
+                currentTaskIcon = iconName;
+                if (quickTaskIconDisplay) quickTaskIconDisplay.textContent = iconName;
+                
+                document.querySelectorAll('.quick-icon-opt').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                quickIconPickerDropdown.style.display = 'none';
+            });
+        });
+    }
+
     // Global function to open modal
     window.editingTaskId = null;
     window.openQuickAddModal = (name = '', roomId = 'general', icon = 'check_circle', prefilledDate = null, taskObj = null) => {
@@ -70,7 +104,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         window.editingTaskId = taskObj ? taskObj.id : null;
         
-        currentTaskIcon = icon;
+        currentTaskIcon = (taskObj && taskObj.icon) ? taskObj.icon : (icon || 'check_circle');
+        if (quickTaskIconDisplay) quickTaskIconDisplay.textContent = currentTaskIcon;
+        document.querySelectorAll('.quick-icon-opt').forEach(btn => {
+            if (btn.getAttribute('data-icon') === currentTaskIcon) btn.classList.add('selected');
+            else btn.classList.remove('selected');
+        });
+        if (quickIconPickerDropdown) quickIconPickerDropdown.style.display = 'none';
+
         isFixedTask = !!name && !taskObj; // If a name is passed and no taskObj, it's a pre-defined template task
 
         // Dynamically populate room options
@@ -684,6 +725,106 @@ document.addEventListener('DOMContentLoaded', () => {
             descRow.style.display = 'none';
         }
 
+        // 5.5 Completion Status & History
+        const completionCard = document.getElementById('popoverCompletionCard');
+        const completerAvatar = document.getElementById('popoverCompleterAvatar');
+        const completionText = document.getElementById('popoverCompletionText');
+        const completionTime = document.getElementById('popoverCompletionTime');
+        const toggleCompleteBtn = document.getElementById('popoverToggleCompleteBtn');
+        const historySection = document.getElementById('popoverHistorySection');
+        const historyList = document.getElementById('popoverHistoryList');
+
+        if (completionCard && toggleCompleteBtn) {
+            const today = new Date();
+            const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            const targetDate = task.date || todayKey;
+            
+            const completions = JSON.parse(localStorage.getItem('taskCompletions') || '[]');
+            const isCompleted = completions.some(c => c.taskId == task.id && c.date === targetDate);
+            const compRecord = completions.find(c => c.taskId == task.id && c.date === targetDate);
+
+            completionCard.style.display = 'flex';
+            if (isCompleted) {
+                completionCard.style.background = 'rgba(16, 185, 129, 0.1)';
+                completionCard.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                
+                const userName = (compRecord && compRecord.userName) ? compRecord.userName : 'Member';
+                const userAvatar = compRecord ? compRecord.userAvatar : null;
+                
+                if (userAvatar) {
+                    completerAvatar.innerHTML = `<img src="${userAvatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                } else {
+                    completerAvatar.innerHTML = `<span style="font-weight:700;">${userName.charAt(0).toUpperCase()}</span>`;
+                    completerAvatar.style.background = '#10b981';
+                }
+                
+                completionText.textContent = `Completed by ${userName}`;
+                completionText.style.color = '#065f46';
+                
+                const timeStr = (compRecord && compRecord.completedAt) ? new Date(compRecord.completedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Today';
+                completionTime.textContent = `Completed at ${timeStr} • +10 pts`;
+                completionTime.style.color = '#047857';
+                
+                toggleCompleteBtn.textContent = 'Undo ✓';
+                toggleCompleteBtn.style.color = '#dc2626';
+                toggleCompleteBtn.style.borderColor = '#fca5a5';
+                toggleCompleteBtn.onclick = async () => {
+                    toggleCompleteBtn.disabled = true;
+                    toggleCompleteBtn.textContent = 'Updating...';
+                    if (window.HomeAPI && window.HomeAPI.incompleteTask) {
+                        await window.HomeAPI.incompleteTask(task.id, targetDate);
+                    } else {
+                        const remaining = completions.filter(c => !(c.taskId == task.id && c.date === targetDate));
+                        localStorage.setItem('taskCompletions', JSON.stringify(remaining));
+                    }
+                    if (popover) popover.classList.remove('active');
+                    if (window.refreshAllData) window.refreshAllData();
+                };
+            } else {
+                completionCard.style.background = 'rgba(245, 158, 11, 0.08)';
+                completionCard.style.borderColor = 'rgba(245, 158, 11, 0.25)';
+                completerAvatar.innerHTML = '<span class="material-symbols-rounded" style="font-size: 18px; color: white;">schedule</span>';
+                completerAvatar.style.background = '#f59e0b';
+                
+                completionText.textContent = 'Status: Pending';
+                completionText.style.color = '#92400e';
+                completionTime.textContent = 'Not completed yet today';
+                completionTime.style.color = '#b45309';
+                
+                toggleCompleteBtn.textContent = 'Mark Done ✓';
+                toggleCompleteBtn.style.color = '#10b981';
+                toggleCompleteBtn.style.borderColor = '#6ee7b7';
+                toggleCompleteBtn.onclick = async () => {
+                    toggleCompleteBtn.disabled = true;
+                    toggleCompleteBtn.textContent = 'Saving...';
+                    if (window.HomeAPI && window.HomeAPI.completeTask) {
+                        await window.HomeAPI.completeTask(task.id, targetDate);
+                    } else {
+                        completions.push({ taskId: task.id, date: targetDate, userName: 'Me' });
+                        localStorage.setItem('taskCompletions', JSON.stringify(completions));
+                    }
+                    if (popover) popover.classList.remove('active');
+                    if (window.refreshAllData) window.refreshAllData();
+                };
+            }
+
+            // Task History (Recent Completions for this task)
+            if (historySection && historyList) {
+                const pastCompletions = completions.filter(c => c.taskId == task.id).slice(-4).reverse();
+                if (pastCompletions.length > 0) {
+                    historySection.style.display = 'flex';
+                    historyList.innerHTML = pastCompletions.map(c => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:6px 10px; background:rgba(0,0,0,0.03); border-radius:8px;">
+                            <span style="color:var(--text-main); font-weight:500;">📅 ${c.date}</span>
+                            <span style="color:#10b981; font-weight:600;">✓ ${c.userName || 'Member'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    historySection.style.display = 'none';
+                }
+            }
+        }
+
         // 6. Open Popover
         popover.classList.add('active');
     };
@@ -761,9 +902,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const modalContent = saveBtn.closest('.modal-content');
             
-            // Create glassmorphism success overlay
+            // Create glassmorphism success overlay pinned on top of entire modal
             const overlay = document.createElement('div');
             overlay.className = 'modal-success-overlay';
+            overlay.style.position = 'absolute';
+            overlay.style.inset = '0';
+            overlay.style.zIndex = '9999';
+            overlay.style.borderRadius = '28px';
+            overlay.style.background = 'rgba(255, 255, 255, 0.92)';
+            overlay.style.backdropFilter = 'blur(12px)';
+            overlay.style.webkitBackdropFilter = 'blur(12px)';
             overlay.innerHTML = `
                 <div class="success-content">
                     <div class="spinner-ring"></div>
@@ -774,9 +922,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modalContent) {
                 modalContent.style.position = 'relative';
                 modalContent.appendChild(overlay);
+                modalContent.scrollTop = 0;
             }
             
             saveBtn.disabled = true;
+            const originalBtnText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
 
             try {
                 if (window.HomeAPI) {
@@ -797,8 +948,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h3>Task Saved!</h3>
                         </div>
                     `;
-                    // Wait 1.2s for user to enjoy the animation
-                    await new Promise(r => setTimeout(r, 1200));
+                    // Wait 1.0s for user feedback
+                    await new Promise(r => setTimeout(r, 1000));
                 }
                 
             } catch (e) {
@@ -815,6 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } finally {
                 saveBtn.disabled = false;
+                saveBtn.textContent = originalBtnText;
                 if (overlay && overlay.parentNode) {
                     overlay.parentNode.removeChild(overlay);
                 }

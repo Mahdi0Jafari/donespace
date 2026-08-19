@@ -330,15 +330,15 @@
 .modal-success-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-radius: 28px;
-    z-index: 100;
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: fadeInOverlay 0.3s ease forwards;
+    animation: fadeInOverlay 0.25s ease forwards;
 }
 .modal-success-overlay .success-content {
     display: flex;
@@ -406,4 +406,33 @@
 @keyframes spinRing {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+/* Quick Icon Grid */
+.quick-icon-opt {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.quick-icon-opt:hover {
+    background: #f1f5f9;
+    color: var(--primary-purple, #8c52ff);
+    transform: scale(1.08);
+}
+.quick-icon-opt.selected {
+    background: var(--primary-purple, #8c52ff);
+    color: #ffffff;
+    border-color: var(--primary-purple, #8c52ff);
+    box-shadow: 0 4px 10px rgba(140, 82, 255, 0.25);
+}
+.quick-icon-opt .material-symbols-rounded {
+    font-size: 20px;
 }
