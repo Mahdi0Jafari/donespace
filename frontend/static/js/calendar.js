@@ -246,8 +246,8 @@ window.AgendaWidget = (() => {
                         }
 
                         const isOneTime = !task.recurrence || task.recurrence === 'none';
-                        const isCompleted = completions.some(c => c.taskId == task.id && (c.date === dateKey || (isOneTime && (c.date === task.startDate || (task.createdAt && c.date === task.createdAt.split('T')[0])))));
-                        const compRecord = completions.find(c => c.taskId == task.id && (c.date === dateKey || (isOneTime && (c.date === task.startDate || (task.createdAt && c.date === task.createdAt.split('T')[0])))));
+                        const isCompleted = completions.some(c => c.taskId == task.id && (c.date === dateKey || isOneTime));
+                        const compRecord = completions.find(c => c.taskId == task.id && (c.date === dateKey || isOneTime));
 
                         const taskWrapper = document.createElement('div');
                         taskWrapper.innerHTML = createTaskPillHTML(task, assignedUsers, dateKey, isCompleted, compRecord);
