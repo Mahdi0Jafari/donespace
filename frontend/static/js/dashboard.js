@@ -28,10 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 // Handle task completion UI
-window.completeTaskUI = async function(checkbox, taskId) {
+window.completeTaskUI = async function(checkbox, taskId, overrideDate = null) {
     const el = checkbox.closest('li').querySelector('.task-text');
     const today = new Date();
     const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const targetDate = overrideDate || todayKey;
     
     let completions = JSON.parse(localStorage.getItem('taskCompletions') || '[]');
     
@@ -63,13 +64,26 @@ window.completeTaskUI = async function(checkbox, taskId) {
             setTimeout(() => toast.remove(), 300);
         }, 2000);
         
-        // Add locally immediately
-        completions.push({ taskId: taskId, date: todayKey });
+        // Add locally immediately with user details
+        const userName = window.me && window.me.user ? (window.me.user.display_name || window.me.user.username) : 'Me';
+        const userAvatar = window.me && window.me.user ? window.me.user.avatar : null;
+        completions.push({ 
+            taskId: taskId, 
+            date: targetDate, 
+            userName: userName, 
+            userAvatar: userAvatar, 
+            completedAt: new Date().toISOString() 
+        });
         localStorage.setItem('taskCompletions', JSON.stringify(completions));
         
         // Call API to give points
         if (window.HomeAPI && window.HomeAPI.completeTask) {
-            await window.HomeAPI.completeTask(taskId, todayKey);
+            await window.HomeAPI.completeTask(taskId, targetDate);
+        }
+        
+        // Refresh Calendar immediately so past/today completions reflect live
+        if (window.AgendaWidget && typeof window.AgendaWidget.refresh === 'function') {
+            window.AgendaWidget.refresh();
         }
         
         // If it's inside a priority card, remove it after 1 second for "Inbox Zero" feel
@@ -119,9 +133,9 @@ window.completeTaskUI = async function(checkbox, taskId) {
                                 }
                             }
                         }, 300);
-                    }, 10);
+                    }, 300);
                 }
-            }, 1000);
+            }, 800);
         }
     } else {
         if (el) {
@@ -406,7 +420,7 @@ window.rescheduleTaskToToday = async function(taskId) {
                 overdueTasksHTML += `
                     <li data-task-id="${task.id}" style="cursor: pointer;" onclick="if(window.openEventDetailsPopover) window.openEventDetailsPopover(JSON.parse(this.dataset.task), 'task')" data-task='${JSON.stringify(task).replace(/'/g, "&apos;")}'>
                         <label class="custom-checkbox" onclick="event.stopPropagation()">
-                            <input type="checkbox" onchange="window.completeTaskUI(this, '${task.id}')">
+                            <input type="checkbox" onchange="window.completeTaskUI(this, '${task.id}', '${task._overdueDate}')">
                             <span class="checkmark" style="border-color: #f59e0b;"></span>
                             <span class="task-text" style="display:flex; align-items:center; gap:6px;">
                                 <span class="material-symbols-rounded" style="font-size: 16px; color: #d97706;">${task.icon || 'brush'}</span>

@@ -1,5 +1,5 @@
 /**
- * Agenda Calendar Widget - Bi-directional Infinite Scroll & Completion Tracking
+ * Agenda Calendar Widget - Bi-directional True Infinite Timeline & Completion Tracking
  */
 
 window.AgendaWidget = (() => {
@@ -123,8 +123,8 @@ window.AgendaWidget = (() => {
                 onTaskClick: null
             }, options);
 
-            this.pastDaysCount = 7;
-            this.futureDaysCount = 21;
+            this.pastDaysCount = 14;
+            this.futureDaysCount = 28;
             this.earliestDate = null;
             this.latestDate = null;
             this.isLoadingPast = false;
@@ -132,6 +132,15 @@ window.AgendaWidget = (() => {
 
             this.container.innerHTML = '';
             this.init();
+        }
+
+        createMonthDivider(dateObj) {
+            const div = document.createElement('div');
+            div.className = 'agenda-month-divider';
+            const monthName = getMonthName(dateObj);
+            const year = dateObj.getFullYear();
+            div.innerHTML = `<span>📅 ${monthName} ${year}</span>`;
+            return div;
         }
 
         createDayElement(dateObj) {
@@ -236,8 +245,9 @@ window.AgendaWidget = (() => {
                             assignedUsers = [task.assignees[turnIndex]];
                         }
 
-                        const isCompleted = completions.some(c => c.taskId == task.id && c.date === dateKey);
-                        const compRecord = completions.find(c => c.taskId == task.id && c.date === dateKey);
+                        const isOneTime = !task.recurrence || task.recurrence === 'none';
+                        const isCompleted = completions.some(c => c.taskId == task.id && (c.date === dateKey || (isOneTime && (c.date === task.startDate || (task.createdAt && c.date === task.createdAt.split('T')[0])))));
+                        const compRecord = completions.find(c => c.taskId == task.id && (c.date === dateKey || (isOneTime && (c.date === task.startDate || (task.createdAt && c.date === task.createdAt.split('T')[0])))));
 
                         const taskWrapper = document.createElement('div');
                         taskWrapper.innerHTML = createTaskPillHTML(task, assignedUsers, dateKey, isCompleted, compRecord);
@@ -245,7 +255,6 @@ window.AgendaWidget = (() => {
 
                         // Wire Popover click
                         pillNode.addEventListener('click', (e) => {
-                            // If checkbox clicked, do not open popover
                             if (e.target.classList.contains('calendar-task-check')) return;
                             if (this.options.onTaskClick) {
                                 const popoverTask = Object.assign({}, task, { date: dateKey });
@@ -299,9 +308,14 @@ window.AgendaWidget = (() => {
             return dayGroup;
         }
 
-        prependPastDays(numDays) {
+        prependPastDays(numDays = 14) {
             if (this.isLoadingPast || !this.earliestDate) return;
             this.isLoadingPast = true;
+
+            const loadPastBtn = document.getElementById('calendarLoadPastBtn');
+            if (loadPastBtn) {
+                loadPastBtn.innerHTML = '<span class="spinner-small"></span> Loading earlier days...';
+            }
 
             const fragment = document.createDocumentFragment();
             const current = new Date(this.earliestDate);
@@ -313,7 +327,13 @@ window.AgendaWidget = (() => {
                 daysToAdd.unshift(prev);
             }
 
+            let prevMonth = null;
             daysToAdd.forEach(d => {
+                const m = d.getMonth();
+                if (prevMonth !== null && prevMonth !== m) {
+                    fragment.appendChild(this.createMonthDivider(d));
+                }
+                prevMonth = m;
                 fragment.appendChild(this.createDayElement(d));
             });
 
@@ -322,36 +342,65 @@ window.AgendaWidget = (() => {
             const oldScrollHeight = this.container.scrollHeight;
             const oldScrollTop = this.container.scrollTop;
 
-            this.container.prepend(fragment);
+            if (loadPastBtn && loadPastBtn.nextSibling) {
+                this.container.insertBefore(fragment, loadPastBtn.nextSibling);
+            } else {
+                this.container.prepend(fragment);
+            }
 
             const newScrollHeight = this.container.scrollHeight;
             this.container.scrollTop = oldScrollTop + (newScrollHeight - oldScrollHeight);
 
+            if (loadPastBtn) {
+                loadPastBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">history</span> Load Earlier Weeks';
+            }
+
             this.isLoadingPast = false;
         }
 
-        appendFutureDays(numDays) {
+        appendFutureDays(numDays = 14) {
             if (this.isLoadingFuture || !this.latestDate) return;
             this.isLoadingFuture = true;
+
+            const loadFutureBtn = document.getElementById('calendarLoadFutureBtn');
+            if (loadFutureBtn) {
+                loadFutureBtn.innerHTML = '<span class="spinner-small"></span> Loading more days...';
+            }
 
             const fragment = document.createDocumentFragment();
             const current = new Date(this.latestDate);
 
+            let lastMonth = current.getMonth();
             for (let i = 1; i <= numDays; i++) {
                 const next = new Date(current);
                 next.setDate(next.getDate() + i);
+                if (next.getMonth() !== lastMonth) {
+                    fragment.appendChild(this.createMonthDivider(next));
+                    lastMonth = next.getMonth();
+                }
                 fragment.appendChild(this.createDayElement(next));
                 this.latestDate = next;
             }
 
-            this.container.appendChild(fragment);
+            if (loadFutureBtn) {
+                this.container.insertBefore(fragment, loadFutureBtn);
+                loadFutureBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">expand_more</span> Load More Days';
+            } else {
+                this.container.appendChild(fragment);
+            }
+
             this.isLoadingFuture = false;
         }
 
         scrollToToday(smooth = true) {
             const todayGroup = this.container.querySelector('.is-today-group');
             if (todayGroup) {
-                todayGroup.scrollIntoView({ block: 'start', behavior: smooth ? 'smooth' : 'auto' });
+                const targetScroll = Math.max(0, todayGroup.offsetTop - this.container.offsetTop - 10);
+                if (smooth) {
+                    this.container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+                } else {
+                    this.container.scrollTop = targetScroll;
+                }
             }
         }
 
@@ -368,7 +417,7 @@ window.AgendaWidget = (() => {
             const containerRect = this.container.getBoundingClientRect();
             const todayRect = todayGroup.getBoundingClientRect();
 
-            const isVisible = (todayRect.top >= containerRect.top - 50) && (todayRect.bottom <= containerRect.bottom + 50);
+            const isVisible = (todayRect.top >= containerRect.top - 40) && (todayRect.bottom <= containerRect.bottom + 40);
             jumpBtn.style.display = isVisible ? 'none' : 'inline-flex';
         }
 
@@ -382,34 +431,58 @@ window.AgendaWidget = (() => {
             this.latestDate = new Date(today);
             this.latestDate.setDate(this.latestDate.getDate() + this.futureDaysCount);
 
+            // Top Load Button (Past)
+            const topBtn = document.createElement('button');
+            topBtn.id = 'calendarLoadPastBtn';
+            topBtn.className = 'agenda-load-edge-btn';
+            topBtn.type = 'button';
+            topBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">history</span> Load Earlier Weeks';
+            topBtn.addEventListener('click', () => this.prependPastDays(14));
+            this.container.appendChild(topBtn);
+
             const fragment = document.createDocumentFragment();
             const iterDate = new Date(this.earliestDate);
+            let prevMonth = null;
 
             while (iterDate <= this.latestDate) {
+                const m = iterDate.getMonth();
+                if (prevMonth !== null && prevMonth !== m) {
+                    fragment.appendChild(this.createMonthDivider(new Date(iterDate)));
+                }
+                prevMonth = m;
                 fragment.appendChild(this.createDayElement(new Date(iterDate)));
                 iterDate.setDate(iterDate.getDate() + 1);
             }
 
             this.container.appendChild(fragment);
 
+            // Bottom Load Button (Future)
+            const bottomBtn = document.createElement('button');
+            bottomBtn.id = 'calendarLoadFutureBtn';
+            bottomBtn.className = 'agenda-load-edge-btn';
+            bottomBtn.type = 'button';
+            bottomBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">expand_more</span> Load More Days';
+            bottomBtn.addEventListener('click', () => this.appendFutureDays(14));
+            this.container.appendChild(bottomBtn);
+
             // Center on Today after render
-            requestAnimationFrame(() => {
+            setTimeout(() => {
                 this.scrollToToday(false);
                 this.checkTodayVisibility();
-            });
+            }, 60);
 
             // Scroll Listener for bi-directional scroll
             this.container.addEventListener('scroll', () => {
                 this.checkTodayVisibility();
 
-                // Scroll Up -> Prepend Past Days
-                if (this.container.scrollTop <= 60 && !this.isLoadingPast) {
-                    this.prependPastDays(7);
+                // Auto Scroll Up -> Prepend Past Days
+                if (this.container.scrollTop <= 40 && !this.isLoadingPast) {
+                    this.prependPastDays(14);
                 }
 
-                // Scroll Down -> Append Future Days
-                if (this.container.scrollTop + this.container.clientHeight >= this.container.scrollHeight - 120 && !this.isLoadingFuture) {
-                    this.appendFutureDays(10);
+                // Auto Scroll Down -> Append Future Days
+                if (this.container.scrollTop + this.container.clientHeight >= this.container.scrollHeight - 80 && !this.isLoadingFuture) {
+                    this.appendFutureDays(14);
                 }
             });
 
@@ -436,15 +509,40 @@ window.AgendaWidget = (() => {
             this.latestDate = new Date(today);
             this.latestDate.setDate(this.latestDate.getDate() + this.futureDaysCount);
 
+            // Top Load Button
+            const topBtn = document.createElement('button');
+            topBtn.id = 'calendarLoadPastBtn';
+            topBtn.className = 'agenda-load-edge-btn';
+            topBtn.type = 'button';
+            topBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">history</span> Load Earlier Weeks';
+            topBtn.addEventListener('click', () => this.prependPastDays(14));
+            this.container.appendChild(topBtn);
+
             const fragment = document.createDocumentFragment();
             const iterDate = new Date(this.earliestDate);
+            let prevMonth = null;
 
             while (iterDate <= this.latestDate) {
+                const m = iterDate.getMonth();
+                if (prevMonth !== null && prevMonth !== m) {
+                    fragment.appendChild(this.createMonthDivider(new Date(iterDate)));
+                }
+                prevMonth = m;
                 fragment.appendChild(this.createDayElement(new Date(iterDate)));
                 iterDate.setDate(iterDate.getDate() + 1);
             }
 
             this.container.appendChild(fragment);
+
+            // Bottom Load Button
+            const bottomBtn = document.createElement('button');
+            bottomBtn.id = 'calendarLoadFutureBtn';
+            bottomBtn.className = 'agenda-load-edge-btn';
+            bottomBtn.type = 'button';
+            bottomBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">expand_more</span> Load More Days';
+            bottomBtn.addEventListener('click', () => this.appendFutureDays(14));
+            this.container.appendChild(bottomBtn);
+
             this.container.scrollTop = currentScrollTop;
             this.checkTodayVisibility();
         }
@@ -482,13 +580,12 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             onMealClick: (meal, dateKey) => {
                 if (window.openEventDetailsPopover) {
-                    // Normalize meal object to work with the popover
                     const mealTask = {
                         isMeal: true,
                         name: meal.name,
                         icon: meal.emoji,
                         date: dateKey,
-                        time: meal.type, // e.g. Lunch
+                        time: meal.type,
                         assignees: [meal.cook],
                         description: meal.note || `A delicious ${meal.type ? meal.type.toLowerCase() : 'meal'} planned for ${dateKey}.`,
                         recipeId: meal.recipeId

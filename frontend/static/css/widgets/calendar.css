@@ -245,6 +245,72 @@
     transform: translateY(-1px);
 }
 
+/* Edge Load Buttons (Top & Bottom) */
+.agenda-load-edge-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    margin: 4px auto 10px auto;
+    width: fit-content;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px dashed #d1d5db;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted, #6b7280);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.agenda-load-edge-btn:hover {
+    background: rgba(140, 82, 255, 0.08);
+    color: var(--primary-purple, #8c52ff);
+    border-color: rgba(140, 82, 255, 0.3);
+    transform: scale(1.03);
+}
+
+/* Month Divider */
+.agenda-month-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 12px 0 8px 0;
+    position: relative;
+}
+.agenda-month-divider::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    height: 1px;
+    background: #e5e7eb;
+    z-index: 1;
+}
+.agenda-month-divider span {
+    position: relative;
+    z-index: 2;
+    background: var(--surface-color, #ffffff);
+    padding: 2px 14px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-purple, #8c52ff);
+    border: 1px solid #e5e7eb;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.spinner-small {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(140, 82, 255, 0.2);
+    border-top-color: var(--primary-purple, #8c52ff);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+
 @media (max-width: 600px) {
     .agenda-day-group {
         grid-template-columns: 40px 1fr;
@@ -254,4 +320,5 @@
         padding: 10px 12px;
     }
 }
+
 
