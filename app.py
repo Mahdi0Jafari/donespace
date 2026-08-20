@@ -68,7 +68,9 @@ try:
 except Exception as e:
     print(f"Failed to start gcal scheduler: {e}")
 
-# --- Middleware ---
+# --- Middleware & ProxyFix ---
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 @app.before_request
 def handle_canonical_and_auth():
@@ -78,12 +80,26 @@ def handle_canonical_and_auth():
         new_url = request.url.replace('://www.', '://', 1)
         return redirect(new_url, code=301)
 
+    # 1.5 Canonical trailing slash redirect (strip trailing slash except for root '/')
+    if len(request.path) > 1 and request.path.endswith('/'):
+        clean_path = request.path.rstrip('/')
+        qs = request.query_string.decode('utf-8')
+        dest = clean_path + (f'?{qs}' if qs else '')
+        return redirect(dest, code=301)
+
     # 2. Allow CORS preflight
     if request.method == 'OPTIONS':
         return
     # Exempt auth routes, static files, and public pages
     exempt_routes = ['/api/auth/login', '/api/auth/register', '/api/auth/check-email', '/login', '/', '/robots.txt', '/sitemap.xml', '/llms.txt', '/about', '/manifest.webmanifest', '/manifest.json', '/sw.js', '/offline']
     if request.path in exempt_routes or request.path.startswith('/api/auth/invite/') or request.path.startswith('/api/auth/google/') or request.path.startswith('/static/') or request.path.startswith('/blog'):
+        return
+
+    # Check if the requested route exists; if not, let Flask trigger 404 handler
+    try:
+        adapter = app.url_map.bind_to_environ(request.environ)
+        adapter.match()
+    except Exception:
         return
         
     # Check for SSE stream auth or URL token auth (e.g. from OAuth redirect)
@@ -249,6 +265,12 @@ def logs_page():
 @app.route('/database/photos/<filename>')
 def serve_photo(filename):
     return send_from_directory(os.path.join(BASE_DIR, 'database', 'photos'), filename)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Not found'}), 404
+    return render_template('404.html'), 404
 
 if __name__ == '__main__':
     app.run(port=3004, debug=True, threaded=True)

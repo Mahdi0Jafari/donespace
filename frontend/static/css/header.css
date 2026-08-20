@@ -75,15 +75,19 @@
     .header {
         flex-direction: column-reverse;
         align-items: stretch;
-        gap: 20px;
+        gap: 16px;
+        width: 100%;
+        max-width: 100%;
     }
     
     .search-bar {
         width: 100%;
+        max-width: 100%;
     }
     
     .header-actions {
         justify-content: flex-end;
+        width: 100%;
         gap: 15px;
     }
 }

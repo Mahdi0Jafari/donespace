@@ -5,6 +5,16 @@
     -webkit-tap-highlight-color: transparent; /* Removes ugly blue highlight on mobile tap */
 }
 
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+    -webkit-overflow-scrolling: touch;
+}
+
 body {
     font-family: var(--font-family);
     background-color: #eaeaf2;
@@ -46,9 +56,12 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     gap: 30px;
     overflow-y: auto;
+    overflow-x: hidden;
     background-color: transparent;
     margin: 0;
     z-index: 5;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Right Panel */
@@ -60,6 +73,7 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     gap: 40px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .panel-section {
@@ -79,26 +93,48 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 1200px) {
+    body {
+        padding: 0;
+    }
     .app-container {
         flex-direction: column;
         height: auto;
         min-height: 100vh;
+        width: 100%;
+        max-width: 100%;
         margin: 0;
         border-radius: 0;
         box-shadow: none;
+        overflow-x: hidden;
+    }
+    .main-content {
+        padding: 24px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
     .right-panel {
         width: 100%;
-        padding-bottom: 110px; /* Clear bottom nav */
+        max-width: 100%;
+        padding: 24px 24px 120px 24px; /* Clear bottom nav */
+        overflow-x: hidden;
     }
 }
 @media (max-width: 600px) {
-    body { padding: 0; }
-    .main-content, .right-panel {
-        padding: 20px;
+    body {
+        padding: 0;
+    }
+    .main-content {
+        padding: 16px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
     .right-panel {
-        padding-bottom: 110px; /* Consistent clear of bottom nav */
+        padding: 16px 16px 120px 16px; /* Consistent clear of bottom nav */
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 }
 
