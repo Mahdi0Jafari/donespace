@@ -26,8 +26,7 @@ CORS(app)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 db_dir = os.path.join(BASE_DIR, 'database')
 os.makedirs(db_dir, exist_ok=True)
-db_filename = 'homethings.db' if os.path.exists(os.path.join(db_dir, 'homethings.db')) else 'donespace.db'
-default_db_uri = 'sqlite:///' + os.path.join(db_dir, db_filename)
+default_db_uri = 'sqlite:///' + os.path.join(db_dir, 'donespace.db')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or default_db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
